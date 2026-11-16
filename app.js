@@ -81,7 +81,8 @@ function drawMapKey(){
 function mapItemsFor(zoneId){
  const candidates=D.items.filter(item=>item.zone===zoneId&&item.type!=="stop"&&(state.mapKind==="all"||state.mapKind===item.type));
  candidates.sort((a,b)=>(MAP_PRIORITY[a.type]??10)-(MAP_PRIORITY[b.type]??10));
- const dense=zoom>1.6, limit=state.mapKind==="all"?(dense?9:4):(dense?13:9);
+ const dense=zoom>1.6, mid=zoom>1.24;
+ const limit=state.mapKind==="all"?(dense?8:mid?4:2):(dense?12:6);
  const selected=state.selected&&D.items.find(i=>i.id===state.selected);
  const picked=candidates.slice(0,limit);
  // Search results can always be highlighted directly on the map even when omitted from the overview.
