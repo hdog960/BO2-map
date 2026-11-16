@@ -195,6 +195,52 @@ const builds=[
 {id:"nav",name:"NAV Table",zone:"pylon",location:"Under pylon",parts:[["Meteorite","Outside Bus Depot"],["Radio","Nacht bunker or Diner garage"],["Wooden board","Tunnel or Power Station"],["Electrical box","Farm near fridge or Town alley"]]},
 {id:"bus",name:"Bus upgrades",zone:"depot",location:"Four Turbine rooms; three upgrades, one empty",parts:[["Roof hatch","One of four upgrade rooms"],["Ladder","One of four upgrade rooms"],["Plow / bumper","One of four upgrade rooms"]]}
 ];
+// Craftable-specific identity. Codes and colors label each part on the atlas and
+// in the same saved-progress checklist (state.parts remains unchanged).
+const buildAppearance={
+ turbine:{code:"TB",color:"#e8c66a",note:"All three parts and bench are in the Bus Depot hall."},
+ shield:{code:"ZS",color:"#8cabf6",note:"Parts split between the Diner and its garage; bench in the garage."},
+ turret:{code:"TR",color:"#89dfab",note:"Parts are around Farm, with variable indoor spawns."},
+ trap:{code:"ET",color:"#c6a0ef",note:"Parts near the Power Station upstairs catwalk; requires a Turbine to operate."},
+ power:{code:"PS",color:"#efa56c",note:"All three pieces and the switch bench are in the reactor area."},
+ jet:{code:"JG",color:"#6fd4e6",note:"Four separate part areas: Tunnel, Power Station, Nacht, Hunter's Cabin; bench in Town bar."},
+ pap:{code:"PAP",color:"#f18b87",note:"Three pieces below the Town bank; requires the separate remote-Turbine door step."},
+ nav:{code:"NAV",color:"#ed9bce",note:"Four components; several have alternate possible areas; bench under the Pylon."},
+ bus:{code:"BUS",color:"#d3c0a0",note:"Three upgrades appear across four powered rooms (one empty); attach them directly to the bus."}
+};
+const componentNames={
+ turbine:["Turbine mannequin","Turbine fan","Turbine tail"],
+ shield:["Shield car door","Shield hand trolley"],
+ turret:["Turret unusable RPD","Turret ammo bag","Turret lawn mower"],
+ trap:["Electric Trap battery","Electric Trap coil","Electric Trap TV screen"],
+ power:["Power board","Power lever","Zombie arm"],
+ jet:["Jet Gun engine","Jet Gun wires","Jet Gun handbrake","Jet Gun gauge"],
+ pap:["Pack-a-Punch parts","Pack-a-Punch parts","Pack-a-Punch parts"],
+ nav:["NAV meteorite","NAV radio","NAV wooden board","NAV electrical box"],
+ bus:["Bus upgrade candidate","Bus upgrade candidate","Bus upgrade candidate"]
+};
+const benchNames={
+ turbine:"Turbine bench",shield:"Zombie Shield bench",turret:"Turret bench",
+ trap:"Electric Trap bench",power:"Power switch bench",jet:"Jet Gun bench",
+ pap:"Pack-a-Punch bench",nav:"NAV Table bench"
+};
+for(const b of builds){
+ Object.assign(b,buildAppearance[b.id]);
+ const names=componentNames[b.id]||[];
+ for(let i=0;i<b.parts.length;i++){
+  // A candidate may represent several possible spots, not separate physical copies.
+  const name=names[i],catalog=items.filter(item=>item.type==="part"&&item.name===name);
+  b.parts[i][2]=catalog.map(item=>item.id);
+ }
+ const bench=items.find(item=>item.type==="bench"&&item.name===benchNames[b.id]);
+ b.benchItemId=bench?.id||null; // Bus upgrades are attached to the bus, not to a fixed crafting bench.
+ for(const item of items.filter(i=>i.type==="part"&&names.includes(i.name))){
+  item.buildId=b.id;
+  const partIndex=names.indexOf(item.name);
+  item.buildPartIndex=names.filter(x=>x===item.name).length===1?partIndex:null;
+ }
+ if(bench){bench.buildId=b.id;bench.buildKind="bench";}
+}
 const quests={
 maxis:[
 {title:"Prepare four Turbines",zone:"depot",note:"Every player can build a Turbine at the Bus Depot hall. A pair is sufficient for the core pylon step, while four simplifies simultaneous placements."},
