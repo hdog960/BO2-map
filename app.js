@@ -594,6 +594,7 @@ document.addEventListener("keydown",e=>{
  if(e.key!=="Escape")return;
  if($("#modal").open){$("#modal").close();return;}
  if(sheetView){closeSheet();return;}
+ if($("#mapKeyDisclosure")?.open){$("#mapKeyDisclosure").open=false;return;}
  if(!$("#mapContext").hidden){closeMapContext();return;}
  if($("#interactiveMap").classList.contains("map-expanded"))setMapExpanded(false);
 });
