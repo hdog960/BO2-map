@@ -57,9 +57,12 @@ function go(view){state.view=view;save();renderNav();if(view==="map")renderMap()
 function selectZone(id){state.zone=id;state.floor=0;save();go("zones");}
 function showItem(id){
  const item=D.items.find(x=>x.id===id);if(!item)return;
- const z=zone(item.zone),onMap=item.mapMode==="site-callout";
+ const z=zone(item.zone),onMap=item.mapMode==="site-callout",b=buildById(item.buildId);
  const alt=item.alternateZones?.length?'<p><strong>Other possible area(s):</strong> '+item.alternateZones.map(x=>esc(zone(x).name)).join(", ")+'</p>':"";
- modal(item.name,'<div class="kicker">'+esc(category(item.type).name)+' · '+esc(z.name)+'</div><p>'+esc(item.detail||"Check the area described below.")+'</p><div class="info"><b>Where:</b> '+esc(item.room||z.description||z.name)+(item.price?"<br><b>Price / requirement:</b> "+esc(item.price):"")+'</div>'+alt+'<div class="actions">'+(onMap?'<button type="button" class="button" data-find-on-map="'+esc(item.id)+'">⌖ Show location area</button>':"")+'<button type="button" class="button ghost" data-toggle-item="'+esc(item.id)+'">'+(state.found[id]?"✓ Tracked":"Mark found / opened")+'</button></div><p class="footer-note">'+esc(onMap?"Location-group callout only; the exact floor/world position is not verified.":"No fixed map pin: "+item.mapReason)+'</p>');
+ const tag=b?'<div class="craft-modal-tag" style="--craft-color:'+b.color+'"><b>'+esc(b.code)+'</b><span>'+esc(b.name)+(item.type==="bench"?" · Workbench":" · Part")+'</span></div>':"";
+ const collect=b&&item.buildPartIndex!==null&&item.buildPartIndex!==undefined?
+  '<button type="button" class="button ghost" data-part="'+b.id+':'+item.buildPartIndex+'">'+(state.parts[b.id+":"+item.buildPartIndex]?"✓ Collected":"Mark part collected")+'</button>':"";
+ modal(item.name,tag+'<div class="kicker">'+esc(category(item.type).name)+' · '+esc(z.name)+'</div><p>'+esc(item.detail||"Check the area described below.")+'</p><div class="info"><b>Where:</b> '+esc(item.room||z.description||z.name)+(item.price?"<br><b>Price / requirement:</b> "+esc(item.price):"")+'</div>'+alt+'<div class="actions">'+(onMap?'<button type="button" class="button" data-find-on-map="'+esc(item.id)+'">⌖ Show location area</button>':"")+(b?'<button class="button ghost" type="button" data-craft-view="'+b.id+'">View '+esc(b.name)+' parts</button>':"")+collect+'<button type="button" class="button ghost" data-toggle-item="'+esc(item.id)+'">'+(state.found[id]?"✓ Tracked":"Mark found / opened")+'</button></div><p class="footer-note">'+esc(onMap?"Location-group callout only; the exact floor/world position is not verified.":"No fixed map pin: "+item.mapReason)+'</p>');
 }
 /* Interactive atlas. Pins are anchored to known sites, not invented exact in-room coordinates. */
 const svgNS="http://www.w3.org/2000/svg";
@@ -249,20 +252,24 @@ function context(key){
  if(key.startsWith("zone:")){
   const z=zone(key.slice(5));if(!z)return;
   state.selected=key;
-  const arr=placedItems(z.id);
+  const arr=state.craftFocus?placedItems(z.id).filter(i=>i.buildId===state.craftFocus):placedItems(z.id);
   const notable=arr.slice().sort((a,b)=>(MAP_PRIORITY[a.type]??10)-(MAP_PRIORITY[b.type]??10)).slice(0,6);
   mapCard('<p>'+esc(z.description)+'</p><p class="placement-warning">Category badges are linked to this site, not to verified in-building coordinates.</p><div class="map-card-items">'+notable.map(i=>'<button type="button" data-map-item="'+esc(i.id)+'"><span class="inline-pin" style="background:'+category(i.type).color+'">'+esc(MAP_SYMBOLS[i.type])+'</span>'+esc(i.name)+'</button>').join("")+'</div><div class="map-card-actions"><button type="button" class="button" data-map-more="'+z.id+'">All '+arr.length+' items here</button><button type="button" class="button ghost" data-open-zone="'+z.id+'">Room guide</button></div>',
    z.stop?"BUS STOP "+z.stop:"LANDMARK",z.name);
  }else if(key.startsWith("more:")||key.startsWith("group:")){
   const ref=key.slice(key.indexOf(":")+1),parts=ref.split("|"),z=zone(parts[0]);if(!z)return;
-  const type=parts[1],arr=placedItems(z.id,type);
+  const type=parts[1],arr=placedItems(z.id,type).filter(i=>!state.craftFocus||i.buildId===state.craftFocus);
   state.selected=key;
   mapCard('<p>'+esc(z.name)+' — tap any entry for its verified area/room description. Badge positions are callouts, not exact coordinates.</p><div class="map-card-list">'+arr.map(i=>'<button type="button" data-map-item="'+esc(i.id)+'"><span class="inline-pin" style="background:'+category(i.type).color+'">'+esc(MAP_SYMBOLS[i.type])+'</span><span><strong>'+esc(i.name)+'</strong><small>'+esc(i.room)+'</small></span><span class="map-list-arrow">›</span></button>').join("")+'</div><div class="map-card-actions"><button type="button" class="button ghost" data-open-zone="'+z.id+'">Room guide</button></div>',
    "LOCATION INDEX",z.name+" · "+arr.length+" entries");
  }else{
   const item=D.items.find(i=>i.id===key);if(!item)return;
   state.selected=key;
-  mapCard('<p><strong>Where:</strong> '+esc(item.room||zone(item.zone).description)+'</p>'+(item.price?'<div class="map-price">'+esc(item.price)+(isNaN(Number(item.price))?"":" points")+'</div>':"")+'<p>'+esc(item.detail||"See the location notes.")+'</p><p class="placement-warning">'+esc(item.mapReason)+'</p><div class="map-card-actions"><button type="button" class="button" data-toggle-item="'+esc(item.id)+'">'+(state.found[item.id]?"✓ Tracked":"Mark found / opened")+'</button><button type="button" class="button ghost" data-map-more="'+item.zone+'">More at '+esc(zone(item.zone).name)+'</button></div>',
+  const b=buildById(item.buildId),ix=item.buildPartIndex;
+  const tag=b?'<div class="craft-modal-tag" style="--craft-color:'+b.color+'"><b>'+esc(b.code)+'</b><span>'+esc(b.name)+(item.type==="bench"?" · Bench":" · Part")+'</span></div>':"";
+  const partCheck=b&&ix!==null&&ix!==undefined?'<button class="button" type="button" data-part="'+b.id+':'+ix+'">'+(state.parts[b.id+":"+ix]?"✓ Collected":"Mark "+esc(b.code)+" part collected")+'</button>':"";
+  const alts=item.alternateZones?.length?'<p><b>Alternate possible areas:</b> '+item.alternateZones.map(a=>esc(zone(a).name)).join(", ")+'</p>':"";
+  mapCard(tag+'<p><strong>Where:</strong> '+esc(item.room||zone(item.zone).description)+'</p>'+(item.price?'<div class="map-price">'+esc(item.price)+(isNaN(Number(item.price))?"":" points")+'</div>':"")+'<p>'+esc(item.detail||"See the location notes.")+'</p>'+alts+'<p class="placement-warning">'+esc(item.mapReason)+'</p><div class="map-card-actions">'+partCheck+(b?'<button class="button ghost" type="button" data-craft-view="'+b.id+'">All '+esc(b.name)+' parts</button>':'')+'<button type="button" class="button" data-toggle-item="'+esc(item.id)+'">'+(state.found[item.id]?"✓ Tracked":"Mark found / opened")+'</button><button type="button" class="button ghost" data-map-more="'+item.zone+'">More at '+esc(zone(item.zone).name)+'</button></div>',
    MAP_LABELS[item.type]+" · "+zone(item.zone).name,item.name);
  }
  save();
@@ -396,8 +403,8 @@ function renderAtlas(){
  });
  $("#atlasCount").textContent=results.length+(results.length===1?" result":" results")+(term?' for "'+$("#atlasSearch").value.trim()+'"':" · Choose a category or search above");
  $("#atlasItems").innerHTML=results.map(i=>{
-  const t=category(i.type);
-  return '<button type="button" class="atlas-item" data-show-item="'+esc(i.id)+'" aria-label="'+esc(i.name)+' in '+esc(zone(i.zone).name)+'"><span class="symbol" style="background:'+t.color+'">'+esc(t.short)+'</span><span><strong>'+esc(i.name)+'</strong><small>'+esc(zone(i.zone).name)+' · '+esc(i.room)+'</small></span><span class="arr">'+(state.found[i.id]?"✓":"›")+'</span></button>';
+  const b=buildById(i.buildId),t=category(i.type),mark=b?b.code:t.short,color=b?b.color:t.color;
+  return '<button type="button" class="atlas-item" data-show-item="'+esc(i.id)+'" aria-label="'+esc(i.name)+' in '+esc(zone(i.zone).name)+'"><span class="symbol" style="background:'+color+'">'+esc(mark)+'</span><span><strong>'+esc(i.name)+'</strong><small>'+esc(zone(i.zone).name)+' · '+esc(i.room)+'</small></span><span class="arr">'+(state.found[i.id]?"✓":"›")+'</span></button>';
  }).join("")||'<div class="empty"><strong>No matching locations</strong><p>Try another name, perk, door, or location; or clear your search.</p><button type="button" class="button ghost" data-quick-find="">Clear search</button></div>';
 }
 function renderCraftPanel(){
@@ -437,7 +444,7 @@ function renderCrew(){
  D.builds.forEach(b=>{
   const complete=b.parts.filter((_,i)=>state.parts[b.id+":"+i]).length;
   const isOpen=alreadyRendered?previouslyOpen.includes(b.id):b.id==="turbine";
-  html+='<details class="build-card" data-build="'+b.id+'" '+(isOpen?"open":"")+'><summary><span><strong>'+esc(b.name)+'</strong><small>'+esc(zone(b.zone).name)+' · '+esc(b.location)+'</small></span><span class="pill">'+complete+'/'+b.parts.length+'</span></summary><div class="build-content">'+
+  html+='<details class="build-card" data-build="'+b.id+'" style="--craft-color:'+b.color+'" '+(isOpen?"open":"")+'><summary><span><strong><span class="mini-craft-code">'+esc(b.code)+'</span> '+esc(b.name)+'</strong><small>'+esc(zone(b.zone).name)+' · '+esc(b.location)+'</small></span><span class="pill">'+complete+'/'+b.parts.length+'</span></summary><div class="build-content">'+
    b.parts.map((part,i)=>'<div class="row-item"><div class="left"><strong>'+esc(part[0])+'</strong><small>'+esc(part[1])+'</small></div><button class="tick '+(state.parts[b.id+":"+i]?"checked":"")+'" type="button" data-part="'+b.id+":"+i+'" aria-label="'+(state.parts[b.id+":"+i]?"Uncheck ":"Mark found ")+esc(part[0])+'" aria-pressed="'+!!state.parts[b.id+":"+i]+'">'+(state.parts[b.id+":"+i]?"✓":"○")+'</button></div>').join("")+
    '<div class="actions"><button class="button ghost" data-open-zone="'+b.zone+'">Show bench location</button></div></div></details>';
  });
@@ -460,6 +467,7 @@ const b=e.target.closest("button,[data-zone],[data-room],[data-item],[data-group
 if(!b)return;
 if(b.dataset.view){go(b.dataset.view);return;}
 if(b.dataset.craftSelect){state.craftSelected=b.dataset.craftSelect;save();renderCraftPanel();return;}
+if(b.dataset.craftView){state.craftSelected=b.dataset.craftView;save();if($("#modal").open)$("#modal").close();go("craft");return;}
 if(b.dataset.craftMap){
  state.craftFocus=b.dataset.craftMap==="all"?null:b.dataset.craftMap;
  state.mapKind=state.craftFocus?"part":"all";state.selected=null;
@@ -505,7 +513,7 @@ if(b.dataset.group){if(!isAccidentalMapClick(e))context("group:"+b.dataset.group
 if(b.dataset.item){if(!isAccidentalMapClick(e))context(b.dataset.item);return;}
 if(b.dataset.zone){if(!isAccidentalMapClick(e))context("zone:"+b.dataset.zone);return;}
 if(b.id==="resetSession"){modal("Reset this match?",'<p>This will clear quest checks, collected parts, marked doors/items and assignments on this phone. Your player names will remain.</p><div class="actions"><button class="button danger" id="confirmReset">Yes, reset progress</button><button class="button ghost" id="cancelReset">Cancel</button></div>');return;}
-if(b.id==="confirmReset"){state.done={};state.parts={};state.found={};state.assign={};state.selected=null;save();$("#modal").close();renderCrew();return;}
+if(b.id==="confirmReset"){state.done={};state.parts={};state.found={};state.assign={};state.selected=null;save();$("#modal").close();renderCrew();renderCraftPanel();return;}
 if(b.id==="cancelReset"||b.id==="closeModal"){$("#modal").close();return;}
 if(b.id==="helpBtn"){help();return;}
 if(b.id==="globalFind"){state.atlasFilter="all";$("#atlasSearch").value="";go("atlas");$("#atlasSearch").focus?.();return;}
@@ -673,5 +681,5 @@ window.TZ_MAP_TELEMETRY=(light=false)=>({
 function network(){const b=$("#networkStatus");b.textContent=navigator.onLine?"CACHE PENDING":"OFFLINE MODE";b.classList.toggle("warn",!navigator.onLine);}
 window.addEventListener("online",network);window.addEventListener("offline",network);network();
 if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("./sw.js").then(()=>navigator.serviceWorker.ready).then(()=>{$("#networkStatus").textContent=navigator.onLine?"OFFLINE READY":"OFFLINE MODE";}).catch(()=>{$("#networkStatus").textContent="ONLINE ONLY";$("#networkStatus").classList.add("warn")});}else if(location.protocol!=="https:"){$("#networkStatus").textContent="HTTPS REQUIRED";}
-renderNav();renderMap();renderZones();renderQuest();renderAtlas();renderCrew();
+renderNav();renderMap();renderZones();renderQuest();renderAtlas();renderCraftPanel();renderCrew();
 })();
