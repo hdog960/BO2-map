@@ -145,3 +145,15 @@ dialog{padding:17px 17px 22px;background:#14262e;border-color:#85917c;max-height
 .reference-details p{color:#c6d4cb;font-size:12px;line-height:1.6}
 .map-mission .mission-link:focus-visible,.map-mode-bar button:focus-visible,.quick-find button:focus-visible,.build-card summary:focus-visible,.step-reveal summary:focus-visible{outline:2px solid #e8bf79;outline-offset:2px}
 @media(max-width:370px){.mission-row{gap:5px}.map-mission .mission-link{padding:7px 8px;white-space:normal}.site-picker{grid-template-columns:1fr}.site-picker .button{width:100%}}
+
+/* Preserve tappable space around an iPhone's landscape camera cutout. */
+.top{padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right))}
+.view{padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right))}
+.bottom-nav{padding-inline:max(7px,env(safe-area-inset-left)) max(7px,env(safe-area-inset-right))}
+@media(max-width:380px){
+ .brand .eyebrow{display:none}
+ .offline{display:block;font-size:8px;max-width:56px}
+ .top{gap:4px}
+ .iconbtn{width:40px;height:40px}
+ .top-actions{gap:5px}
+}
