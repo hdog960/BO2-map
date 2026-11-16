@@ -111,3 +111,19 @@ Implementation:
 - Advanced the PWA offline cache to v6 for the new map code and artwork.
 
 Remaining gate: physical Safari/installed-PWA testing on the user's iPhone. Headless Chromium phone-size viewports are not physical iPhone confirmation. Detailed indoor map accuracy remains on the earlier milestones.
+
+
+## M12 — On-device map-performance scanner for iPhone debugging
+
+**Why:** Physical-iPhone feedback reports that map dragging still feels broken and laggy even after the camera rewrite. Desktop Chrome gesture pass was insufficient to diagnose the user device.
+
+**Delivered:**
+- Added a visible **Scan** button in the TranZit Map heading and a self-contained **Map Performance Scan** panel.
+- Tap **Start 15-second scan**, then actively drag and pinch the map. Capture finishes automatically or with **Stop & view results**.
+- The diagnostic collects device/browser and CSS viewport information, map zoom and pan, marker/label counts, touch starts/moves/cancels, approximate finger travel, longest input gap, requestAnimationFrame interval median/P95/worst, counts of slow frames, and SVG map update timing median/P95/worst. Long-task observation is included when the browser supports it.
+- The scan is **opt-in and on-device**. It does not record game save data, account information, GPS location or app conversations. Nothing is uploaded; users manually choose **Copy report** (with a selectable text fallback) and paste into ChatGPT.
+- Progress bars, game content, all Easter egg walkthroughs, map interactions and saved match state remain unchanged.
+- Included diagnostics.js in PWA cache version 8 so Home Screen installation supports the scan offline after an online refresh.
+- Added static and real Chromium interaction coverage for start, touch events, stop, report creation and visibility.
+
+**Truth boundary:** Results from Chrome test automation prove the scan runs as designed in that browser, but only a scan copied from the user's own iPhone can establish the real iOS lag profile. Review an actual diagnostic report before claiming the underlying performance bug has been fixed.
