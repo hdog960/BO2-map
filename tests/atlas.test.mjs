@@ -49,7 +49,7 @@ test('all five detailed floor plan groups remain available',()=>{
  for(const z of ['depot','diner','farm','power','town']){assert.ok(D.plans[z]);assert.ok(D.plans[z].floors.length>0);}
 });
 test('JavaScript files are syntactically valid',()=>{
- for(const p of ['app.js','data.js','sw.js'])assert.doesNotThrow(()=>new vm.Script(read(p),{filename:p}),p);
+ for(const p of ['app.js','data.js','diagnostics.js','sw.js'])assert.doesNotThrow(()=>new vm.Script(read(p),{filename:p}),p);
 });
 test('PWA resources referenced by service worker exist',()=>{
  const sw=read('sw.js');const m=sw.match(/const ASSETS=\[([^\]]+)\]/);assert.ok(m,'ASSETS precache array');
@@ -172,4 +172,25 @@ test('pinch and drag both use camera-space deltas and bounded pan',()=>{
  assert.match(app,/function clampMap\(/);
  assert.match(app,/pointercancel/);
  assert.match(app,/wheel",e=>/);
+});
+
+test('Map Diagnostics is available in the map view and offline precache',()=>{
+ const html=read('index.html'),sw=read('sw.js'),js=read('diagnostics.js');
+ for(const id of ['openMapScan','mapScanPanel','startMapScan','stopMapScan','copyMapScan','mapScanReport'])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(html,/src="\.\/diagnostics\.js"/);
+ assert.match(sw,/'\.\/diagnostics\.js'/);
+ assert.match(js,/TRANZIT MAP PERFORMANCE SCAN v1/);
+ assert.match(js,/requestAnimationFrame/);
+ assert.match(js,/pointermove/);
+ assert.match(js,/recordMapWork/);
+ assert.match(js,/navigator\.clipboard/);
+ assert.match(js,/does not access your location|No game saves, account data, GPS location/);
+});
+test('Map scanner is opt-in and does not silently upload reports',()=>{
+ const code=read('diagnostics.js');
+ assert.match(code,/scan\.active=false/);
+ assert.match(code,/copyMapScan/);
+ assert.doesNotMatch(code,/\bfetch\(|XMLHttpRequest|sendBeacon\(|WebSocket\(/);
+ assert.match(read('app.js'),/window\.TZ_MAP_TELEMETRY/);
 });
