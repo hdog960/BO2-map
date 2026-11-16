@@ -31,8 +31,11 @@ function renderNav(){
 }
 function go(view){state.view=view;save();renderNav();if(view==="map")renderMap();if(view==="zones")renderZones();if(view==="quest")renderQuest();if(view==="atlas")renderAtlas();if(view==="crew")renderCrew();window.scrollTo({top:0,behavior:"auto"});}
 function selectZone(id){state.zone=id;state.floor=0;save();go("zones");}
-function showItem(id){const item=D.items.find(x=>x.id===id);if(!item)return;const z=zone(item.zone);modal(item.name,'<div class="kicker">'+esc(category(item.type).name)+" · "+esc(z.name)+'</div><p>'+esc(item.detail||"Reference point on the TranZit map.")+'</p><div class="info"><b>Where:</b> '+esc(item.room||z.description||z.name)+(item.price?"<br><b>Requirement / price:</b> "+esc(item.price):"")+'</div><div class="actions"><button class="button" data-open-zone="'+esc(item.zone)+'">Explore location</button><button class="button ghost" data-toggle-item="'+esc(item.id)+'">'+(state.found[id]?"✓ Marked found":"Mark found / opened")+'</button></div><p class="footer-note">Pins give an approximate area, not a measured coordinate. Part spawns can vary between matches.</p>');}
-
+function showItem(id){
+ const item=D.items.find(x=>x.id===id);if(!item)return;
+ const z=zone(item.zone);
+ modal(item.name,'<div class="kicker">'+esc(category(item.type).name)+' · '+esc(z.name)+'</div><p>'+esc(item.detail||"Check the area described below.")+'</p><div class="info"><b>Where:</b> '+esc(item.room||z.description||z.name)+(item.price?"<br><b>Price / requirement:</b> "+esc(item.price):"")+'</div><div class="actions"><button type="button" class="button" data-find-on-map="'+esc(item.id)+'">⌖ Show on map</button><button type="button" class="button ghost" data-toggle-item="'+esc(item.id)+'">'+(state.found[id]?"✓ Tracked":"Mark found / opened")+'</button></div><p class="footer-note">Map icons locate the site or relevant room area; variable spawn locations are listed in the item notes.</p>');
+}
 /* Interactive atlas. Pins are anchored to known sites, not invented exact in-room coordinates. */
 const svgNS="http://www.w3.org/2000/svg";
 const MAP_SYMBOLS={perk:"P",weapon:"W",part:"+",bench:"⚒",paid:"$",turbine:"T",special:"!",box:"?",secret:"★",goal:"⚡"};
@@ -262,7 +265,9 @@ function renderCrew(){
  panel.innerHTML=html;
  panel.dataset.ready="1";
 }
-function help(){modal("How to use TranZit Atlas",'<div class="stack"><p><b>Map:</b> Start with Route, Easter egg, Gear or Doors. Pinch to zoom, drag to pan, and tap a stop. Open <b>More map layers</b> for individual categories.</p><p><b>Quest:</b> Your next step appears on the Map and Quest screens. Pick Maxis or Richtofen, open a step for instructions, and tap its number to check it off.</p><p><b>Find:</b> Tap the magnifier or FIND at the bottom, search an item name, or choose a quick suggestion.</p><p><b>Sites:</b> Select any location from the picker, then switch floors. Interiors are schematic and do not claim exact game-file geometry.</p><p><b>Crew:</b> Enter four names; expand a buildable to check off parts. Data stays on this phone, with no live multiplayer syncing.</p><p><b>Install:</b> Open in Safari, tap Share → Add to Home Screen, then launch once online to cache resources. Test airplane mode before your match.</p><p><b>Note:</b> Neither the atlas nor checklists read your BO2 session. All map and quest tracking is manual.</p></div>');}
+function help(){
+ modal("TranZit interactive map",'<div class="stack"><p><b>Map:</b> All major locations and important item icons appear directly on the geography. Tap a numbered stop, perk, weapon, part, bench or door marker to open its details. A <b>+number</b> marker lists the other items at that location.</p><p><b>Map key:</b> Each symbol has a color and meaning. Tap a category in the key to show more icons of that type, or <b>All</b> to restore the overview. Pinch to zoom, drag to pan, or expand the map.</p><p><b>Easter Egg:</b> The separate <b>EASTER EGG</b> tab contains the Maxis and Richtofen steps, progress checks and four-player assignments. A Locate button brings you back to the correct map site.</p><p><b>Sites, Find and Crew:</b> Room notes, searchable listings, buildable part checklists and names remain available without cluttering the main map.</p><p><b>Offline:</b> Safari Share → Add to Home Screen. Launch once online, then test airplane mode. Information is saved only on your phone, not synced with the game.</p><p><b>Accuracy:</b> Roads and buildings follow the supplied reference map; icons are site-level guides, not measured in-game pickup coordinates. Alternate spawns are listed in details.</p></div>');
+}
 document.addEventListener("click",e=>{
 const b=e.target.closest("button,[data-zone],[data-room],[data-item],[data-group],[data-map-more],[data-map-item],[data-map-key]");
 if(!b)return;
@@ -313,7 +318,7 @@ if(!pointers.has(e.pointerId))return;const prev=pointers.get(e.pointerId);if(Mat
 if(pointers.size===1){panX+=e.clientX-prev.x;panY+=e.clientY-prev.y;}else if(pointers.size===2){const other=[...pointers].find(([id])=>id!==e.pointerId)?.[1];if(other){const before=Math.hypot(prev.x-other.x,prev.y-other.y),after=Math.hypot(e.clientX-other.x,e.clientY-other.y);if(before>3){const old=zoom;zoom=Math.min(3.6,Math.max(1,zoom*after/before));const rect=vp.getBoundingClientRect(),cx=(e.clientX+other.x)/2-rect.left,cy=(e.clientY+other.y)/2-rect.top;panX=cx-(cx-panX)*zoom/old;panY=cy-(cy-panY)*zoom/old;}}}
 pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});clampMap();applyTransform();
 });
-const end=e=>{if(dragged)lastDrag=Date.now();pointers.delete(e.pointerId);};
+const end=e=>{if(dragged)lastDrag=Date.now();pointers.delete(e.pointerId);if(!pointers.size&&dragged)renderMapMarkers();};
 vp.addEventListener("pointerup",end);vp.addEventListener("pointercancel",end);vp.addEventListener("lostpointercapture",end);
 vp.addEventListener("wheel",e=>{e.preventDefault();setZoom(zoom*(e.deltaY<0?1.15:1/1.15));},{passive:false});
 $("#modal").addEventListener("click",e=>{if(e.target===$("#modal"))$("#modal").close();});
