@@ -34,7 +34,7 @@
    select.value="town";select.dispatchEvent(new win.Event("change",{bubbles:true}));
    check(doc.querySelector("#zonePlan").textContent.includes("Bank"),"Town interior should display");
    click('nav button[data-view="crew"]');
-   check(doc.querySelectorAll("details.build-card").length===9,"All nine buildables remain");
+   check(doc.querySelectorAll("details.build-card[data-build]").length===9,"All nine buildables remain");
    click('[data-part="jet:0"]');
    check(JSON.parse(win.localStorage.getItem("tranzit-atlas-save-v1")).parts["jet:0"]===true,"Part progress must persist");
    click('nav button[data-view="map"]');
