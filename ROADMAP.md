@@ -48,3 +48,27 @@ Node checks, simulated UI tests, real Chromium viewport and interaction testing,
 
 ## Constraints
 The first world map is **not** a measured extraction of BO2 geometry. Successful static deployment is **not** proof of real-device compatibility. The user can continue development by requesting the next milestone.
+
+## M9 — iPhone usability and full-app interface refinement
+Goal: stop forcing players to navigate long lists during a four-player live match, while preserving original geography and progress.
+
+Delivered:
+- Simplified **Map / Quest / Find / Sites / Crew** bottom navigation with larger, clearly labeled tap targets, selected states and iOS safe-area handling.
+- Four one-tap map layers: **Route, Easter egg, Gear, Doors**. Fine-grained category filters move under an optional disclosure; the original map and location-based clickable clusters remain.
+- An always-visible, side-aware **next objective** shortcut on the Map view, and step-progress summaries in the Quest view.
+- Quest steps are expandable; completed steps remain recorded and assignments are still associated with all four custom player names.
+- Search prioritizes item-name matches, has common search suggestions, category counts, clear empty states, and a global header shortcut.
+- Sites now support a native location dropdown as well as stop chips and floor switching; non-verified interiors remain labeled schematic.
+- Nine buildable trackers use expandable panels; part counts, names, local-only saved data and reset are preserved. Sources are folded into a separate disclosure.
+- Touch-driven pan/pinch navigation no longer captures pointer taps immediately; SVG markers have enlarged transparent hit areas.
+- Progress migration preserves pre-existing custom map filter settings. Offline-cache revision updated.
+- Node source, UI contracts, browser DOM interaction smoke, SVG XML validation and Chrome 390x844 + 844x390 screenshots are produced by repository CI. No third-party paid services.
+
+**Status: Implemented and verified using Node and desktop headless Chrome at mobile viewport sizes.** Physical iPhone testing, in-game cross-check of exact room geometry, and user preference feedback remain necessary. These improvements are independent of M3's unfinished geometry work.
+
+## User playtest priorities after M9
+1. In Safari and the Home Screen version, open Map, change all four map modes and tap a numbered location; verify contextual information is easy to reach.
+2. Use the global search to find the Jet Gun, Turbine doors and Juggernog.
+3. Choose Maxis or Richtofen, complete one quest checklist step and ensure the Map shortcut advances.
+4. In Crew, enter names, check one Jet Gun part, reload, and verify it remains checked.
+5. Try portrait, landscape and airplane mode after an online load. Report any contrast, tap or scrolling issues with screenshots.
