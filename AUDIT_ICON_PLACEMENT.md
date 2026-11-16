@@ -65,108 +65,108 @@ Only records with a grounded static site are offered as category callouts. Mobil
 | 3 | stop | Farm | Farm | Bus stop 3 | Site anchor (schematic) | non-spatial |
 | 4 | stop | Power Station | Power Station | Bus stop 4 | Site anchor (schematic) | non-spatial |
 | 5 | stop | Town | Town | Bus stop 5 | Site anchor (schematic) | non-spatial |
-| 6 | perk | Quick Revive | Bus Depot | Depot hall, hallway near main door | Site/room callout | verified general site / unmeasured room |
-| 7 | perk | Speed Cola | Diner & Garage | Diner interior by MP5 | Site/room callout | verified general site / unmeasured room |
-| 8 | perk | Double Tap Root Beer | Farm | Barn upper level | Site/room callout | verified general site / unmeasured room |
-| 9 | perk | Tombstone Soda | Power Station | Power exit / catwalk | Site/room callout | verified general site / unmeasured room |
-| 10 | perk | Juggernog | Town | Burning building upper floor | Site/room callout | verified general site / unmeasured room |
-| 11 | perk | Stamin-Up | Town | Bar ground floor | Site/room callout | verified general site / unmeasured room |
-| 12 | weapon | M14 | Bus Depot | Starting hall | Site/room callout | verified general site / unmeasured room |
-| 13 | weapon | Olympia | Bus Depot | Starting hall | Site/room callout | verified general site / unmeasured room |
+| 6 | perk | Quick Revive | Bus Depot | Depot hall, hallway near main door | Site/room callout | reported general site / unmeasured room |
+| 7 | perk | Speed Cola | Diner & Garage | Diner interior by MP5 | Site/room callout | reported general site / unmeasured room |
+| 8 | perk | Double Tap Root Beer | Farm | Barn upper level | Site/room callout | reported general site / unmeasured room |
+| 9 | perk | Tombstone Soda | Power Station | Power exit / catwalk | Site/room callout | reported general site / unmeasured room |
+| 10 | perk | Juggernog | Town | Burning building upper floor | Site/room callout | reported general site / unmeasured room |
+| 11 | perk | Stamin-Up | Town | Bar ground floor | Site/room callout | reported general site / unmeasured room |
+| 12 | weapon | M14 | Bus Depot | Starting hall | Site/room callout | reported general site / unmeasured room |
+| 13 | weapon | Olympia | Bus Depot | Starting hall | Site/room callout | reported general site / unmeasured room |
 | 14 | weapon | B23R | Bus Depot | Inside the moving bus | No fixed pin | non-spatial |
-| 15 | weapon | Colt M16A1 | Tunnel | Tunnel maintenance ramp | Site/room callout | verified general site / unmeasured room |
-| 16 | weapon | MP5 | Diner & Garage | Diner interior near Speed Cola | Site/room callout | verified general site / unmeasured room |
-| 17 | weapon | Galvaknuckles | Diner & Garage | Diner roof | Site/room callout | verified general site / unmeasured room |
-| 18 | weapon | Remington 870 MCS | Farm | Barn ground floor | Site/room callout | verified general site / unmeasured room |
-| 19 | weapon | Claymores | Farm | Farm shed (Turbine) | Site/room callout | verified general site / unmeasured room |
-| 20 | weapon | AK-74u | Power Station | Exterior of Power Station outhouse | Site/room callout | verified general site / unmeasured room |
-| 21 | weapon | Bowie Knife | Hunter's Cabin | Hunter's Cabin interior | Site/room callout | verified general site / unmeasured room |
-| 22 | weapon | Semtex | Town | Rare Books / Turbine room | Site/room callout | verified general site / unmeasured room |
-| 23 | bench | Turbine bench | Bus Depot | Depot hall | Site/room callout | verified general site / unmeasured room |
-| 24 | bench | Zombie Shield bench | Diner & Garage | Garage | Site/room callout | verified general site / unmeasured room |
-| 25 | bench | Turret bench | Farm | Farmhouse ground level | Site/room callout | verified general site / unmeasured room |
-| 26 | bench | Power switch bench | Power Station | Reactor | Site/room callout | verified general site / unmeasured room |
-| 27 | bench | Electric Trap bench | Power Station | Exit catwalk / top of stairs | Site/room callout | verified general site / unmeasured room |
-| 28 | bench | Jet Gun bench | Town | Town bar next to Stamin-Up | Site/room callout | verified general site / unmeasured room |
-| 29 | bench | Pack-a-Punch bench | Town | Bank underground hallway | Site/room callout | verified general site / unmeasured room |
-| 30 | bench | NAV Table bench | Obelisk Tower / Pylon | Under the pylon | Site/room callout | verified general site / unmeasured room |
-| 31 | paid | Depot main door | Bus Depot | Hall exit | Site/room callout | verified general site / unmeasured room |
-| 32 | paid | Diner entrance | Diner & Garage | Diner | Site/room callout | verified general site / unmeasured room |
-| 33 | paid | Garage entrance | Diner & Garage | Gas station garage | Site/room callout | verified general site / unmeasured room |
-| 34 | paid | Farm gate | Farm | Farm perimeter | Site/room callout | verified general site / unmeasured room |
-| 35 | paid | Farmhouse door | Farm | Farmhouse ground floor | Site/room callout | verified general site / unmeasured room |
-| 36 | paid | Power Station outhouse | Power Station | Outdoor outhouse | Site/room callout | verified general site / unmeasured room |
-| 37 | paid | Bank door | Town | Bank ground floor | Site/room callout | verified general site / unmeasured room |
-| 38 | paid | Bar door | Town | Town bar | Site/room callout | verified general site / unmeasured room |
-| 39 | paid | Burning building door | Town | Building near Bank | Site/room callout | verified general site / unmeasured room |
-| 40 | turbine | Depot power door A | Bus Depot | Side garage | Site/room callout | verified general site / unmeasured room |
-| 41 | turbine | Depot power door B | Bus Depot | Side garage exit | Site/room callout | verified general site / unmeasured room |
-| 42 | turbine | Diner shed | Diner & Garage | Beyond gas station | Site/room callout | verified general site / unmeasured room |
-| 43 | turbine | Farm shed doors | Farm | Between farmhouse and barn | Site/room callout | verified general site / unmeasured room |
-| 44 | turbine | Remote Pack-a-Punch door | Power Station | Under Power Station / lightning symbol | Site/room callout | verified general site / unmeasured room |
+| 15 | weapon | Colt M16A1 | Tunnel | Tunnel maintenance ramp | Site/room callout | reported general site / unmeasured room |
+| 16 | weapon | MP5 | Diner & Garage | Diner interior near Speed Cola | Site/room callout | reported general site / unmeasured room |
+| 17 | weapon | Galvaknuckles | Diner & Garage | Diner roof | Site/room callout | reported general site / unmeasured room |
+| 18 | weapon | Remington 870 MCS | Farm | Barn ground floor | Site/room callout | reported general site / unmeasured room |
+| 19 | weapon | Claymores | Farm | Farm shed (Turbine) | Site/room callout | reported general site / unmeasured room |
+| 20 | weapon | AK-74u | Power Station | Exterior of Power Station outhouse | Site/room callout | reported general site / unmeasured room |
+| 21 | weapon | Bowie Knife | Hunter's Cabin | Hunter's Cabin interior | Site/room callout | reported general site / unmeasured room |
+| 22 | weapon | Semtex | Town | Rare Books / Turbine room | Site/room callout | reported general site / unmeasured room |
+| 23 | bench | Turbine bench | Bus Depot | Depot hall | Site/room callout | reported general site / unmeasured room |
+| 24 | bench | Zombie Shield bench | Diner & Garage | Garage | Site/room callout | reported general site / unmeasured room |
+| 25 | bench | Turret bench | Farm | Farmhouse ground level | Site/room callout | reported general site / unmeasured room |
+| 26 | bench | Power switch bench | Power Station | Reactor | Site/room callout | reported general site / unmeasured room |
+| 27 | bench | Electric Trap bench | Power Station | Exit catwalk / top of stairs | Site/room callout | reported general site / unmeasured room |
+| 28 | bench | Jet Gun bench | Town | Town bar next to Stamin-Up | Site/room callout | reported general site / unmeasured room |
+| 29 | bench | Pack-a-Punch bench | Town | Bank underground hallway | Site/room callout | reported general site / unmeasured room |
+| 30 | bench | NAV Table bench | Obelisk Tower / Pylon | Under the pylon | Site/room callout | reported general site / unmeasured room |
+| 31 | paid | Depot main door | Bus Depot | Hall exit | Site/room callout | reported general site / unmeasured room |
+| 32 | paid | Diner entrance | Diner & Garage | Diner | Site/room callout | reported general site / unmeasured room |
+| 33 | paid | Garage entrance | Diner & Garage | Gas station garage | Site/room callout | reported general site / unmeasured room |
+| 34 | paid | Farm gate | Farm | Farm perimeter | Site/room callout | reported general site / unmeasured room |
+| 35 | paid | Farmhouse door | Farm | Farmhouse ground floor | Site/room callout | reported general site / unmeasured room |
+| 36 | paid | Power Station outhouse | Power Station | Outdoor outhouse | Site/room callout | reported general site / unmeasured room |
+| 37 | paid | Bank door | Town | Bank ground floor | Site/room callout | reported general site / unmeasured room |
+| 38 | paid | Bar door | Town | Town bar | Site/room callout | reported general site / unmeasured room |
+| 39 | paid | Burning building door | Town | Building near Bank | Site/room callout | reported general site / unmeasured room |
+| 40 | turbine | Depot power door A | Bus Depot | Side garage | Site/room callout | reported general site / unmeasured room |
+| 41 | turbine | Depot power door B | Bus Depot | Side garage exit | Site/room callout | reported general site / unmeasured room |
+| 42 | turbine | Diner shed | Diner & Garage | Beyond gas station | Site/room callout | reported general site / unmeasured room |
+| 43 | turbine | Farm shed doors | Farm | Between farmhouse and barn | Site/room callout | reported general site / unmeasured room |
+| 44 | turbine | Remote Pack-a-Punch door | Power Station | Under Power Station / lightning symbol | Site/room callout | reported general site / unmeasured room |
 | 45 | turbine | Rare Books store | Town | Turbine room in Town | Variable-spawn site callout | variable within site |
-| 46 | special | Station shutter | Power Station | Power exit / catwalk | Site/room callout | verified general site / unmeasured room |
-| 47 | special | Bank vault outer door | Town | Bank interior | Site/room callout | verified general site / unmeasured room |
-| 48 | special | Bank vault inner door | Town | Bank inner vault | Site/room callout | verified general site / unmeasured room |
-| 49 | special | Pack-a-Punch passage door | Town | Below the Bank | Site/room callout | verified general site / unmeasured room |
-| 50 | part | Turbine mannequin | Bus Depot | By wall route map | Site/room callout | verified general site / unmeasured room |
-| 51 | part | Turbine fan | Bus Depot | Waiting room seats | Site/room callout | verified general site / unmeasured room |
-| 52 | part | Turbine tail | Bus Depot | Depot hall floor / pay phones | Site/room callout | verified general site / unmeasured room |
+| 46 | special | Station shutter | Power Station | Power exit / catwalk | Site/room callout | reported general site / unmeasured room |
+| 47 | special | Bank vault outer door | Town | Bank interior | Site/room callout | reported general site / unmeasured room |
+| 48 | special | Bank vault inner door | Town | Bank inner vault | Site/room callout | reported general site / unmeasured room |
+| 49 | special | Pack-a-Punch passage door | Town | Below the Bank | Site/room callout | reported general site / unmeasured room |
+| 50 | part | Turbine mannequin | Bus Depot | By wall route map | Site/room callout | reported general site / unmeasured room |
+| 51 | part | Turbine fan | Bus Depot | Waiting room seats | Site/room callout | reported general site / unmeasured room |
+| 52 | part | Turbine tail | Bus Depot | Depot hall floor / pay phones | Site/room callout | reported general site / unmeasured room |
 | 53 | part | Shield car door | Diner & Garage | Garage, restroom, car on lift or bench-side table | Variable-spawn site callout | variable within site |
 | 54 | part | Shield hand trolley | Diner & Garage | Diner behind counter or far booth | Variable-spawn site callout | variable within site |
 | 55 | part | Turret unusable RPD | Farm | Barn upper or farmhouse | Variable-spawn site callout | variable within site |
 | 56 | part | Turret ammo bag | Farm | Farmhouse ground or upper shelves | Variable-spawn site callout | variable within site |
-| 57 | part | Turret lawn mower | Farm | Behind farmhouse | Site/room callout | verified general site / unmeasured room |
-| 58 | part | Electric Trap battery | Power Station | Upstairs / catwalk room | Site/room callout | verified general site / unmeasured room |
-| 59 | part | Electric Trap coil | Power Station | Upstairs / catwalk room | Site/room callout | verified general site / unmeasured room |
-| 60 | part | Electric Trap TV screen | Power Station | Upstairs / catwalk room | Site/room callout | verified general site / unmeasured room |
-| 61 | part | Power board | Power Station | Reactor area | Site/room callout | verified general site / unmeasured room |
-| 62 | part | Power lever | Power Station | Reactor area | Site/room callout | verified general site / unmeasured room |
-| 63 | part | Zombie arm | Power Station | Reactor area | Site/room callout | verified general site / unmeasured room |
+| 57 | part | Turret lawn mower | Farm | Behind farmhouse | Site/room callout | reported general site / unmeasured room |
+| 58 | part | Electric Trap battery | Power Station | Upstairs / catwalk room | Site/room callout | reported general site / unmeasured room |
+| 59 | part | Electric Trap coil | Power Station | Upstairs / catwalk room | Site/room callout | reported general site / unmeasured room |
+| 60 | part | Electric Trap TV screen | Power Station | Upstairs / catwalk room | Site/room callout | reported general site / unmeasured room |
+| 61 | part | Power board | Power Station | Reactor area | Site/room callout | reported general site / unmeasured room |
+| 62 | part | Power lever | Power Station | Reactor area | Site/room callout | reported general site / unmeasured room |
+| 63 | part | Zombie arm | Power Station | Reactor area | Site/room callout | reported general site / unmeasured room |
 | 64 | part | Jet Gun engine | Tunnel | Tunnel cars / M16 railing area | Variable-spawn site callout | variable within site |
-| 65 | part | Jet Gun wires | Power Station | Near Tombstone / power exit room | Site/room callout | verified general site / unmeasured room |
-| 66 | part | Jet Gun handbrake | The Prototype / Nacht der Untoten | Nacht bunker | Site/room callout | verified general site / unmeasured room |
-| 67 | part | Jet Gun gauge | Hunter's Cabin | Hunter's Cabin | Site/room callout | verified general site / unmeasured room |
-| 68 | part | NAV meteorite | Bus Depot | Wall opening outside Depot near Box | Site/room callout | verified general site / unmeasured room |
+| 65 | part | Jet Gun wires | Power Station | Near Tombstone / power exit room | Site/room callout | reported general site / unmeasured room |
+| 66 | part | Jet Gun handbrake | The Prototype / Nacht der Untoten | Nacht bunker | Site/room callout | reported general site / unmeasured room |
+| 67 | part | Jet Gun gauge | Hunter's Cabin | Hunter's Cabin | Site/room callout | reported general site / unmeasured room |
+| 68 | part | NAV meteorite | Bus Depot | Wall opening outside Depot near Box | Site/room callout | reported general site / unmeasured room |
 | 69 | part | NAV radio | The Prototype / Nacht der Untoten; OR Diner & Garage | Nacht bunker or Diner garage tall cabinet | Multi-site callout | multiple possible sites |
 | 70 | part | NAV wooden board | Tunnel; OR Power Station | Tunnel by M16 or Power Station catwalk | Multi-site callout | multiple possible sites |
 | 71 | part | NAV electrical box | Farm; OR Town, Bus Depot | Farm fridge area or Town back alley | Multi-site callout | multiple possible sites |
-| 72 | part | Pack-a-Punch parts | Town | Bank underground | Site/room callout | verified general site / unmeasured room |
-| 73 | part | Bus upgrade candidate | Bus Depot | Depot powered room | Site/room callout | verified general site / unmeasured room |
-| 74 | part | Bus upgrade candidate | Diner & Garage | Diner shed powered room | Site/room callout | verified general site / unmeasured room |
-| 75 | part | Bus upgrade candidate | Farm | Farm powered shed | Site/room callout | verified general site / unmeasured room |
-| 76 | part | Bus upgrade candidate | Town | Rare Books Turbine room | Site/room callout | verified general site / unmeasured room |
-| 77 | box | Mystery Box (initial) | Diner & Garage | Garage | Site/room callout | verified general site / unmeasured room |
+| 72 | part | Pack-a-Punch parts | Town | Bank underground | Site/room callout | reported general site / unmeasured room |
+| 73 | part | Bus upgrade candidate | Bus Depot | Depot powered room | Site/room callout | reported general site / unmeasured room |
+| 74 | part | Bus upgrade candidate | Diner & Garage | Diner shed powered room | Site/room callout | reported general site / unmeasured room |
+| 75 | part | Bus upgrade candidate | Farm | Farm powered shed | Site/room callout | reported general site / unmeasured room |
+| 76 | part | Bus upgrade candidate | Town | Rare Books Turbine room | Site/room callout | reported general site / unmeasured room |
+| 77 | box | Mystery Box (initial) | Diner & Garage | Garage | Site/room callout | reported general site / unmeasured room |
 | 78 | box | Mystery Box spawn | Bus Depot | Outside Bus Depot | Variable-spawn site callout | variable within site |
 | 79 | box | Mystery Box spawn | Farm | Farmhouse balcony | Variable-spawn site callout | variable within site |
 | 80 | box | Mystery Box spawn | Power Station | Power room | Variable-spawn site callout | variable within site |
 | 81 | box | Mystery Box spawn | Town | Bar upstairs | Variable-spawn site callout | variable within site |
 | 82 | box | Mystery Box spawn | Town | Town back alley | Variable-spawn site callout | variable within site |
-| 83 | goal | Tower of Babble Pylon | Obelisk Tower / Pylon | Beneath electric tower | Site/room callout | verified general site / unmeasured room |
+| 83 | goal | Tower of Babble Pylon | Obelisk Tower / Pylon | Beneath electric tower | Site/room callout | reported general site / unmeasured room |
 | 84 | goal | Streetlight / possible EMP target | Bus Depot | By Bus Depot | No fixed pin | non-spatial |
 | 85 | goal | Streetlight / possible EMP target | Diner & Garage | Diner outskirts | No fixed pin | non-spatial |
 | 86 | goal | Streetlight / possible EMP target | Farm | Farm road | No fixed pin | non-spatial |
 | 87 | goal | Streetlight / possible EMP target | Hunter's Cabin | Hunter's Cabin road | No fixed pin | non-spatial |
-| 88 | secret | Carrion teddy bear 1 | Bus Depot | Bench outside Bus Depot | Site/room callout | verified general site / unmeasured room |
-| 89 | secret | Carrion teddy bear 2 | Farm | Farmhouse upstairs mattress | Site/room callout | verified general site / unmeasured room |
-| 90 | secret | Carrion teddy bear 3 | Town | Town bar | Site/room callout | verified general site / unmeasured room |
-| 91 | secret | Weapon storage fridge | Farm | Farmhouse | Site/room callout | verified general site / unmeasured room |
-| 92 | secret | Bank deposits and withdrawals | Town | Bank vault | Site/room callout | verified general site / unmeasured room |
-| 93 | secret | Hidden Nacht der Untoten | The Prototype / Nacht der Untoten | Cornfield side path | Site/room callout | verified general site / unmeasured room |
+| 88 | secret | Carrion teddy bear 1 | Bus Depot | Bench outside Bus Depot | Site/room callout | reported general site / unmeasured room |
+| 89 | secret | Carrion teddy bear 2 | Farm | Farmhouse upstairs mattress | Site/room callout | reported general site / unmeasured room |
+| 90 | secret | Carrion teddy bear 3 | Town | Town bar | Site/room callout | reported general site / unmeasured room |
+| 91 | secret | Weapon storage fridge | Farm | Farmhouse | Site/room callout | reported general site / unmeasured room |
+| 92 | secret | Bank deposits and withdrawals | Town | Bank vault | Site/room callout | reported general site / unmeasured room |
+| 93 | secret | Hidden Nacht der Untoten | The Prototype / Nacht der Untoten | Cornfield side path | Site/room callout | reported general site / unmeasured room |
 | 94 | secret | Denizen portal | Diner & Garage | Powered streetlight with Denizen | No fixed pin | non-spatial |
 | 95 | secret | Diner → Town walking shortcut | Town | Fog route via church approach | No fixed pin | non-spatial |
-| 96 | secret | Collapsing bridge | Bridge | Town return leg | Site/room callout | verified general site / unmeasured room |
-| 97 | secret | NAV Table / NAV Card | Obelisk Tower / Pylon | Under pylon | Site/room callout | verified general site / unmeasured room |
+| 96 | secret | Collapsing bridge | Bridge | Town return leg | Site/room callout | reported general site / unmeasured room |
+| 97 | secret | NAV Table / NAV Card | Obelisk Tower / Pylon | Under pylon | Site/room callout | reported general site / unmeasured room |
 | 98 | secret | Persistent upgrades (perma-perks) | Bus Depot | Across map | No fixed pin | non-spatial |
-| 99 | secret | Farmhouse radio TV | Farm | Farmhouse interior | Site/room callout | verified general site / unmeasured room |
-| 100 | secret | Town Morse-code traffic light | Town | Town streets | Site/room callout | verified general site / unmeasured room |
+| 99 | secret | Farmhouse radio TV | Farm | Farmhouse interior | Site/room callout | reported general site / unmeasured room |
+| 100 | secret | Town Morse-code traffic light | Town | Town streets | Site/room callout | reported general site / unmeasured room |
 | 101 | secret | Ghostly laughter | Obelisk Tower / Pylon | Under the Pylon | No fixed pin | non-spatial |
 | 102 | secret | Bus Depot power announcements | Bus Depot | Depot hall | No fixed pin | non-spatial |
-| 103 | secret | POWER! and Nuke Donkey posters | Bus Depot | Depot starting hall | Site/room callout | verified general site / unmeasured room |
+| 103 | secret | POWER! and Nuke Donkey posters | Bus Depot | Depot starting hall | Site/room callout | reported general site / unmeasured room |
 | 104 | secret | Sniper-scope pre-apocalypse reflection | Diner & Garage | Diner area / sniper scopes | No fixed pin | non-spatial |
-| 105 | secret | Bank teammate point sharing | Town | Bank vault / teller counter | Site/room callout | verified general site / unmeasured room |
-| 106 | secret | Bank storage limit and fee | Town | Bank vault | Site/room callout | verified general site / unmeasured room |
-| 107 | secret | Weapon Locker restrictions | Farm | Farmhouse fridge | Site/room callout | verified general site / unmeasured room |
+| 105 | secret | Bank teammate point sharing | Town | Bank vault / teller counter | Site/room callout | reported general site / unmeasured room |
+| 106 | secret | Bank storage limit and fee | Town | Bank vault | Site/room callout | reported general site / unmeasured room |
+| 107 | secret | Weapon Locker restrictions | Farm | Farmhouse fridge | Site/room callout | reported general site / unmeasured room |
 | 108 | secret | First Mystery Box and EMP Grenades | Diner & Garage | Diner garage | No fixed pin | non-spatial |
 | 109 | secret | Persistent Quick Revive upgrade | Bus Depot | Map-wide profile bonus (reference pin only) | No fixed pin | non-spatial |
 | 110 | secret | Persistent Juggernog upgrade | Bus Depot | Map-wide profile bonus (reference pin only) | No fixed pin | non-spatial |
