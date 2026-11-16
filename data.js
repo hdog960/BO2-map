@@ -182,7 +182,7 @@ for(const item of items){
    :"User-supplied Afrochubman/BradyGames world-map reference and community location guide";
  item.placementPrecision=item.mapMode==="index-only"?"non-spatial":
    item.alternateZones.length?"multiple possible sites":
-   /random|alternate|possible|candidate/i.test(item.detail)?"variable within site":"verified general site / unmeasured room";
+   /random|alternate|possible|candidate/i.test(item.detail)?"variable within site":"reported general site / unmeasured room";
 }
 const builds=[
 {id:"turbine",name:"Turbine",zone:"depot",location:"Depot hall",parts:[["Mannequin","By route map"],["Fan","Waiting seats"],["Tail","Hall floor / pay phones"]]},
