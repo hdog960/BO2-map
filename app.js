@@ -45,15 +45,57 @@ function craftLocationLabel(build,index){
 const markPrice=v=>v?'<span class="meta">'+esc(v)+(v==="Turbine"||v==="Grenade"||v==="Power or Turbine"||v==="Remote Turbine"?"":" pts")+"</span>":"";
 function category(type){return D.types[type]||D.types.secret}
 function modal(title,body){$("#modalTitle").textContent=title;$("#modalBody").innerHTML=body;const d=$("#modal");if(!d.open)d.showModal();}
+// M16.1: older saved destinations become secondary sheets without changing the save key.
+if(state.view==="atlas"||state.view==="zones"){state.view="map";save();}
+else if(state.view==="crew"){state.view="quest";save();}
+if(!["map","quest","craft"].includes(state.view)){state.view="map";save();}
+let sheetView=null, sheetReturnFocus=null;
+const secondaryViews=new Set(["atlas","zones","crew"]);
 function renderNav(){
  $$(".bottom-nav button").forEach(b=>{
   const active=b.dataset.view===state.view;
   b.classList.toggle("selected",active);
   if(active)b.setAttribute("aria-current","page");else b.removeAttribute?.("aria-current");
  });
- $$(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+state.view));
+ $$(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+(secondaryViews.has(v.id.slice(5))?sheetView:state.view)));
 }
-function go(view){state.view=view;save();renderNav();if(view==="map")renderMap();if(view==="zones")renderZones();if(view==="quest")renderQuest();if(view==="atlas")renderAtlas();if(view==="crew")renderCrew();if(view==="craft")renderCraftPanel();window.scrollTo({top:0,behavior:"auto"});}
+function closeSheet(restoreFocus=true){
+ if(!sheetView)return;
+ sheetView=null;
+ $("#auxSheet").hidden=true;
+ document.body?.classList?.remove("sheet-open");
+ renderNav();
+ if(restoreFocus)sheetReturnFocus?.focus?.();
+ sheetReturnFocus=null;
+}
+function openSheet(view){
+ if(!secondaryViews.has(view))return;
+ if(!sheetView)sheetReturnFocus=document.activeElement;
+ // Secondary features inherit a visible, semantically correct primary tab.
+ if(view==="crew")state.view="quest";
+ else state.view="map";
+ save();
+ sheetView=view;
+ $("#auxSheet").hidden=false;
+ document.body?.classList?.add("sheet-open");
+ $("#sheetTitle").textContent={atlas:"Find anything",zones:"Interior & sites",crew:"Crew & match"}[view];
+ renderNav();
+ if(view==="atlas"){renderAtlas();$("#atlasSearch").focus?.();}
+ else if(view==="zones")renderZones();
+ else renderCrew();
+ $("#auxSheet").scrollTop=0;
+ $("#closeSheet").focus?.();
+}
+function go(view){
+ if(secondaryViews.has(view)){openSheet(view);return;}
+ if(!["map","quest","craft"].includes(view))return;
+ closeSheet(false);
+ state.view=view;save();renderNav();
+ if(view==="map")renderMap();
+ if(view==="quest")renderQuest();
+ if(view==="craft")renderCraftPanel();
+ window.scrollTo({top:0,behavior:"auto"});
+}
 function selectZone(id){state.zone=id;state.floor=0;save();go("zones");}
 function showItem(id){
  const item=D.items.find(x=>x.id===id);if(!item)return;
@@ -454,7 +496,7 @@ function renderCrew(){
  panel.dataset.ready="1";
 }
 function help(){
- modal("TranZit interactive map",'<div class="stack"><p><b>Map:</b> All major locations and important item icons appear directly on the geography. Tap a numbered stop, perk, weapon, part, bench or door marker to open its details. A <b>+number</b> marker lists the other items at that location.</p><p><b>Map key:</b> Each symbol has a color and meaning. Tap a category in the key to show more icons of that type, or <b>All</b> to restore the overview. Pinch to zoom, drag to pan, or expand the map.</p><p><b>Easter Egg:</b> The separate <b>EASTER EGG</b> tab contains the Maxis and Richtofen steps, progress checks and four-player assignments. A Locate button brings you back to the correct map site.</p><p><b>Sites, Find and Crew:</b> Room notes, searchable listings, buildable part checklists and names remain available without cluttering the main map.</p><p><b>Offline:</b> Safari Share → Add to Home Screen. Launch once online, then test airplane mode. Information is saved only on your phone, not synced with the game.</p><p><b>Accuracy:</b> Roads and buildings follow the supplied reference map; icons are site-level guides, not measured in-game pickup coordinates. Alternate spawns are listed in details.</p></div>');
+ modal("Help & Settings",'<div class="stack"><p><b>Map:</b> All major locations and important item icons appear directly on the geography. Tap a numbered stop, perk, weapon, part, bench or door marker to open its details. A <b>+number</b> marker lists the other items at that location.</p><p><b>Map key:</b> Each symbol has a color and meaning. Tap a category in the key to show more icons of that type, or <b>All</b> to restore the overview. Pinch to zoom, drag to pan, or expand the map.</p><p><b>Easter Egg:</b> The separate <b>EASTER EGG</b> tab contains the Maxis and Richtofen steps, progress checks and four-player assignments. A Locate button brings you back to the correct map site.</p><p><b>Sites, Find and Crew:</b> Room notes, searchable listings, buildable part checklists and names remain available without cluttering the main map.</p><p><b>Map diagnostics:</b> Run the privacy-safe v2 map performance scanner while panning and pinching, then copy the report.</p><button type="button" class="button" id="helpMapScan">Open map diagnostics</button><p><b>Offline:</b> Safari Share → Add to Home Screen. Launch once online, then test airplane mode. Information is saved only on your phone, not synced with the game.</p><p><b>Accuracy:</b> Roads and buildings follow the supplied reference map; icons are site-level guides, not measured in-game pickup coordinates. Alternate spawns are listed in details.</p></div>');
 }
 function isAccidentalMapClick(e){
  // Only disregard the single ghost click generated at the end of a drag,
@@ -466,6 +508,15 @@ document.addEventListener("click",e=>{
 const b=e.target.closest("button,[data-zone],[data-room],[data-item],[data-group],[data-map-more],[data-map-item],[data-map-key]");
 if(!b)return;
 if(b.dataset.view){go(b.dataset.view);return;}
+if(b.id==="closeSheet"){closeSheet();return;}
+if(b.id==="crewAccess"){go("crew");return;}
+if(b.id==="helpMapScan"){
+ $("#modal").close();go("map");
+ const scanner=$("#mapScanPanel");
+ if(scanner.hidden)$("#openMapScan").click();
+ scanner.scrollIntoView?.({behavior:"auto",block:"nearest"});
+ return;
+}
 if(b.dataset.craftSelect){state.craftSelected=b.dataset.craftSelect;save();renderCraftPanel();return;}
 if(b.dataset.craftView){state.craftSelected=b.dataset.craftView;save();if($("#modal").open)$("#modal").close();go("craft");return;}
 if(b.dataset.craftMap){
@@ -524,6 +575,13 @@ if(b.id==="mapFullScreen"){setMapExpanded(!$("#interactiveMap").classList.contai
 if(b.id==="mapExit"){setMapExpanded(false);return;}
 if(b.id==="zoomIn"){setZoom(zoom*1.3);return;}
 if(b.id==="zoomOut"){setZoom(zoom/1.3);return;}
+});
+document.addEventListener("keydown",e=>{
+ if(e.key!=="Escape")return;
+ if($("#modal").open){$("#modal").close();return;}
+ if(sheetView){closeSheet();return;}
+ if(!$("#mapContext").hidden){closeMapContext();return;}
+ if($("#interactiveMap").classList.contains("map-expanded"))setMapExpanded(false);
 });
 document.addEventListener("change",e=>{if(e.target.dataset.assignment!==undefined){state.assign[state.side+":"+e.target.dataset.assignment]=e.target.value;save();}
 if(e.target.id==="zoneSelect"){state.zone=e.target.value;state.floor=0;save();renderZones();}});
