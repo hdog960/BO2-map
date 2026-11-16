@@ -1,4 +1,4 @@
-// M16.0 ONLY — genuine Chromium baseline capture, no external packages or live-site writes.
+// M16.2 — genuine Chromium map, filter and location-sheet acceptance capture, no external packages or live-site writes.
 // Intended to be run inside the isolated draft PR's GitHub Actions job.
 import fs from "node:fs";
 import fsp from "node:fs/promises";
@@ -65,7 +65,7 @@ async function evaluate(rpc,expression){
   if(value.exceptionDetails)fail("Browser evaluate failed: "+JSON.stringify(value.exceptionDetails));
   return value.result?.value;
 }
-const metricsExpression='(() => { const $=s=>document.querySelector(s), box=s=>{const e=$(s);if(!e)return null;const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height}};return {url:location.href,documentReady:document.readyState,viewport:{innerWidth:innerWidth,innerHeight:innerHeight,visualWidth:visualViewport.width,visualHeight:visualViewport.height,documentWidth:document.documentElement.scrollWidth,documentHeight:document.documentElement.scrollHeight},activeView:document.querySelector(".view.active")?.id || null,navCount:document.querySelectorAll("nav.bottom-nav button").length,navViews:Array.from(document.querySelectorAll("nav.bottom-nav button"),b=>b.dataset.view),sitePinCount:document.querySelectorAll("#mapPins [data-zone]").length,categoryKeyCount:document.querySelectorAll("#mapLegend [data-map-key]").length,buildFilterCount:document.querySelectorAll("#craftMapStrip [data-craft-map]").length,buildCount:window.TZ_DATA?.builds?.length,worldSites:window.TZ_DATA?.zones?.length,catalogItems:window.TZ_DATA?.items?.length,questMaxis:window.TZ_DATA?.quests?.maxis?.length,questRichtofen:window.TZ_DATA?.quests?.richtofen?.length,sheetOpen:!$("#auxSheet")?.hidden,sheetTitle:$("#sheetTitle")?.textContent,sheetView:Array.from(document.querySelectorAll(".aux-sheet .view.active"),v=>v.id),scannerPresent:!!$("#mapScanPanel"),scannerHidden:!!$("#mapScanPanel")?.hidden,layout:{header:box(".top"),map:box("#mapViewport"),navigation:box(".bottom-nav"),key:box("#mapLegend")}}})()';
+const metricsExpression='(() => { const $=s=>document.querySelector(s), box=s=>{const e=$(s);if(!e)return null;const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height}};return {url:location.href,documentReady:document.readyState,viewport:{innerWidth:innerWidth,innerHeight:innerHeight,visualWidth:visualViewport.width,visualHeight:visualViewport.height,documentWidth:document.documentElement.scrollWidth,documentHeight:document.documentElement.scrollHeight},activeView:document.querySelector(".view.active")?.id || null,navCount:document.querySelectorAll("nav.bottom-nav button").length,navViews:Array.from(document.querySelectorAll("nav.bottom-nav button"),b=>b.dataset.view),sitePinCount:document.querySelectorAll("#mapPins [data-zone]").length,categoryKeyCount:document.querySelectorAll("#mapLegend [data-map-key]").length,buildFilterCount:document.querySelectorAll("#craftMapStrip [data-craft-map]").length,buildCount:window.TZ_DATA?.builds?.length,worldSites:window.TZ_DATA?.zones?.length,catalogItems:window.TZ_DATA?.items?.length,questMaxis:window.TZ_DATA?.quests?.maxis?.length,questRichtofen:window.TZ_DATA?.quests?.richtofen?.length,sheetOpen:!$("#auxSheet")?.hidden,sheetTitle:$("#sheetTitle")?.textContent,sheetView:Array.from(document.querySelectorAll(".aux-sheet .view.active"),v=>v.id),scannerPresent:!!$("#mapScanPanel"),scannerHidden:!!$("#mapScanPanel")?.hidden,layout:{header:box(".top"),map:box("#mapViewport"),navigation:box(".bottom-nav"),key:box("#mapLegend"),keyToggle:box("#mapKeyDisclosure summary"),context:box("#mapContext")},drawerOpen:!!$("#mapKeyDisclosure")?.open,contextOpen:!$("#mapContext")?.hidden,mapAspect:$("#worldMap")?.getAttribute("preserveAspectRatio")}})()';
 
 async function waitForApp(rpc){
   for(let i=0;i<60;i++){
@@ -112,6 +112,27 @@ try {
       fail("Offscreen primary navigation at "+width+"x"+height+": "+JSON.stringify(nav));
     const mapScreenshot=await capture(rpc,width,height,"map");
     evidence.push({requested:{width,height},measured:info,screenshot:mapScreenshot});
+    if(info.mapAspect!=="xMidYMid slice")fail("Expected source-map slice mode: "+width+"x"+height);
+    if(info.viewport.documentWidth>width+1)fail("Horizontal document overflow "+width+"x"+height);
+    if(height<=470){
+      if(info.layout.map.y>116)fail("Landscape map starts too far below header: "+JSON.stringify(info.layout.map));
+      if(info.layout.map.height < Math.max(165,height*.48))fail("Landscape map area too small "+JSON.stringify(info.layout.map));
+      if(info.layout.map.y+info.layout.map.height>nav.y+10)fail("Map hidden beneath bottom tabs "+JSON.stringify(info.layout.map));
+    }
+    await evaluate(rpc,'document.querySelector("#mapKeyDisclosure").open=true');
+    await sleep(70);
+    const keyInfo=await evaluate(rpc,metricsExpression);
+    if(!keyInfo.drawerOpen||keyInfo.categoryKeyCount!==11||keyInfo.buildFilterCount!==10)fail("Map key/buildable drawer parity failure");
+    evidence.push({requested:{width,height},measured:keyInfo,screenshot:await capture(rpc,width,height,"filters")});
+    await evaluate(rpc,'document.querySelector("#mapKeyDisclosure").open=false');
+    await evaluate(rpc,'document.querySelector("#mapPins [data-zone=town]").dispatchEvent(new MouseEvent("click",{bubbles:true}))');
+    await sleep(80);
+    const detailInfo=await evaluate(rpc,metricsExpression);
+    if(!detailInfo.contextOpen||!detailInfo.layout.context||detailInfo.layout.context.height<70)fail("Town location sheet failed: "+width+"x"+height);
+    if(detailInfo.layout.context.y+detailInfo.layout.context.height > info.layout.map.y+info.layout.map.height+4)fail("Location sheet goes below map edge");
+    evidence.push({requested:{width,height},measured:detailInfo,screenshot:await capture(rpc,width,height,"location")});
+    await evaluate(rpc,'document.querySelector("#closeMapContext")?.click()');
+
     if(width===390&&height===844){
       for(const name of extraViews){
         await evaluate(rpc,'document.querySelector("nav [data-view='+name+']").click()');
@@ -144,10 +165,10 @@ try {
     baselineCommit:"80cdb6db12efb38edb41a3d43adbfec52ac5a99a",
     candidateCommit:process.env.GITHUB_SHA||"local PR branch",
     browser:"Chromium headless CDP; mobile emulation at deviceScaleFactor=1; not physical iPhone",
-    milestone:"M16.1 three-tab foundation",
+    milestone:"M16.2 map redesign",
     screenshotCount:evidence.length,records:evidence
   },null,2)+"\n");
-  if(evidence.length!==10)fail("Expected 5 map viewport captures plus 2 main tab and 3 secondary sheet captures");
+  if(evidence.length!==20)fail("Expected five map + five filters + five details + five secondary views");
   console.log("M16_FOUNDATION_CAPTURE_PASS "+evidence.length+" genuine screenshots");
 }finally {
   try{socket?.close();}catch{}
