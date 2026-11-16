@@ -10,7 +10,7 @@
 </head>
 <body>
 <div class="app">
-<header class="top"><div class="brand"><div class="brand-mark">T<span>Z</span></div><div><span class="eyebrow">GREEN RUN • 2012</span><h1>TRAN<span>ZIT</span> <small>ATLAS</small></h1></div></div><div class="top-actions"><span class="offline" id="networkStatus" role="status" aria-live="polite">OFFLINE READY</span><button type="button" class="iconbtn search-trigger" id="globalFind" aria-label="Search items, perks and doors" title="Quick search">⌕</button><button id="helpBtn" class="iconbtn" type="button" aria-label="Help and installation">?</button></div></header>
+<header class="top"><div class="brand"><div class="brand-mark">T<span>Z</span></div><div><span class="eyebrow">GREEN RUN • 2012</span><h1>TRAN<span>ZIT</span> <small>ATLAS</small></h1></div></div><div class="top-actions"><span class="offline" id="networkStatus" role="status" aria-live="polite">OFFLINE READY</span><button type="button" class="iconbtn search-trigger" id="globalFind" aria-label="Find locations, parts, perks and doors" title="Quick search">⌕</button><button id="helpBtn" class="iconbtn" type="button" aria-label="Help and installation">?</button></div></header>
 <div class="notice"><span class="notice-dot"></span> ORIGINAL BO2 TRANZIT <span class="notice-separator">·</span> INTERACTIVE MAP & EASTER EGG GUIDE</div>
 <main id="main">
 <section id="view-map" class="view active" aria-label="Interactive TranZit map">
@@ -25,9 +25,10 @@
 <div class="map-wrap" id="interactiveMap">
   <div class="map-topline"><span>GREEN RUN · TRANZIT</span><span>DRAG TO PAN · PINCH TO ZOOM</span></div>
   <div class="map-tools"><button type="button" id="zoomIn" aria-label="Zoom in">+</button><button type="button" id="zoomOut" aria-label="Zoom out">−</button><button type="button" id="resetMap" aria-label="Show complete map overview">↺</button><button type="button" id="mapExit" aria-label="Exit expanded map" hidden>✕</button></div>
-  <div class="map-viewport" id="mapViewport"><svg id="worldMap" viewBox="0 0 720 580" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Interactive TranZit map with clickable icons for perks, weapons, doors, parts, benches and Easter egg landmarks"><g id="mapWorld"><image href="./world-art.svg" x="0" y="0" width="720" height="580" preserveAspectRatio="xMidYMid meet"/></g><g id="mapOverlay"><g id="mapPins"></g><g id="mapLabels"></g></g></svg></div>
-  <div id="mapContext" class="map-context" aria-live="polite" hidden></div>
-</div>
+  <div class="map-viewport" id="mapViewport"><svg id="worldMap" viewBox="0 0 720 580" preserveAspectRatio="xMidYMid slice" role="group" aria-label="Interactive TranZit map with clickable icons for perks, weapons, doors, parts, benches and Easter egg landmarks"><g id="mapWorld"><image href="./world-art.svg" x="0" y="0" width="720" height="580" preserveAspectRatio="xMidYMid meet"/></g><g id="mapOverlay"><g id="mapPins"></g><g id="mapLabels"></g></g></svg></div>
+  <details id="mapKeyDisclosure" class="map-key-disclosure">
+  <summary aria-label="Expand map key, category filters and craftable filters">◈ KEY & FILTERS <span aria-hidden="true">⌄</span></summary>
+  <div class="map-filter-scroll" role="group" aria-label="Map key and category filters">
 <div class="map-key-head"><strong>MAP KEY · LOCATION CALLOUTS</strong><span>Dotted lines connect categories to a site. They are not exact indoor positions. Tap All for the overview.</span></div>
 <div id="mapLegend" class="map-legend" aria-label="Map key and icon filters"></div>
 <div class="craft-strip-heading"><strong>FIND CRAFTABLE PARTS</strong><span>Select one build to highlight only its parts and bench.</span></div>
@@ -35,6 +36,11 @@
 
 <div class="map-route-order"><strong>BUS LOOP</strong><span>01 Depot</span><b>→</b><span>02 Diner</span><b>→</b><span>03 Farm</span><b>→</b><span>04 Power</span><b>→</b><span>05 Town</span><b>→</b><span>Depot</span></div>
 <p class="map-guide">The ten named sites follow the supplied world reference. Colored symbols are location-linked callouts, not measured pickup coordinates. Tap a category to see its list of named rooms and alternate spawns. Non-spatial achievements, moving-bus equipment and persistent upgrades remain in FIND.</p>
+
+  </div>
+</details>
+<div id="mapContext" class="map-context" role="region" aria-label="Map location details" aria-live="polite" hidden></div>
+</div>
 </section>
 <section id="view-quest" class="view" aria-label="Easter egg tracker"><div class="section-head"><div><span class="eyebrow">TOWER OF BABBLE</span><h2>Easter Egg Walkthrough</h2><p>Choose Maxis or Richtofen. Follow each step with your four-player crew.</p></div></div><div class="choice" id="questSides"><button type="button" data-side="maxis">MAXIS</button><button type="button" data-side="richtofen">RICHTOFEN</button></div><button type="button" id="crewAccess" class="button ghost crew-access" aria-controls="auxSheet" aria-haspopup="dialog">♧ Crew & assignments</button><div id="questPanel"></div></section>
 <section id="view-craft" class="view" aria-label="Craftables and part tracking">
