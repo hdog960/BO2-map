@@ -21,6 +21,20 @@ jobs:
         run: |
           node --check tests/m16-baseline-capture.mjs
           node --test tests/*.test.mjs
+      - name: Verify the published GitHub Pages baseline without changing it
+        shell: bash
+        run: |
+          set -euo pipefail
+          LIVE="https://hdog960.github.io/BO2-map"
+          for asset in index.html app.js data.js sw.js; do
+            curl -fsSL --retry 3 --max-time 25 "$LIVE/$asset" -o "/tmp/m16-pages-$asset"
+            if ! cmp -s "$asset" "/tmp/m16-pages-$asset"; then
+              echo "PUBLISHED_PAGES_MISMATCH: $asset differs from checked-out protected main source"
+              exit 1
+            fi
+            echo "Published Pages matches baseline: $asset"
+          done
+          echo "M16_PAGES_BASELINE_MATCH"
       - name: Capture genuine Chromium baselines at all five viewport sizes
         shell: bash
         run: |
