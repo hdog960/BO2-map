@@ -127,3 +127,23 @@ Remaining gate: physical Safari/installed-PWA testing on the user's iPhone. Head
 - Added static and real Chromium interaction coverage for start, touch events, stop, report creation and visibility.
 
 **Truth boundary:** Results from Chrome test automation prove the scan runs as designed in that browser, but only a scan copied from the user's own iPhone can establish the real iOS lag profile. Review an actual diagnostic report before claiming the underlying performance bug has been fixed.
+
+
+## M13 — Real-iPhone touch responsiveness correction (after 59 Hz scan)
+
+### Evidence from iPhone Home Screen scan (2026-11-16)
+- Median rAF interval improved from **33 ms (~30 Hz)** to **17 ms (~59 Hz)** after M11.
+- User still reported dragging felt extremely laggy. Scan recorded **267 pointer moves but only 28 map-update samples** during 15 s, with the view ending at zoom 1 and pan boundaries +55/-55 SVG units.
+- Conclusion: frame cadence improved but responsiveness did not; the prior performance fix was insufficient. These measurements suggest movement limits and/or touch events being lost by the PointerEvent capture path, but do not prove precisely which dominates.
+- No physical-iPhone pass has been claimed.
+
+### Changes
+- Added native \`touchstart\`/\`touchmove\`/\`touchend\`/\`touchcancel\` handlers, with non-passive \`touchmove\` and touch-ID-aware one-finger pan and two-finger pinch. Native iOS streams bypass the previous PointerEvent capture path; PointerEvents remain as the fallback for mouse and other platforms.
+- Added a camera-movement helper to count **handled touches, accepted camera changes, boundary-blocked attempts, capture interruptions** and render frames independently.
+- The world map now begins at **1.7×**, centered, giving players actual room to drag. Reset returns to whole-map overview, which naturally has limited panning because the entire map is visible.
+- Relaxed the fit-level pan allowance and preserved world-positioned, fixed-screen-size item icons and label typography.
+- Updated the local diagnostic to **v2**, adding input-to-camera counters so future scans distinguish unhandled touches from clamped movement and rendering delays.
+- Added automated browser tests dispatching native TouchEvent-style events to verify drags and pinches move the camera. Kept existing PointerEvent smoke, map markers, quest tracking, and saved progress checks.
+- Bumped offline PWA cache to \`tranzit-atlas-v9\`.
+
+**Verification gate:** Exact GitHub main, Node/Chromium tests, and Pages deploy are required. User must still confirm dragging with a physical-iPhone playtest and, if necessary, copy the v2 map scan.
