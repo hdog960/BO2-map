@@ -58,3 +58,11 @@ test('in-app details dialog opens and closes',()=>{
  const {els,click}=boot();click({showItem:'perk-depot-quick-revive-depot-hall-hallway-near-main-door'});
  assert.equal(els.modal.open,true);assert.match(els.modalBody.innerHTML,/Quic|Speed|Double|Tombstone|Juggernog|Stamin-Up/);
 });
+
+test('clicking a map category cluster lists real area items',()=>{
+ const {els,click,saved}=boot();
+ click({group:'town|perk'});
+ assert.match(els.mapContext.innerHTML,/Juggernog/);
+ assert.match(els.mapContext.innerHTML,/Stamin-Up/);
+ assert.equal(saved().selected,'group:town|perk');
+});
