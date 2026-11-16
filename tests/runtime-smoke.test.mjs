@@ -13,7 +13,7 @@ function boot(seed=null){
  const els=Object.fromEntries(names.map(n=>[n,new Element(n)]));
  let stored=seed;
  const localStorage={getItem(){return stored},setItem(k,s){assert.equal(k,'tranzit-atlas-save-v1');stored=s;}};
- const document={events:{},querySelector(k){if(!k.startsWith('#'))throw Error(k);return els[k.slice(1)]||(els[k.slice(1)]=new Element(k));},querySelectorAll(k){if(k==='.bottom-nav button')return ['map','zones','quest','atlas','crew'].map(view=>Object.assign(new Element('nav'),{dataset:{view}}));if(k==='.view')return ['map','zones','quest','atlas','crew'].map(view=>new Element('view-'+view));if(k==='[data-side]')return ['maxis','richtofen'].map(side=>Object.assign(new Element('button'),{dataset:{side}}));return[];},createElementNS(ns,tag){return new Element(tag)},addEventListener(k,fn){this.events[k]=fn;}};
+ const document={events:{},querySelector(k){if(!k.startsWith('#'))throw Error(k);return els[k.slice(1)]||(els[k.slice(1)]=new Element(k));},querySelectorAll(k){if(k==='.bottom-nav button')return ['map','zones','quest','atlas','craft','crew'].map(view=>Object.assign(new Element('nav'),{dataset:{view}}));if(k==='.view')return ['map','zones','quest','atlas','crew'].map(view=>new Element('view-'+view));if(k==='[data-side]')return ['maxis','richtofen'].map(side=>Object.assign(new Element('button'),{dataset:{side}}));return[];},createElementNS(ns,tag){return new Element(tag)},addEventListener(k,fn){this.events[k]=fn;}};
  const window={addEventListener(){},scrollTo(){}};const navigator={onLine:true};const location={protocol:'http:'};
  const sandbox={window,document,navigator,location,localStorage,console:{warn(){}}};
  vm.runInNewContext(read('data.js'),sandbox,{filename:'data.js'});
@@ -170,4 +170,34 @@ test('Find can send a selected item back to the map',()=>{
  assert.equal(saved().view,'map');
  assert.equal(saved().mapKind,'perk');
  assert.match(els.mapContext.innerHTML,/Quick Revive/);
+});
+
+test('craftable screen selects distinct color-coded buildables',()=>{
+ const {els,click,saved}=boot();
+ assert.match(els.craftPanel.innerHTML,/Jet Gun/);
+ assert.match(els.craftPanel.innerHTML,/JG/);
+ assert.match(els.craftMapStrip.innerHTML,/data-craft-map="jet"/);
+ click({view:'craft'});
+ click({craftSelect:'shield'});
+ assert.equal(saved().craftSelected,'shield');
+ assert.match(els.craftPanel.innerHTML,/ZS/);
+ assert.match(els.craftPanel.innerHTML,/Car door/);
+});
+test('craft map focus isolates one buildable, then All restores atlas',()=>{
+ const {els,click,saved}=boot();
+ click({craftMap:'jet'});
+ assert.equal(saved().view,'map');
+ assert.equal(saved().craftFocus,'jet');
+ assert.match(els.mapPins.innerHTML||els.craftMapStrip.innerHTML,/jet/);
+ click({craftMap:'all'});
+ assert.equal(saved().craftFocus,null);
+});
+test('part checklist is shared between Craftables and Crew',()=>{
+ const {els,click,saved}=boot();
+ click({view:'craft'});
+ click({part:'jet:1'});
+ assert.equal(saved().parts['jet:1'],true);
+ assert.match(els.craftPanel.innerHTML,/1 of 4 parts checked/);
+ click({view:'crew'});
+ assert.match(els.crewPanel.innerHTML,/Jet Gun/);
 });
