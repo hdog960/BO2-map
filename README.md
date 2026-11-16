@@ -13,10 +13,13 @@ An independent, unofficial **Black Ops II TranZit** interactive atlas for **four
 - Manually saved local progress, part tracker, no account or backend.
 - Offline service worker and Home Screen manifest.
 
-## Refined interface
-The phone app now opens to a clear, interactive world map with a concise **next Easter egg objective** card. The bottom bar is organized by what players do mid-match: **Map / Quest / Find / Sites / Crew**. Map filters are grouped into **Route / Easter egg / Gear / Doors** with extra layers optional. The quest highlights what to do next, Find supports common searches, Sites has an easy location selector, and Crew organizes parts into compact expandable buildable checklists.
+## Interactive map-first interface
 
-All match and player progress remains on-device in the same saved-data key. No live game telemetry or cross-device synchronization is claimed. For detailed implementation and pending accuracy work, see ROADMAP.md.
+The home screen is the geographically referenced **TranZit map**. Every major area has tappable icons with an **always-visible key** for perks, wall buys, doors (paid/Turbine/special), parts, benches, boxes, secrets and Easter egg locations. Tapping a marker opens information on the map; the **+N** site markers reveal the other items associated with each location. Icons describe site/room areas, not unverified exact pickup coordinates.
+
+The bottom navigation provides a **separate EASTER EGG tab** with the complete Maxis/Richtofen checklists and four-player assignments. The walkthrough's **Show location** buttons return to a marked site on the map. Search, site floor diagrams and buildable checklists are supporting views.
+
+The map supports touch pan/pinch zoom, a Full map view and local part/door tracking. All content stays available offline after an online cache load. See ROADMAP.md (M10) for implementation and accuracy boundaries.
 
 ## Install on iPhone
 1. Open the app in Safari while online.
