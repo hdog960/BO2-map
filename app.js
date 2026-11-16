@@ -156,7 +156,7 @@ function renderMapMarkers(){
  positionMapOverlays();lastMarkerBand=mapMarkerBand();
 }
 function renderMap(){
- drawMapKey();renderMapLabels();renderMapMarkers();applyTransform();
+ refreshMapMetrics();drawMapKey();renderMapLabels();renderMapMarkers();applyTransform();
  if(state.selected)context(state.selected);else closeMapContext();
 }
 function closeMapContext(){
@@ -481,7 +481,7 @@ function nativeTouchEnd(e){
    if(t)lastDragPoint={x:t.clientX,y:t.clientY};
   }
   nativeDrag=false;
-  flushMapFrame();
+  if(mapRaf)flushMapFrame();
  }
 }
 vp.addEventListener("touchstart",nativeTouchStart,{passive:true});
@@ -526,7 +526,7 @@ function finishMapGesture(e){
  if(e.type==="lostpointercapture")pointerCaptureLost++;
  if(dragged){lastDrag=Date.now();lastDragPoint={x:e.clientX,y:e.clientY};}
  pointers.delete(e.pointerId);
- if(!pointers.size){dragged=false;flushMapFrame();}
+ if(!pointers.size){dragged=false;if(mapRaf)flushMapFrame();}
 }
 vp.addEventListener("pointerup",finishMapGesture);
 vp.addEventListener("pointercancel",finishMapGesture);
