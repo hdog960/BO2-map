@@ -18,6 +18,41 @@
    check(doc.querySelectorAll("#mapPins [data-zone]").length===10,"all ten mapped site pins");
    check(doc.querySelector("#worldMap image").getAttribute("href")==="./world-art.svg","reference vector artwork is present");
    check((await fetch("../world-art.svg")).ok,"local map artwork is served");
+
+   // Interactive camera regression: world geometry zooms, on-map graphics do not.
+   const fixedPin=doc.querySelector('#mapPins [data-zone="farm"] .site-pin');
+   const fixedLabel=doc.querySelector('#mapLabels .fixed-world-label');
+   check(fixedPin&&fixedLabel,"pin and fixed world label are present");
+   const iconWidth=fixedPin.getBoundingClientRect().width;
+   const labelHeight=fixedLabel.getBoundingClientRect().height;
+   const terrain=doc.querySelector("#mapWorld");
+   const root=doc.querySelector("#worldMap");
+   const preWidth=root.getBoundingClientRect().width;
+   click("#zoomIn");click("#zoomIn");
+   check(terrain.getAttribute("transform").includes("scale("),"zoom transforms terrain group");
+   check(Math.abs(fixedPin.getBoundingClientRect().width-iconWidth)<1.2,"icon physical size must not grow on zoom");
+   check(Math.abs(fixedLabel.getBoundingClientRect().height-labelHeight)<1.2,"map label physical size must stay fixed on zoom");
+   check(Math.abs(root.getBoundingClientRect().width-preWidth)<1,"root SVG stays fixed when terrain zooms");
+   const viewport=doc.querySelector("#mapViewport"),mapRect=viewport.getBoundingClientRect();
+   const oldLeft=fixedPin.getBoundingClientRect().left;
+   const send=(type,id,x,y)=>viewport.dispatchEvent(new win.PointerEvent(type,{bubbles:true,pointerId:id,pointerType:"touch",isPrimary:id===51,clientX:x,clientY:y}));
+   const px=mapRect.left+mapRect.width*.53,py=mapRect.top+mapRect.height*.52;
+   send("pointerdown",51,px,py);
+   send("pointermove",51,px+65,py+28);
+   send("pointerup",51,px+65,py+28);
+   check(Math.abs(fixedPin.getBoundingClientRect().left-oldLeft)>12,"drag moves the world and its marker anchors");
+   check(Math.abs(fixedPin.getBoundingClientRect().width-iconWidth)<1.2,"drag does not stretch the icon");
+   const cameraBefore=terrain.getAttribute("transform");
+   send("pointerdown",61,px-45,py);
+   send("pointerdown",62,px+45,py);
+   send("pointermove",62,px+90,py);
+   send("pointerup",62,px+90,py);
+   send("pointerup",61,px-45,py);
+   check(terrain.getAttribute("transform")!==cameraBefore,"pinch gesture updates the world camera");
+   check(Math.abs(fixedPin.getBoundingClientRect().width-iconWidth)<1.2,"pinch zoom keeps icons a fixed size");
+   check(Math.abs(fixedLabel.getBoundingClientRect().height-labelHeight)<1.2,"pinch zoom keeps map labels fixed size");
+   click("#resetMap");
+
    click('#mapPins [data-item^="perk-"]');
    check(!doc.querySelector("#mapContext").hidden,"tapping a perk icon opens map sheet");
    check(doc.querySelector("#mapContext").textContent.includes("Where:"),"map item sheet has location details");
