@@ -185,34 +185,51 @@ function context(key){
  }
  save();
 }
-function mapPixelScale(){
- // Root SVG is fixed-size; account for meet-letterboxing in expanded portrait/landscape.
+let mapMetrics=null,mapRaf=0,lastMarkerBand=-1,lastOverlayZoom=NaN,overlayDirty=true;
+function refreshMapMetrics(){
  const svg=$("#worldMap"),r=svg.getBoundingClientRect();
  const width=r.width||svg.clientWidth||$("#mapViewport").clientWidth||MAP_W;
  const height=r.height||svg.clientHeight||$("#mapViewport").clientHeight||MAP_H;
- return Math.max(0.15,Math.min(width/MAP_W,height/MAP_H));
+ const k=Math.max(0.15,Math.min(width/MAP_W,height/MAP_H));
+ mapMetrics={left:r.left||0,top:r.top||0,k,
+  offX:(width-MAP_W*k)/2,offY:(height-MAP_H*k)/2};
+ overlayDirty=true;
+ return mapMetrics;
 }
+function mapPixelScale(){return (mapMetrics||refreshMapMetrics()).k;}
 function pointerToMap(e){
- const rect=$("#worldMap").getBoundingClientRect(),k=mapPixelScale();
- const width=rect.width||$("#mapViewport").clientWidth||MAP_W;
- const height=rect.height||$("#mapViewport").clientHeight||MAP_H;
- const offX=(width-MAP_W*k)/2,offY=(height-MAP_H*k)/2;
- return {x:((e.clientX??0)-(rect.left||0)-offX)/k,y:((e.clientY??0)-(rect.top||0)-offY)/k};
+ const m=mapMetrics||refreshMapMetrics();
+ return {x:((e.clientX??0)-m.left-m.offX)/m.k,y:((e.clientY??0)-m.top-m.offY)/m.k};
 }
 function positionMapOverlays(){
- // Convert geography coordinates through the camera; inverse viewport density only.
- // Pin rectangles, glyphs, hit areas, and site titles never inherit camera zoom.
- const fixedSize=1/mapPixelScale();
- for(const node of $$("#mapLabels [data-world-x],#mapPins [data-world-x]")){
+ // Reapply inverse zoom on rare zoom/viewport changes; pan updates only two parent groups.
+ const fixedSize=1/(zoom*mapPixelScale());
+ for(const node of $("#mapLabels [data-world-x],#mapPins [data-world-x]")){
   const x=Number(node.dataset.worldX),y=Number(node.dataset.worldY);
-  node.setAttribute("transform","translate("+(panX+zoom*x).toFixed(2)+" "+(panY+zoom*y).toFixed(2)+") scale("+fixedSize.toFixed(4)+")");
+  node.setAttribute("transform","translate("+x+" "+y+") scale("+fixedSize.toFixed(5)+")");
  }
+ lastOverlayZoom=zoom;overlayDirty=false;
 }
+function mapMarkerBand(){return zoom>1.6?2:zoom>1.24?1:0;}
 function applyTransform(){
+ mapRaf=0;
  const profiler=window.TZ_SCAN,stamp=profiler?.active?performance.now():0;
- $("#mapWorld").setAttribute("transform","translate("+panX.toFixed(3)+" "+panY.toFixed(3)+") scale("+zoom.toFixed(5)+")");
- positionMapOverlays();
+ const band=mapMarkerBand();
+ if(band!==lastMarkerBand){lastMarkerBand=band;renderMapMarkers();}
+ if(overlayDirty||Math.abs(lastOverlayZoom-zoom)>0.00001)positionMapOverlays();
+ const t="translate("+panX.toFixed(3)+" "+panY.toFixed(3)+") scale("+zoom.toFixed(5)+")";
+ $("#mapWorld").setAttribute("transform",t);
+ $("#mapOverlay").setAttribute("transform",t);
  if(stamp)profiler.recordMapWork(performance.now()-stamp);
+}
+function requestMapFrame(){
+ if(mapRaf)return;
+ if(typeof requestAnimationFrame!=="function"){applyTransform();return;}
+ mapRaf=requestAnimationFrame(applyTransform);
+}
+function flushMapFrame(){
+ if(mapRaf&&typeof cancelAnimationFrame==="function")cancelAnimationFrame(mapRaf);
+ mapRaf=0;applyTransform();
 }
 function clampMap(){
  // Allow a small drag at full overview scale. At higher zoom, bound the camera to
@@ -229,7 +246,6 @@ function setZoom(next,center={x:MAP_W/2,y:MAP_H/2}){
  panX=center.x-worldX*zoom;
  panY=center.y-worldY*zoom;
  clampMap();
- if((old<=1.6)!==(zoom<=1.6)||(old<=1.24)!==(zoom<=1.24))renderMapMarkers();
  applyTransform();
 }
 function resetMap(){zoom=1;panX=0;panY=0;renderMapMarkers();applyTransform();}
@@ -239,7 +255,7 @@ function setMapExpanded(expanded){
  $("#mapExit").hidden=!expanded;
  $("#mapFullScreen").textContent=expanded?"Close map":"Full map";
  zoom=1;panX=0;panY=0;
- renderMapMarkers();applyTransform();
+ refreshMapMetrics();renderMapMarkers();applyTransform();
 }
 function roomSvg(rooms){
 return '<div class="zone-art"><svg viewBox="0 0 610 355" role="img" aria-label="Conceptual room-adjacency diagram"><g stroke="#9f9575" stroke-width="3" opacity=".6" stroke-dasharray="6 8"><path d="M10 336 H600"/></g>'+rooms.map((r,i)=>'<g data-room="'+esc(r.name)+'" style="cursor:pointer"><rect class="room-shape '+(i%2?"alt":"")+'" x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" rx="5"/><text class="room-text" x="'+(r.x+r.w/2)+'" y="'+(r.y+r.h/2)+'">'+esc(r.name.length>24?r.name.slice(0,21)+"…":r.name)+'</text></g>').join("")+'</svg><div id="roomNotice" class="footer-note">Tap a room to highlight its name. Diagram is not a measured footprint or verified doorway layout.</div></div>';
@@ -381,6 +397,7 @@ function captureDrag(e){
  try{if(!vp.hasPointerCapture?.(e.pointerId))vp.setPointerCapture?.(e.pointerId)}catch(_){}
 }
 vp.addEventListener("pointerdown",e=>{
+ if(!pointers.size)refreshMapMetrics();
  const at=pointerToMap(e);
  pointers.set(e.pointerId,{x:at.x,y:at.y,startX:at.x,startY:at.y});
  if(pointers.size>=2){dragged=true;captureDrag(e);}
@@ -393,7 +410,7 @@ vp.addEventListener("pointermove",e=>{
   if(!dragged&&Math.hypot(at.x-prev.startX,at.y-prev.startY)>6){dragged=true;captureDrag(e);}
   if(dragged){
    panX+=at.x-prev.x;panY+=at.y-prev.y;
-   clampMap();applyTransform();
+   clampMap();requestMapFrame();
   }
  }else{
   const other=[...pointers].find(([id])=>id!==e.pointerId)?.[1];
@@ -409,8 +426,7 @@ vp.addEventListener("pointermove",e=>{
    panX=nextMid.x-worldX*zoom;
    panY=nextMid.y-worldY*zoom;
    clampMap();
-   if((oldZoom<=1.6)!==(zoom<=1.6)||(oldZoom<=1.24)!==(zoom<=1.24))renderMapMarkers();
-   applyTransform();
+   requestMapFrame();
   }
  }
  pointers.set(e.pointerId,{...prev,x:at.x,y:at.y});
@@ -419,7 +435,7 @@ function finishMapGesture(e){
  if(!pointers.has(e.pointerId))return;
  if(dragged){lastDrag=Date.now();lastDragPoint={x:e.clientX,y:e.clientY};}
  pointers.delete(e.pointerId);
- if(!pointers.size){dragged=false;applyTransform();}
+ if(!pointers.size){dragged=false;flushMapFrame();}
 }
 vp.addEventListener("pointerup",finishMapGesture);
 vp.addEventListener("pointercancel",finishMapGesture);
@@ -428,7 +444,7 @@ vp.addEventListener("wheel",e=>{
  e.preventDefault();
  setZoom(zoom*(e.deltaY<0?1.15:1/1.15),pointerToMap(e));
 },{passive:false});
-window.addEventListener("resize",()=>{clampMap();applyTransform();});
+window.addEventListener("resize",()=>{refreshMapMetrics();clampMap();requestMapFrame();});
 $("#modal").addEventListener("click",e=>{if(e.target===$("#modal"))$("#modal").close();});
 // Read-only diagnostic view; excludes player names, saved match progress and all private data.
 window.TZ_MAP_TELEMETRY=(light=false)=>({
