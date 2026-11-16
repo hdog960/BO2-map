@@ -60,7 +60,9 @@ test('PWA manifest launches from project relative URL',()=>{
 });
 test('top navigation matches actual view elements',()=>{
  const html=read('index.html');
- for(const view of ['map','zones','quest','atlas','crew']){assert.ok(html.includes('id="view-'+view+'"'));assert.ok(html.includes('data-view="'+view+'"'));}
+ for(const view of ['map','quest','craft']){assert.ok(html.includes('id="view-'+view+'"'));assert.ok(html.includes('data-view="'+view+'"'));}
+ for(const view of ['zones','atlas','crew'])assert.ok(html.includes('id="view-'+view+'"'));
+ assert.equal((html.match(/data-view="/g)||[]).length,3);assert.match(html,/id="auxSheet"/);
 });
 test('all script resources are local to the repository',()=>{
  const html=read('index.html');
@@ -110,7 +112,9 @@ test('map category badges are tethered to known sites, never arbitrary item coor
 });
 test('world atlas exposes a visible icon key and separate Easter Egg tab',()=>{
  const html=read('index.html');
- for(const view of ['map','quest','atlas','zones','crew'])assert.ok(html.includes('data-view="'+view+'"'),view);
+ for(const view of ['map','quest','craft'])assert.ok(html.includes('data-view="'+view+'"'),view);
+ for(const view of ['atlas','zones','crew'])assert.ok(html.includes('id="view-'+view+'"'),view);
+ assert.match(html,/id="crewAccess"/);assert.match(html,/id="closeSheet"/);
  for(const node of ['interactiveMap','mapLegend','mapContext','mapViewport','mapFullScreen','mapExit','questPanel'])assert.ok(html.includes('id="'+node+'"'),node);
  assert.match(html,/MAP KEY/);
  assert.match(html,/EASTER EGG/);
@@ -171,12 +175,13 @@ test('pinch and drag use bounded camera-space deltas and retain desktop fallback
  assert.match(app,/pointercancel/);
  assert.match(app,/wheel",e=>/);
 });
-test('Map Diagnostics is available in the map view and offline precache',()=>{
+test('Map Diagnostics is accessible through Help and remains offline precached',()=>{
  const html=read('index.html'),sw=read('sw.js'),js=read('diagnostics.js');
  for(const id of ['openMapScan','mapScanPanel','startMapScan','stopMapScan','copyMapScan','mapScanReport'])
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/src="\.\/diagnostics\.js"/);
  assert.match(sw,/'\.\/diagnostics\.js'/);
+ assert.match(read('app.js'),/id==="helpMapScan"/);
  assert.match(js,/TRANZIT MAP PERFORMANCE SCAN v2/);
  assert.match(js,/requestAnimationFrame/);
  assert.match(js,/pointermove/);
