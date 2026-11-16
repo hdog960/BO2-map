@@ -1,9 +1,15 @@
-name: M16 baseline viewport evidence
+name: M16 foundation viewport evidence
 on:
   pull_request:
     paths:
+      - 'index.html'
+      - 'app.js'
+      - 'styles.css'
+      - 'tests/browser-smoke.html'
+      - 'tests/runtime-smoke.test.mjs'
+      - 'tests/atlas.test.mjs'
+      - 'tests/m16-foundation-capture.mjs'
       - 'docs/M16_BASELINE_AND_FEATURE_PARITY.md'
-      - 'tests/m16-baseline-capture.mjs'
       - '.github/workflows/m16-baseline.yml'
   workflow_dispatch:
 permissions:
@@ -17,9 +23,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify unchanged six-tab baseline source
+      - name: Verify M16.1 source and compatibility contracts
         run: |
-          node --check tests/m16-baseline-capture.mjs
+          node --check tests/m16-foundation-capture.mjs
           node --test tests/*.test.mjs
       - name: Verify the published GitHub Pages baseline without changing it
         shell: bash
@@ -35,7 +41,7 @@ jobs:
             echo "Published Pages matches baseline: $asset"
           done
           echo "M16_PAGES_BASELINE_MATCH"
-      - name: Capture genuine Chromium baselines at all five viewport sizes
+      - name: Capture genuine three-tab Chromium evidence at five viewport sizes
         shell: bash
         run: |
           set -euo pipefail
@@ -44,13 +50,13 @@ jobs:
           if [ -z "$CHROME_BIN" ]; then echo "Chromium not present"; exit 1; fi
           export CHROME_BIN
           sleep 1
-          node tests/m16-baseline-capture.mjs
-          test -f m16-baseline-evidence/baseline-layout.json
-      - name: Upload baseline viewport captures and layout diagnostics
+          node tests/m16-foundation-capture.mjs
+          test -f m16-foundation-evidence/baseline-layout.json
+      - name: Upload M16.1 viewport captures and layout diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: m16-baseline-five-viewports
-          path: m16-baseline-evidence/
+          name: m16-foundation-five-viewports
+          path: m16-foundation-evidence/
           if-no-files-found: warn
           retention-days: 30
