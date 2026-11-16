@@ -1,4 +1,4 @@
-name: M16 foundation viewport evidence
+name: M16 interactive map viewport evidence
 on:
   pull_request:
     paths:
@@ -10,6 +10,7 @@ on:
       - 'tests/atlas.test.mjs'
       - 'tests/m16-foundation-capture.mjs'
       - 'docs/M16_BASELINE_AND_FEATURE_PARITY.md'
+      - 'docs/M16_2_ACCEPTANCE.md'
       - '.github/workflows/m16-baseline.yml'
   workflow_dispatch:
 permissions:
@@ -23,7 +24,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify M16.1 source and compatibility contracts
+      - name: Verify map source, content and save compatibility
         run: |
           node --check tests/m16-foundation-capture.mjs
           node --test tests/*.test.mjs
@@ -53,11 +54,11 @@ jobs:
           sleep 1
           node tests/m16-foundation-capture.mjs
           test -f m16-foundation-evidence/baseline-layout.json
-      - name: Upload M16.1 viewport captures and layout diagnostics
+      - name: Upload M16.2 viewport captures and layout diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: m16-foundation-five-viewports
+          name: m16-map-five-viewports
           path: m16-foundation-evidence/
           if-no-files-found: warn
           retention-days: 30
