@@ -78,9 +78,13 @@ test('world map uses the supplied-reference geometry and separate art layer',()=
  assert.match(html,/href="\.\/world-art\.svg"/);
  const art=read('world-art.svg');
  assert.match(art,/<svg[^>]*viewBox="0 0 720 580"/);
+ const app=read('app.js');
  for(const text of ['FARM','DINER / GARAGE','TOWN CENTER','BUS DEPOT','POWER STATION','THE TUNNEL','OBELISK / PYLON','PROTOTYPE / NACHT','CABIN','BRIDGE']){
-  assert.ok(art.includes(text),text);
+  assert.ok(app.includes(text),'fixed-overlay label: '+text);
  }
+ assert.match(html,/id="mapWorld"/);
+ assert.match(html,/id="mapLabels"/);
+ assert.doesNotMatch(art,/<text\\b/,'labels must not be baked into zooming terrain');
  assert.match(art,/class="route-surface"/);
  assert.match(art,/class="lamp"/);
 });
@@ -123,10 +127,14 @@ test('mobile styles include minimum touch sizes, adaptive layout and reduced mot
  assert.match(css,/@media\(max-width:390px\)/);
  assert.match(css, /prefers-reduced-motion:reduce/);
 });
-test('map touch gesture capture begins only on movement, not tap',()=>{
+test('map pointer camera waits for motion before dragging a one-finger tap',()=>{
  const code=read('app.js');
- assert.match(code,/pointerdown",e=>\{pointers\.set\(e\.pointerId/);
- assert.doesNotMatch(code,/pointerdown",e=>\{[^}]*setPointerCapture/);
+ assert.match(code,/pointerdown",e=>\{/);
+ assert.match(code,/pointers\.set\(e\.pointerId/);
+ assert.match(code,/pointermove",e=>\{/);
+ assert.match(code,/if\(!dragged&&Math\.hypot\(/);
+ assert.match(code,/captureDrag\(e\)/);
+ assert.match(code,/function finishMapGesture\(/);
 });
 
 test('tap information and category key are directly wired to map markers',()=>{
@@ -139,4 +147,29 @@ test('tap information and category key are directly wired to map markers',()=>{
  assert.match(app,/data-map-item/);
  assert.match(app,/data-find-on-map/);
  assert.match(app,/data-quest-zone/);
+});
+
+test('zoom scales the terrain only and not the icon/text overlays',()=>{
+ const app=read('app.js'),css=read('styles.css'),html=read('index.html');
+ assert.match(html,/<g id="mapWorld">/);
+ assert.match(html,/<g id="mapLabels">/);
+ assert.match(app,/function positionMapOverlays\(/);
+ assert.match(app,/function mapPixelScale\(/);
+ assert.match(app,/function pointerToMap\(/);
+ assert.match(app,/function applyTransform\(/);
+ assert.match(app,/\$\("#mapWorld"\)\.setAttribute\("transform"/);
+ assert.match(app,/data-world-x/);
+ assert.match(app,/positionMapOverlays\(\)/);
+ assert.match(css,/#worldMap\{transform:none!important/);
+ assert.match(css,/#mapLabels .fixed-world-label/);
+});
+test('pinch and drag both use camera-space deltas and bounded pan',()=>{
+ const app=read('app.js');
+ assert.match(app,/panX\+=at\.x-prev\.x/);
+ assert.match(app,/panY\+=at\.y-prev\.y/);
+ assert.match(app,/oldMid/);
+ assert.match(app,/newSpan\/previousSpan/);
+ assert.match(app,/function clampMap\(/);
+ assert.match(app,/pointercancel/);
+ assert.match(app,/wheel",e=>/);
 });
