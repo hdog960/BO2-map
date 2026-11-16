@@ -209,7 +209,9 @@ test('iPhone uses native touch streams instead of brittle pointer capture',()=>{
 });
 test('initial map allows panning and reports blocked camera input separately',()=>{
  const app=read('app.js'),diag=read('diagnostics.js');
- assert.match(app,/let zoom=1\.7,panX=-252,panY=-203/);
+ assert.match(app,/let zoom=1,panX=0,panY=0/);
+ assert.match(app,/Math\.max\(width\/MAP_W,height\/MAP_H\)/);
+ assert.match(app,/const spanX=.*\/m\.k/);
  for(const key of ['nativeTouchHandled','pointerHandled','panChanged','panAtBoundary','cameraFrames','pointerCaptureLost'])
   assert.ok(app.includes(key)&&diag.includes(key),key);
  assert.match(diag,/Camera movement blocked by edge/);
