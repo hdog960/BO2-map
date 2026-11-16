@@ -21,9 +21,15 @@ The bottom navigation provides a **separate EASTER EGG tab** with the complete M
 
 The map supports touch pan/pinch zoom, a Full map view and local part/door tracking. All content stays available offline after an online cache load. See ROADMAP.md (M10) for implementation and accuracy boundaries.
 
+## iPhone map interaction update
+
+Map panning now uses native iPhone touch events rather than pointer capture. The map opens at a useful exploration zoom (1.7×); dragging follows your finger, pinch-zooming changes map scale, and item icons and location names remain the same on-screen size. The ↺ control fits the full map, which naturally has little room to pan until you zoom in again.
+
+**Please test in the Home Screen app**, not only in a desktop browser. The 2026-11-16 scan showed ~59 Hz frame pacing even though dragging still felt stuck. The new diagnostic report (v2) includes native touch events processed, camera moves accepted, moves blocked by the map boundary, and camera rendering counts. See ROADMAP.md M13 for details.
+
 ## Diagnose iPhone map lag
 
-If dragging or pinching the map feels jerky, open the **Map** tab, tap **Scan**, then **Start 15-second scan**. Move the map with one finger and pinch-zoom with two fingers while the scan records. When it finishes, tap **Copy report** and paste the text into the ChatGPT development conversation. If iOS blocks clipboard access, the report remains selectable in the text box.
+If dragging or pinching the map still feels jerky, open the **Map** tab, tap **Scan**, then **Start 15-second scan**. Move the map with one finger and pinch-zoom with two fingers while the scan records. When it finishes, tap **Copy report** and paste the text into the ChatGPT development conversation. If iOS blocks clipboard access, the report remains selectable in the text box.
 
 The scan measures frame pacing, touch events and local SVG map-update cost. It runs entirely on the phone without a backend. No game saves, account data or precise location are collected, and no report is transmitted unless you manually share it.
 
