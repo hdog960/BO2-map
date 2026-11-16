@@ -354,6 +354,29 @@ function renderAtlas(){
   return '<button type="button" class="atlas-item" data-show-item="'+esc(i.id)+'" aria-label="'+esc(i.name)+' in '+esc(zone(i.zone).name)+'"><span class="symbol" style="background:'+t.color+'">'+esc(t.short)+'</span><span><strong>'+esc(i.name)+'</strong><small>'+esc(zone(i.zone).name)+' · '+esc(i.room)+'</small></span><span class="arr">'+(state.found[i.id]?"✓":"›")+'</span></button>';
  }).join("")||'<div class="empty"><strong>No matching locations</strong><p>Try another name, perk, door, or location; or clear your search.</p><button type="button" class="button ghost" data-quick-find="">Clear search</button></div>';
 }
+function renderCraftPanel(){
+ if(!buildById(state.craftSelected))state.craftSelected="jet";
+ const chosen=buildById(state.craftSelected),panel=$("#craftPanel");
+ let html='<div class="craft-selector-grid" aria-label="Choose a buildable">'+D.builds.map(b=>{
+  const p=craftProgress(b),active=b.id===chosen.id;
+  return '<button class="craft-selector '+(active?"selected":"")+'" type="button" data-craft-select="'+b.id+'" aria-pressed="'+active+'" style="--craft-color:'+b.color+'">'+
+   '<span class="craft-emblem" aria-hidden="true">'+esc(b.code)+'</span><span class="craft-label"><strong>'+esc(b.name)+'</strong><small>'+p.found+'/'+p.total+' collected</small></span></button>';
+ }).join("")+'</div>';
+ const progress=craftProgress(chosen),allDone=progress.found===progress.total;
+ html+='<section class="craft-detail" style="--craft-color:'+chosen.color+'"><div class="craft-detail-head"><span class="craft-large-symbol">'+esc(chosen.code)+'</span><div><div class="kicker">SELECTED BUILDABLE</div><h3>'+esc(chosen.name)+'</h3><p>'+esc(chosen.note)+'</p></div></div>';
+ html+='<div class="craft-actions"><span class="craft-status">'+(allDone?"✓ All parts checked":progress.found+' of '+progress.total+' parts checked')+'</span><button class="button craft-show" type="button" data-craft-map="'+chosen.id+'">⌖ Show only this on map</button></div>';
+ html+='<div class="craft-part-progress"><div style="width:'+((progress.found/progress.total)*100)+'%"></div></div>';
+ html+='<div class="craft-part-list">'+chosen.parts.map((part,i)=>{
+  const done=!!state.parts[chosen.id+":"+i],sites=craftLocations(chosen,i),loc=craftLocationLabel(chosen,i);
+  const multi=sites.length>1;
+  const extra=multi?'<small class="craft-alternates">Possible areas; the part spawns at one location, not all of them.</small>':"";
+  const specific=chosen.id==="pap"?'All three Pack-a-Punch parts share a bank-area reference, not separately measured pins.':chosen.id==="bus"?'Each bus upgrade can appear in one of four powered rooms; one room is empty.':"";
+  return '<div class="craft-part-row '+(done?"is-done":"")+'"><button type="button" class="tick '+(done?"checked":"")+'" data-part="'+chosen.id+':'+i+'" aria-pressed="'+done+'" aria-label="'+(done?"Uncheck ":"Mark collected ")+esc(part[0])+'">'+(done?"✓":"○")+'</button><div class="craft-part-info"><strong><span class="mini-craft-code">'+esc(chosen.code)+'</span> '+esc(part[0])+'</strong><small>'+esc(loc)+'</small><small>'+esc(part[1])+'</small>'+extra+(specific?'<small>'+esc(specific)+'</small>':"")+'</div><button type="button" class="craft-locate" data-craft-locate="'+chosen.id+':'+i+'">'+(multi?"Show areas":"Map")+'</button></div>';
+ }).join("")+'</div>';
+ html+='<div class="craft-bench"><strong>'+(chosen.benchItemId?'⚒ Workbench':'🚌 Installation')+'</strong><span>'+esc(chosen.benchItemId?chosen.location+' · '+zone(chosen.zone).name:'Attach upgrades to the bus; there is no fixed upgrade workbench')+'</span><button type="button" class="button ghost" data-craft-bench="'+chosen.id+'">'+(chosen.benchItemId?"Locate bench":"See possible rooms")+'</button></div>';
+ html+='<p class="craft-accuracy">Map badges identify known sites and possible spawn areas—not exact pickup coordinates. Individual parts can vary between matches. Checklist progress is shared with Crew and stays saved on this device.</p></section>';
+ panel.innerHTML=html;
+}
 function renderCrew(){
  const panel=$("#crewPanel");
  const previouslyOpen=$$("details.build-card[open]").map(e=>e.dataset.build);
