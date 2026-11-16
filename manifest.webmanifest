@@ -1,0 +1,18 @@
+{
+  "name": "TranZit Field Atlas",
+  "short_name": "TranZit",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0c121a",
+  "theme_color": "#0c121a",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
