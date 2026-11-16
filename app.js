@@ -32,97 +32,152 @@ function renderNav(){
 function go(view){state.view=view;save();renderNav();if(view==="map")renderMap();if(view==="zones")renderZones();if(view==="quest")renderQuest();if(view==="atlas")renderAtlas();if(view==="crew")renderCrew();window.scrollTo({top:0,behavior:"auto"});}
 function selectZone(id){state.zone=id;state.floor=0;save();go("zones");}
 function showItem(id){const item=D.items.find(x=>x.id===id);if(!item)return;const z=zone(item.zone);modal(item.name,'<div class="kicker">'+esc(category(item.type).name)+" · "+esc(z.name)+'</div><p>'+esc(item.detail||"Reference point on the TranZit map.")+'</p><div class="info"><b>Where:</b> '+esc(item.room||z.description||z.name)+(item.price?"<br><b>Requirement / price:</b> "+esc(item.price):"")+'</div><div class="actions"><button class="button" data-open-zone="'+esc(item.zone)+'">Explore location</button><button class="button ghost" data-toggle-item="'+esc(item.id)+'">'+(state.found[id]?"✓ Marked found":"Mark found / opened")+'</button></div><p class="footer-note">Pins give an approximate area, not a measured coordinate. Part spawns can vary between matches.</p>');}
-function renderMissionShortcut(){
- const box=$("#mapMission");
- if(!box)return;
- const steps=D.quests[state.side],next=steps.findIndex((_,i)=>!state.done[state.side+":"+i]);
- const finished=steps.filter((_,i)=>state.done[state.side+":"+i]).length;
- const title=next<0?"Quest checklist complete":steps[next].title;
- const where=next<0?"Confirm the in-game completion cue.":("Step "+(next+1)+" of "+steps.length+" · "+zone(steps[next].zone).name);
- box.innerHTML='<div class="mission-row"><span class="mission-tag">⚡ '+esc(state.side.toUpperCase())+' · NEXT UP</span><span class="pill">'+finished+'/'+steps.length+' checked</span></div><div class="mission-row"><div class="mission-step">'+esc(title)+'</div><button type="button" class="mission-link" data-view="quest">View steps →</button></div><div class="mission-foot">'+esc(where)+'</div>';
+
+/* Interactive atlas. Pins are anchored to known sites, not invented exact in-room coordinates. */
+const svgNS="http://www.w3.org/2000/svg";
+const MAP_SYMBOLS={perk:"P",weapon:"W",part:"+",bench:"⚒",paid:"$",turbine:"T",special:"!",box:"?",secret:"★",goal:"⚡"};
+const MAP_LABELS={perk:"Perks",weapon:"Wall guns",part:"Parts",bench:"Workbenches",paid:"Paid doors",turbine:"Turbine doors",special:"Special access",box:"Mystery Box",secret:"Secrets",goal:"Easter egg"};
+const MAP_PRIORITY={perk:0,goal:1,box:2,bench:3,turbine:4,paid:5,special:6,weapon:7,part:8,secret:9};
+const MAP_SLOTS={
+ depot:[[509,283],[629,287],[626,358],[505,358],[583,256],[676,314],[556,390]],
+ diner:[[446,104],[539,103],[587,83],[439,46],[571,45],[488,117],[623,116]],
+ farm:[[215,89],[217,128],[110,148],[205,162],[240,48],[78,83],[114,46]],
+ town:[[291,162],[418,161],[409,257],[298,266],[351,284],[276,230],[432,219]],
+ power:[[129,399],[166,435],[134,489],[37,486],[53,375],[182,478]],
+ pylon:[[211,274],[278,238],[177,172],[283,196]],
+ nacht:[[53,259],[89,260],[31,159]],
+ tunnel:[[604,160],[671,198],[637,114]],
+ cabin:[[281,322],[267,355],[216,365]],
+ bridge:[[484,255],[541,248]]
+};
+let zoom=1,panX=0,panY=0,pointers=new Map(),dragged=false,lastDrag=0;
+if(!state.mapKind||!(state.mapKind==="all"||MAP_SYMBOLS[state.mapKind]))state.mapKind="all";
+function svgEl(type,attrs,children){
+ const el=document.createElementNS(svgNS,type);
+ for(const [k,v] of Object.entries(attrs||{}))el.setAttribute(k,String(v));
+ if(children!==undefined)el.textContent=String(children);
+ return el;
 }
-function drawFilters(){
- const box=$("#filterBar");
- box.innerHTML=Object.entries(D.types).filter(([id])=>id!=="stop").map(([id,t])=>'<button class="chip '+(state.mapFilters.includes(id)?"on":"")+'" type="button" data-filter="'+id+'" aria-pressed="'+state.mapFilters.includes(id)+'"><span class="dot" style="background:'+t.color+'"></span>'+esc(t.name)+'</button>').join("");
- $$("#mapModeBar button").forEach(b=>{const active=b.dataset.mapMode===state.mapMode;b.classList.toggle("on",active);b.setAttribute("aria-pressed",String(active));});
- $("#mapLayerStatus").textContent=state.mapMode==="custom"?"Custom · "+state.mapFilters.length+" visible":state.mapFilters.length+" active layers";
+function drawMapKey(){
+ const counts={};for(const type of Object.keys(MAP_SYMBOLS))counts[type]=D.items.filter(i=>i.type===type).length;
+ const types=[["all","ALL","All",D.items.length],...Object.keys(MAP_SYMBOLS).map(type=>[type,MAP_SYMBOLS[type],MAP_LABELS[type],counts[type]])];
+ $("#mapLegend").innerHTML=types.map(([kind,symbol,title,count])=>{
+  const color=kind==="all"?"#ecd09a":category(kind).color,active=state.mapKind===kind;
+  return '<button type="button" class="legend-button '+(active?"active":"")+'" data-map-key="'+kind+'" aria-pressed="'+active+'"><span class="legend-symbol" style="background:'+color+'">'+esc(symbol)+'</span><span class="legend-label">'+esc(title)+'</span><span class="legend-count">'+count+'</span></button>';
+ }).join("");
 }
-const svgNS="http://www.w3.org/2000/svg";let zoom=1,panX=0,panY=0,pointers=new Map(),dragged=false,lastDrag=0;
-function applyTransform(){const svg=$("#worldMap");svg.style.transform="translate("+panX+"px,"+panY+"px) scale("+zoom+")";}
-function clampMap(){const vp=$("#mapViewport"),w=vp.clientWidth,h=vp.clientHeight;panX=Math.max(-w*(zoom-1)-w*.15,Math.min(w*.15,panX));panY=Math.max(-h*(zoom-1)-h*.15,Math.min(h*.15,panY));}
-function setZoom(next){const old=zoom;zoom=Math.min(3.6,Math.max(1,next));const vp=$("#mapViewport"),x=vp.clientWidth/2,y=vp.clientHeight/2;panX=x-(x-panX)*zoom/old;panY=y-(y-panY)*zoom/old;clampMap();applyTransform();}
-function resetMap(){zoom=1;panX=0;panY=0;applyTransform();}
-function renderMap(){
- drawFilters();renderMissionShortcut();
- const labels=$("#routeLabels"),pins=$("#mapPins");labels.textContent="";pins.textContent="";
- // The background is a reference-traced, original vector. Pins are clickable zone markers,
- // not fake exact item coordinates. Every individual item lives in the site-detail panel.
- D.zones.forEach(z=>{
-  const group=document.createElementNS(svgNS,"g");group.classList.add("pin");group.dataset.zone=z.id;
-  group.setAttribute("role","button");group.setAttribute("tabindex","0");
-  group.setAttribute("aria-label",(z.stop?"Bus stop "+z.stop+": ":"")+z.name);
-  const circle=document.createElementNS(svgNS,"circle");
-  circle.setAttribute("cx",z.x);circle.setAttribute("cy",z.y);
-  circle.setAttribute("r",z.stop?"13.5":"10");
-  circle.setAttribute("fill",z.stop?"#f4bd68":"#87c7b7");
-  circle.setAttribute("class","pin-core");
-  const number=document.createElementNS(svgNS,"text");
-  number.setAttribute("x",z.x);number.setAttribute("y",z.y+3.9);
-  number.setAttribute("font-size",z.stop?"12":"10");number.setAttribute("font-weight","900");
-  number.setAttribute("text-anchor","middle");number.setAttribute("fill","#11252b");
-  number.textContent=z.stop?String(z.stop):"◆";
-  const hit=document.createElementNS(svgNS,"circle");hit.setAttribute("cx",z.x);hit.setAttribute("cy",z.y);hit.setAttribute("r","22");hit.setAttribute("fill","transparent");hit.setAttribute("pointer-events","all");
-  group.append(circle,number,hit);pins.appendChild(group);
- });
- const grouped={};
- for(const item of D.items.filter(x=>x.type!=="stop"&&state.mapFilters.includes(x.type))){
-  const key=item.zone+"|"+item.type;
-  (grouped[key]??=[]).push(item);
+function mapItemsFor(zoneId){
+ const candidates=D.items.filter(item=>item.zone===zoneId&&item.type!=="stop"&&(state.mapKind==="all"||state.mapKind===item.type));
+ candidates.sort((a,b)=>(MAP_PRIORITY[a.type]??10)-(MAP_PRIORITY[b.type]??10));
+ const dense=zoom>1.6, limit=state.mapKind==="all"?(dense?9:4):(dense?13:9);
+ const selected=state.selected&&D.items.find(i=>i.id===state.selected);
+ const picked=candidates.slice(0,limit);
+ // Search results can always be highlighted directly on the map even when omitted from the overview.
+ if(selected&&selected.zone===zoneId&&!picked.some(i=>i.id===selected.id)&&(state.mapKind==="all"||state.mapKind===selected.type)){
+  if(picked.length===limit)picked.pop();picked.push(selected);
  }
- // Type-clusters rather than random scattered part pins. A cluster reports a location/room
- // count, avoiding misleading maps where random spawns look like fixed pickup coordinates.
- const positions=[[-26,-26],[26,-26],[-26,26],[26,26],[0,-38],[0,38],[-40,0],[40,0],[-46,-32],[46,-32],[-46,32],[46,32]];
+ return {pins:picked,hidden:Math.max(0,candidates.length-picked.length),total:candidates.length};
+}
+function markerSpot(z,index){
+ const slots=MAP_SLOTS[z.id]||[];
+ if(index<slots.length)return slots[index];
+ const extra=index-slots.length;
+ const angle=extra*2.399963+0.5,r=55+Math.floor(extra/9)*19;
+ return [Math.max(22,Math.min(699,z.x+Math.cos(angle)*r)),Math.max(26,Math.min(552,z.y+Math.sin(angle)*r))];
+}
+function pinGroup(x,y,attrs){
+ const group=svgEl("g",{"class":"pin atlas-pin","role":"button",tabindex:"0",...attrs});
+ group.appendChild(svgEl("circle",{cx:x,cy:y,r:19,fill:"transparent","pointer-events":"all","class":"pin-touch"}));
+ return group;
+}
+function renderMapMarkers(){
+ const pins=$("#mapPins");pins.textContent="";
  D.zones.forEach(z=>{
-  const entries=Object.entries(grouped).filter(([key])=>key.startsWith(z.id+"|"));
-  entries.forEach(([key,arr],index)=>{
-   const type=arr[0].type,offset=positions[index%positions.length];
-   const x=Math.max(15,Math.min(705,z.x+offset[0])),y=Math.max(20,Math.min(558,z.y+offset[1]));
-   const group=document.createElementNS(svgNS,"g");group.classList.add("pin");
-   group.dataset.group=key;group.setAttribute("role","button");group.setAttribute("tabindex","0");
-   group.setAttribute("aria-label",arr.length+" "+category(type).name+" at "+z.name);
-   const circle=document.createElementNS(svgNS,"circle");
-   circle.setAttribute("cx",x);circle.setAttribute("cy",y);circle.setAttribute("r","10.5");
-   circle.setAttribute("fill",category(type).color);circle.setAttribute("class","pin-core");
-   const symbol=document.createElementNS(svgNS,"text");
-   symbol.setAttribute("x",x);symbol.setAttribute("y",y+3.6);
-   symbol.setAttribute("font-size","9.4");symbol.setAttribute("font-weight","900");
-   symbol.setAttribute("text-anchor","middle");symbol.setAttribute("fill","#101b22");
-   symbol.textContent=category(type).short+(arr.length>1?String(arr.length):"");
-   const hit=document.createElementNS(svgNS,"circle");hit.setAttribute("cx",x);hit.setAttribute("cy",y);hit.setAttribute("r","19");hit.setAttribute("fill","transparent");hit.setAttribute("pointer-events","all");
-   group.append(circle,symbol,hit);pins.appendChild(group);
+  const site=pinGroup(z.x,z.y,{"data-zone":z.id,"aria-label":(z.stop?"Bus stop "+z.stop+" ":"")+z.name});
+  const main=svgEl("circle",{cx:z.x,cy:z.y,r:z.stop?16:13,fill:z.stop?"#eac182":"#88c5b7","class":"site-pin"});
+  const number=svgEl("text",{x:z.x,y:z.y+5,"font-size":z.stop?14:11,"font-weight":"900","text-anchor":"middle",fill:"#101c1f"},z.stop?z.stop:"◆");
+  const title=svgEl("title",{},z.name+" — tap to inspect all items");
+  site.append(main,number,title);pins.appendChild(site);
+  const data=mapItemsFor(z.id);
+  data.pins.forEach((item,index)=>{
+   const [x,y]=markerSpot(z,index),type=item.type,code=MAP_SYMBOLS[type];
+   const group=pinGroup(x,y,{"data-item":item.id,"class":"pin atlas-pin item-pin","aria-label":item.name+" at "+z.name});
+   const radius=zoom>1.6?13:14;
+   group.append(svgEl("rect",{x:x-radius,y:y-radius,width:radius*2,height:radius*2,rx:7,fill:category(type).color,stroke:state.selected===item.id?"#fff":"#10202a","stroke-width":state.selected===item.id?3:1.8}));
+   group.append(svgEl("text",{x:x,y:y+4.6,fill:"#0e2327","font-size":"14","font-weight":"900","text-anchor":"middle"},code));
+   if(zoom>1.24||state.mapKind!=="all"){
+    const short=item.name.length>17?item.name.slice(0,15)+"…":item.name;
+    const right=x>525?false:true,anchor=right?"start":"end",lx=x+(right?19:-19);
+    const label=svgEl("text",{x:lx,y:y+3.5,"class":"item-map-label","text-anchor":anchor},short);
+    group.append(label);
+   }
+   group.append(svgEl("title",{},item.name+" — "+item.room+" — Tap for details"));
+   pins.appendChild(group);
   });
+  if(data.hidden>0){
+   const [x,y]=markerSpot(z,data.pins.length),g=pinGroup(x,y,{"data-map-more":z.id,"aria-label":data.hidden+" more map items near "+z.name});
+   g.append(svgEl("rect",{x:x-19,y:y-12,width:38,height:24,rx:9,fill:"#172c36",stroke:"#f0c582","stroke-width":2}));
+   g.append(svgEl("text",{x,y:y+4,"font-size":11,"font-weight":"850","text-anchor":"middle",fill:"#f6d69b"},"+"+data.hidden));
+   g.append(svgEl("title",{},data.hidden+" more entries at "+z.name+" — tap to list all"));
+   pins.appendChild(g);
+  }
  });
- if(state.selected)context(state.selected);
- else $("#mapContext").innerHTML='<div class="context-empty"><strong>Explore the real TranZit layout</strong><span>Tap a numbered stop or landmark, or turn on a filter and tap its grouped markers. Pins indicate areas, not exact spawn points.</span></div>';
+}
+function renderMap(){
+ drawMapKey();renderMapMarkers();
+ if(state.selected)context(state.selected);else closeMapContext();
+}
+function closeMapContext(){
+ const pop=$("#mapContext");pop.hidden=true;pop.innerHTML="";state.selected=null;save();
+}
+function mapCard(body,eyebrow,title){
+ const pop=$("#mapContext");pop.hidden=false;
+ pop.innerHTML='<div class="map-card-top"><span>'+esc(eyebrow)+'</span><button type="button" id="closeMapContext" aria-label="Close map information">✕</button></div><h3>'+esc(title)+'</h3>'+body;
 }
 function context(key){
  if(key.startsWith("zone:")){
   const z=zone(key.slice(5));if(!z)return;
   state.selected=key;
-  $("#mapContext").innerHTML='<div class="kicker">'+(z.stop?"BUS STOP "+z.stop:"OFF-ROUTE LANDMARK")+'</div><h3>'+esc(z.name)+'</h3><p>'+esc(z.description)+'</p><div class="actions"><button class="button" data-open-zone="'+z.id+'">Explore this site</button><button class="button ghost" data-search-zone="'+z.id+'">All items here</button></div>';
- }else if(key.startsWith("group:")){
-  const parts=key.slice(6).split("|"),z=zone(parts[0]),type=parts[1];
-  if(!z||!D.types[type])return;
-  const items=D.items.filter(x=>x.zone===z.id&&x.type===type);
-  if(!items.length)return;state.selected=key;
-  $("#mapContext").innerHTML='<div class="kicker">'+esc(z.name)+'</div><h3>'+esc(category(type).name)+' · '+items.length+' entries</h3><p>These are inside or near the named area. Tap an entry for the specific room, door rule or possible spawn positions.</p>'+
-  items.map(i=>'<div class="row-item"><div class="left"><strong>'+esc(i.name)+'</strong><small>'+esc(i.room)+(i.price?" · "+esc(i.price):"")+'</small></div><button class="button ghost" data-show-item="'+esc(i.id)+'">Details</button></div>').join("")+
-  '<div class="actions"><button class="button" data-open-zone="'+z.id+'">Explore interiors</button></div>';
+  const arr=D.items.filter(i=>i.zone===z.id&&i.type!=="stop");
+  const notable=arr.slice().sort((a,b)=>(MAP_PRIORITY[a.type]??10)-(MAP_PRIORITY[b.type]??10)).slice(0,6);
+  mapCard('<p>'+esc(z.description)+'</p><div class="map-card-items">'+notable.map(i=>'<button type="button" data-map-item="'+esc(i.id)+'"><span class="inline-pin" style="background:'+category(i.type).color+'">'+esc(MAP_SYMBOLS[i.type])+'</span>'+esc(i.name)+'</button>').join("")+'</div><div class="map-card-actions"><button type="button" class="button" data-map-more="'+z.id+'">All '+arr.length+' items here</button><button type="button" class="button ghost" data-open-zone="'+z.id+'">Room guide</button></div>',
+   z.stop?"BUS STOP "+z.stop:"LANDMARK",z.name);
+ }else if(key.startsWith("more:")||key.startsWith("group:")){
+  const ref=key.slice(key.indexOf(":")+1),parts=ref.split("|"),z=zone(parts[0]);if(!z)return;
+  const type=parts[1],arr=D.items.filter(i=>i.zone===z.id&&i.type!=="stop"&&(!type||i.type===type));
+  state.selected=key;
+  mapCard('<p>'+esc(z.name)+' — tap any entry for its price, location, requirements and notes.</p><div class="map-card-list">'+arr.map(i=>'<button type="button" data-map-item="'+esc(i.id)+'"><span class="inline-pin" style="background:'+category(i.type).color+'">'+esc(MAP_SYMBOLS[i.type])+'</span><span><strong>'+esc(i.name)+'</strong><small>'+esc(i.room)+'</small></span><span class="map-list-arrow">›</span></button>').join("")+'</div><div class="map-card-actions"><button type="button" class="button ghost" data-open-zone="'+z.id+'">Room guide</button></div>',
+   "LOCATION INDEX",z.name+" · "+arr.length+" entries");
  }else{
-  const i=D.items.find(x=>x.id===key);if(!i)return;state.selected=key;
-  $("#mapContext").innerHTML='<div class="kicker">'+esc(category(i.type).name)+" · "+esc(zone(i.zone).name)+'</div><h3>'+esc(i.name)+'</h3><p>'+esc(i.room)+" — "+esc(i.detail)+'</p>'+markPrice(i.price)+'<div class="actions"><button class="button" data-show-item="'+i.id+'">Details</button><button class="button ghost" data-open-zone="'+i.zone+'">Explore location</button><button class="button ghost" data-toggle-item="'+i.id+'">'+(state.found[i.id]?"✓ Tracked":"Mark found")+'</button></div>';
+  const item=D.items.find(i=>i.id===key);if(!item)return;
+  state.selected=key;
+  mapCard('<p><strong>Where:</strong> '+esc(item.room||zone(item.zone).description)+'</p>'+(item.price?'<div class="map-price">'+esc(item.price)+(isNaN(Number(item.price))?"":" points")+'</div>':"")+'<p>'+esc(item.detail||"See the location notes.")+'</p><div class="map-card-actions"><button type="button" class="button" data-toggle-item="'+esc(item.id)+'">'+(state.found[item.id]?"✓ Tracked":"Mark found / opened")+'</button><button type="button" class="button ghost" data-map-more="'+item.zone+'">More at '+esc(zone(item.zone).name)+'</button></div>',
+   MAP_LABELS[item.type]+" · "+zone(item.zone).name,item.name);
  }
  save();
+}
+function applyTransform(){
+ $("#worldMap").style.transform="translate("+panX+"px,"+panY+"px) scale("+zoom+")";
+}
+function clampMap(){
+ const vp=$("#mapViewport"),w=vp.clientWidth,h=vp.clientHeight;
+ panX=Math.max(-w*(zoom-1)-w*.12,Math.min(w*.12,panX));
+ panY=Math.max(-h*(zoom-1)-h*.12,Math.min(h*.12,panY));
+}
+function setZoom(next){
+ const old=zoom;zoom=Math.min(3.8,Math.max(1,next));
+ const vp=$("#mapViewport"),x=vp.clientWidth/2,y=vp.clientHeight/2;
+ panX=x-(x-panX)*zoom/old;panY=y-(y-panY)*zoom/old;
+ clampMap();applyTransform();renderMapMarkers();
+}
+function resetMap(){zoom=1;panX=0;panY=0;applyTransform();renderMapMarkers();}
+function setMapExpanded(expanded){
+ $("#interactiveMap").classList.toggle("map-expanded",expanded);
+ document.body.classList.toggle("atlas-expanded",expanded);
+ $("#mapExit").hidden=!expanded;
+ $("#mapFullScreen").textContent=expanded?"✕ Close":"⛶ Expand";
+ // Recenter transforms to the new viewport dimensions after the canvas changes size.
+ zoom=1;panX=0;panY=0;applyTransform();renderMapMarkers();
 }
 function roomSvg(rooms){
 return '<div class="zone-art"><svg viewBox="0 0 610 355" role="img" aria-label="Conceptual room-adjacency diagram"><g stroke="#9f9575" stroke-width="3" opacity=".6" stroke-dasharray="6 8"><path d="M10 336 H600"/></g>'+rooms.map((r,i)=>'<g data-room="'+esc(r.name)+'" style="cursor:pointer"><rect class="room-shape '+(i%2?"alt":"")+'" x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" rx="5"/><text class="room-text" x="'+(r.x+r.w/2)+'" y="'+(r.y+r.h/2)+'">'+esc(r.name.length>24?r.name.slice(0,21)+"…":r.name)+'</text></g>').join("")+'</svg><div id="roomNotice" class="footer-note">Tap a room to highlight its name. Diagram is not a measured footprint or verified doorway layout.</div></div>';
