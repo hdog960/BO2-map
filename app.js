@@ -178,7 +178,7 @@ function setMapExpanded(expanded){
  $("#interactiveMap").classList.toggle("map-expanded",expanded);
  document.body.classList.toggle("atlas-expanded",expanded);
  $("#mapExit").hidden=!expanded;
- $("#mapFullScreen").textContent=expanded?"✕ Close":"⛶ Expand";
+ $("#mapFullScreen").textContent=expanded?"Close map":"Full map";
  // Recenter transforms to the new viewport dimensions after the canvas changes size.
  zoom=1;panX=0;panY=0;applyTransform();renderMapMarkers();
 }
