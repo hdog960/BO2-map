@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>TranZit UI acceptance test</title>
+<style>body{font-family:system-ui;background:#101b23;color:white}iframe{width:400px;height:700px;border:1px solid #888}#result{font-size:20px}</style></head>
+<body><h1>TranZit UI acceptance</h1><div id="result">RUNNING</div><iframe src="../index.html" id="app" title="TranZit test"></iframe>
+<script>
+(function(){
+ const frame=document.getElementById("app"),result=document.getElementById("result");
+ const check=(ok,why)=>{if(!ok)throw new Error(why);};
+ frame.addEventListener("load",async()=>{
+  try{
+   const doc=frame.contentDocument,win=frame.contentWindow;
+   check(!!doc,"Iframe must be same-origin");
+   check(doc.querySelector("#view-map").classList.contains("active"),"Map must start visible");
+   check(doc.querySelector("#mapMission").textContent.includes("NEXT UP"),"Next objective should show");
+   check(doc.querySelectorAll("nav.bottom-nav button").length===5,"Five reachable bottom destinations");
+   check(doc.querySelector("#worldMap image").getAttribute("href")==="./world-art.svg","Reference-aligned vector must be present");
+   check((await fetch("../world-art.svg")).ok,"World map art must be served");
+   const click=selector=>{const b=doc.querySelector(selector);check(!!b,"Missing "+selector);b.click();};
+   click('[data-map-mode="doors"]');
+   check(doc.querySelector('[data-map-mode="doors"]').classList.contains("on"),"Door preset should activate");
+   check(doc.querySelector("#mapLayerStatus").textContent.includes("3 active"),"Door preset layer count");
+   click('nav button[data-view="quest"]');
+   check(doc.querySelector("#view-quest").classList.contains("active"),"Quest destination must open");
+   click('[data-side="richtofen"]');
+   check(doc.querySelector("#questPanel").textContent.includes("Four-player simultaneous EMP throw"),"Richtofen steps should render");
+   click('[data-quest-done="0"]');
+   check(doc.querySelector("#questPanel").textContent.includes("1/8"),"Quest progress must update");
+   click("#globalFind");
+   check(doc.querySelector("#view-atlas").classList.contains("active"),"Global find opens Index");
+   click('[data-quick-find="Jet Gun"]');
+   check(doc.querySelector("#atlasItems").textContent.includes("Jet Gun"),"Quick search results should render");
+   click('nav button[data-view="zones"]');
+   const select=doc.querySelector("#zoneSelect");
+   select.value="town";select.dispatchEvent(new win.Event("change",{bubbles:true}));
+   check(doc.querySelector("#zonePlan").textContent.includes("Bank"),"Town interior should display");
+   click('nav button[data-view="crew"]');
+   check(doc.querySelectorAll("details.build-card").length===9,"All nine buildables remain");
+   click('[data-part="jet:0"]');
+   check(JSON.parse(win.localStorage.getItem("tranzit-atlas-save-v1")).parts["jet:0"]===true,"Part progress must persist");
+   click('nav button[data-view="map"]');
+   const svgZone=doc.querySelector('#mapPins [data-zone="farm"]');
+   check(svgZone,"Farm marker must exist");
+   svgZone.dispatchEvent(new win.MouseEvent("click",{bubbles:true}));
+   check(doc.querySelector("#mapContext").textContent.includes("Farm"),"SVG marker must open location context");
+   const computed=win.getComputedStyle(doc.querySelector(".bottom-nav button"));
+   check(parseFloat(computed.minHeight)>=44,"Bottom nav tap targets must be at least 44px");
+   result.textContent=["TRANZIT","UI","PASS"].join("_");
+  }catch(error){result.textContent="UI_FAIL: "+String(error&&error.message||error);document.body.setAttribute("data-failed","1");}
+ });
+})();
+</script></body></html>
