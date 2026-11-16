@@ -82,11 +82,12 @@ function mapItemsFor(zoneId){
  const items=placedItems(zoneId,state.mapKind==="all"?null:state.mapKind);
  const groups=Object.keys(MAP_SYMBOLS).map(type=>({type,items:items.filter(i=>i.type===type)})).filter(g=>g.items.length);
  groups.sort((a,b)=>(MAP_PRIORITY[a.type]??10)-(MAP_PRIORITY[b.type]??10));
- const picked=groups.slice(0,state.mapKind==="all"?(zoom>1.6?6:zoom>1.24?4:2):groups.length);
+ const cap=state.mapKind==="all"?(zoom>2.75?4:zoom>2.2?3:2):groups.length;
+ const picked=groups.slice(0,cap);
  const selected=state.selected&&D.items.find(i=>i.id===state.selected);
  if(selected&&isInMappedSite(selected,zoneId)&&!picked.some(g=>g.type===selected.type)){
   const wanted=groups.find(g=>g.type===selected.type);
-  if(wanted){if(picked.length>=6)picked.pop();picked.push(wanted);}
+  if(wanted){if(picked.length>=cap)picked.pop();picked.push(wanted);}
  }
  const displayedItems=picked.reduce((n,g)=>n+g.items.length,0);
  return {groups:picked,hidden:items.length-displayedItems,total:items.length};
@@ -144,7 +145,7 @@ function renderMapMarkers(){
    group.append(svgEl("rect",{x:-radius,y:-radius,width:radius*2,height:radius*2,rx:7,fill:category(type).color,stroke:"#16262d","stroke-width":2}));
    group.append(svgEl("text",{x:0,y:4.6,fill:"#0e2327","font-size":"14","font-weight":"900","text-anchor":"middle"},MAP_SYMBOLS[type]));
    if(count>1)group.append(svgEl("text",{x:13,y:-11,"class":"callout-count","text-anchor":"middle"},count));
-   if(zoom>1.24||state.mapKind!=="all"){
+   if(state.mapKind!=="all"){
     const right=x<525,anchor=right?"start":"end",lx=right?19:-19;
     group.append(svgEl("text",{x:lx,y:3.5,"class":"item-map-label","text-anchor":anchor},MAP_LABELS[type]));
    }
@@ -223,7 +224,7 @@ function positionMapOverlays(){
  overlayRefreshes++;
  lastOverlayZoom=zoom;overlayDirty=false;
 }
-function mapMarkerBand(){return zoom>1.6?2:zoom>1.24?1:0;}
+function mapMarkerBand(){return zoom>2.75?2:zoom>2.2?1:0;}
 function applyTransform(){
  mapRaf=0;cameraFrames++;
  const profiler=window.TZ_SCAN,stamp=profiler?.active?performance.now():0;
