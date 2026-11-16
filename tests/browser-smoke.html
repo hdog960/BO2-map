@@ -185,8 +185,8 @@
    check(doc.querySelector("#zonePlan").textContent.includes("Bank"),"Town site notes preserved");
    click('nav button[data-view="crew"]');
    check(doc.querySelectorAll("details.build-card[data-build]").length===9,"nine buildables preserved");
-   click('[data-part="jet:0"]');
-   check(JSON.parse(win.localStorage.getItem("tranzit-atlas-save-v1")).parts["jet:0"]===true,"part tracking persists");
+   click('#crewPanel [data-part="jet:1"]');
+   check(JSON.parse(win.localStorage.getItem("tranzit-atlas-save-v1")).parts["jet:1"]===true,"another Crew part saves separately from map-collected Jet engine");
    const legend=win.getComputedStyle(doc.querySelector(".legend-button"));
    check(parseFloat(legend.minHeight)>=44,"map legend uses phone-sized tap targets");
    result.textContent="TRANZIT_MAP_PASS";
