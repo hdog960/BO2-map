@@ -267,8 +267,13 @@ function closeMapContext(){
  const pop=$("#mapContext");pop.hidden=true;pop.innerHTML="";state.selected=null;save();
 }
 function mapCard(body,eyebrow,title){
- const pop=$("#mapContext");pop.hidden=false;
- pop.innerHTML='<div class="map-card-top"><span>'+esc(eyebrow)+'</span><button type="button" id="closeMapContext" aria-label="Close map information">✕</button></div><h3>'+esc(title)+'</h3>'+body;
+ const pop=$("#mapContext");
+ // A pin tap takes priority over the filter drawer. The sheet scrolls on its
+ // own and never blocks a native drag/pinch starting outside the sheet.
+ const filter=$("#mapKeyDisclosure");if(filter)filter.open=false;
+ pop.hidden=false;
+ pop.innerHTML='<div class="map-sheet-handle" aria-hidden="true"></div><div class="map-card-top"><span>'+esc(eyebrow)+'</span><button type="button" id="closeMapContext" aria-label="Close map information">✕</button></div><h3>'+esc(title)+'</h3>'+body;
+ pop.scrollTop=0;
 }
 function showCraftOnMap(buildId,partIndex=null,bench=false){
  const build=buildById(buildId);if(!build)return;
@@ -297,7 +302,7 @@ function context(key){
   state.selected=key;
   const arr=state.craftFocus?placedItems(z.id).filter(i=>i.buildId===state.craftFocus):placedItems(z.id);
   const notable=arr.slice().sort((a,b)=>(MAP_PRIORITY[a.type]??10)-(MAP_PRIORITY[b.type]??10)).slice(0,6);
-  mapCard('<p>'+esc(z.description)+'</p><p class="placement-warning">Category badges are linked to this site, not to verified in-building coordinates.</p><div class="map-card-items">'+notable.map(i=>'<button type="button" data-map-item="'+esc(i.id)+'"><span class="inline-pin" style="background:'+category(i.type).color+'">'+esc(MAP_SYMBOLS[i.type])+'</span>'+esc(i.name)+'</button>').join("")+'</div><div class="map-card-actions"><button type="button" class="button" data-map-more="'+z.id+'">All '+arr.length+' items here</button><button type="button" class="button ghost" data-open-zone="'+z.id+'">Room guide</button></div>',
+  mapCard('<p>'+esc(z.description)+'</p><div class="map-sheet-footnote">Known site, not a verified indoor pickup position.</div><div class="map-card-items">'+notable.map(i=>'<button type="button" data-map-item="'+esc(i.id)+'"><span class="inline-pin" style="background:'+category(i.type).color+'">'+esc(MAP_SYMBOLS[i.type])+'</span>'+esc(i.name)+'</button>').join("")+'</div><div class="map-card-actions"><button type="button" class="button" data-map-more="'+z.id+'">All '+arr.length+' items here</button><button type="button" class="button ghost" data-open-zone="'+z.id+'">Room guide</button></div>',
    z.stop?"BUS STOP "+z.stop:"LANDMARK",z.name);
  }else if(key.startsWith("more:")||key.startsWith("group:")){
   const ref=key.slice(key.indexOf(":")+1),parts=ref.split("|"),z=zone(parts[0]);if(!z)return;
@@ -312,7 +317,7 @@ function context(key){
   const tag=b?'<div class="craft-modal-tag" style="--craft-color:'+b.color+'"><b>'+esc(b.code)+'</b><span>'+esc(b.name)+(item.type==="bench"?" · Bench":" · Part")+'</span></div>':"";
   const partCheck=b&&ix!==null&&ix!==undefined?'<button class="button" type="button" data-part="'+b.id+':'+ix+'">'+(state.parts[b.id+":"+ix]?"✓ Collected":"Mark "+esc(b.code)+" part collected")+'</button>':"";
   const alts=item.alternateZones?.length?'<p><b>Alternate possible areas:</b> '+item.alternateZones.map(a=>esc(zone(a).name)).join(", ")+'</p>':"";
-  mapCard(tag+'<p><strong>Where:</strong> '+esc(item.room||zone(item.zone).description)+'</p>'+(item.price?'<div class="map-price">'+esc(item.price)+(isNaN(Number(item.price))?"":" points")+'</div>':"")+'<p>'+esc(item.detail||"See the location notes.")+'</p>'+alts+'<p class="placement-warning">'+esc(item.mapReason)+'</p><div class="map-card-actions">'+partCheck+(b?'<button class="button ghost" type="button" data-craft-view="'+b.id+'">All '+esc(b.name)+' parts</button>':'')+'<button type="button" class="button" data-toggle-item="'+esc(item.id)+'">'+(state.found[item.id]?"✓ Tracked":"Mark found / opened")+'</button><button type="button" class="button ghost" data-map-more="'+item.zone+'">More at '+esc(zone(item.zone).name)+'</button></div>',
+  mapCard(tag+'<div class="map-sheet-facts"><div><small>AREA / ROOM</small><strong>'+esc(item.room||zone(item.zone).description)+'</strong></div>'+(item.price?'<div><small>COST / ACCESS</small><strong>'+esc(item.price)+(isNaN(Number(item.price))?"":" points")+'</strong></div>':"")+'</div><p>'+esc(item.detail||"See the location notes.")+'</p>'+alts+'<details class="map-accuracy-note"><summary>Location accuracy</summary><p>'+esc(item.mapReason)+'</p></details><div class="map-card-actions">'+partCheck+(b?'<button class="button ghost" type="button" data-craft-view="'+b.id+'">All '+esc(b.name)+' parts</button>':'')+'<button type="button" class="button" data-toggle-item="'+esc(item.id)+'">'+(state.found[item.id]?"✓ Tracked":"Mark found / opened")+'</button><button type="button" class="button ghost" data-map-more="'+item.zone+'">More at '+esc(zone(item.zone).name)+'</button></div>',
    MAP_LABELS[item.type]+" · "+zone(item.zone).name,item.name);
  }
  save();
@@ -323,7 +328,9 @@ function refreshMapMetrics(){
  const svg=$("#worldMap"),r=svg.getBoundingClientRect();
  const width=r.width||svg.clientWidth||$("#mapViewport").clientWidth||MAP_W;
  const height=r.height||svg.clientHeight||$("#mapViewport").clientHeight||MAP_H;
- const k=Math.max(0.15,Math.min(width/MAP_W,height/MAP_H));
+ // The viewport intentionally crops the schematic (SVG slice), so use the same
+ // aspect scale for world, hit-testing and inverse-scaled labels. No fake pins.
+ const k=Math.max(0.15,Math.max(width/MAP_W,height/MAP_H));
  mapMetrics={left:r.left||0,top:r.top||0,k,
   offX:(width-MAP_W*k)/2,offY:(height-MAP_H*k)/2};
  overlayDirty=true;
@@ -366,11 +373,16 @@ function flushMapFrame(){
  mapRaf=0;applyTransform();
 }
 function clampMap(){
- // Allow a small drag at full overview scale. At higher zoom, bound the camera to
- // all four edges of the world so the full geography remains reachable.
- const slack=zoom<=1.001?110:0;
- panX=Math.max(MAP_W*(1-zoom)-slack,Math.min(slack,panX));
- panY=Math.max(MAP_H*(1-zoom)-slack,Math.min(slack,panY));
+ // SVG 'slice' crops the virtual world to the screen aspect ratio. Camera bounds
+ // must include the visible slice, or edge sites cannot be reached on portrait iPhones.
+ const m=mapMetrics||refreshMapMetrics(),svg=$("#worldMap");
+ const spanX=(svg.clientWidth||MAP_W)/m.k,spanY=(svg.clientHeight||MAP_H)/m.k;
+ const originX=m.offX/m.k,originY=m.offY/m.k;
+ const slack=zoom<=1.001?20:0;
+ const lowX=spanX-originX-MAP_W*zoom-slack,highX=-originX+slack;
+ const lowY=spanY-originY-MAP_H*zoom-slack,highY=-originY+slack;
+ panX=lowX>highX?(lowX+highX)/2:Math.max(lowX,Math.min(highX,panX));
+ panY=lowY>highY?(lowY+highY)/2:Math.max(lowY,Math.min(highY,panY));
 }
 function setZoom(next,center={x:MAP_W/2,y:MAP_H/2}){
  const old=zoom,newZoom=Math.min(4,Math.max(1,next));
@@ -521,6 +533,7 @@ if(b.id==="helpMapScan"){
 if(b.dataset.craftSelect){state.craftSelected=b.dataset.craftSelect;save();renderCraftPanel();return;}
 if(b.dataset.craftView){state.craftSelected=b.dataset.craftView;save();if($("#modal").open)$("#modal").close();go("craft");return;}
 if(b.dataset.craftMap){
+ const drawer=$("#mapKeyDisclosure");if(drawer)drawer.open=false;
  state.craftFocus=b.dataset.craftMap==="all"?null:b.dataset.craftMap;
  state.mapKind=state.craftFocus?"part":"all";state.selected=null;
  if(state.craftFocus)state.craftSelected=state.craftFocus;
@@ -531,7 +544,7 @@ if(b.dataset.craftLocate){
  showCraftOnMap(id,Number(idx));return;
 }
 if(b.dataset.craftBench){showCraftOnMap(b.dataset.craftBench,null,true);return;}
-if(b.dataset.mapKey){state.craftFocus=null;state.mapKind=b.dataset.mapKey;state.selected=null;save();renderMap();return;}
+if(b.dataset.mapKey){const drawer=$("#mapKeyDisclosure");if(drawer)drawer.open=false;state.craftFocus=null;state.mapKind=b.dataset.mapKey;state.selected=null;save();renderMap();return;}
 if(b.dataset.mapMore){if(!isAccidentalMapClick(e))context("more:"+b.dataset.mapMore);return;}
 if(b.dataset.mapItem){context(b.dataset.mapItem);return;}
 if(b.dataset.mapMode){state.mapMode=b.dataset.mapMode;state.mapFilters=MAP_MODES[state.mapMode].slice();save();renderMap();return;}
