@@ -217,7 +217,7 @@ function renderMapMarkers(){
  positionMapOverlays();lastMarkerBand=mapMarkerBand();
 }
 function renderMap(){
- refreshMapMetrics();drawMapKey();renderMapLabels();renderMapMarkers();applyTransform();
+ refreshMapMetrics();drawMapKey();renderCraftMapStrip();renderMapLabels();renderMapMarkers();applyTransform();
  if(state.selected)context(state.selected);else closeMapContext();
 }
 function closeMapContext(){
