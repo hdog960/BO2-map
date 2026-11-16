@@ -24,3 +24,30 @@ jobs:
         run: node --test tests/*.test.mjs
       - name: Parse SVG world geometry as XML
         run: python -c 'import xml.etree.ElementTree as ET; ET.parse("world-art.svg")'
+      - name: Test complete app flows in real headless Chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/tranzit-serve.log 2>&1 &
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          if [ -z "$CHROME" ]; then echo "Chrome unavailable on runner"; exit 1; fi
+          sleep 1
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --user-data-dir="$(mktemp -d)" --virtual-time-budget=5000 --window-size=430,920 --dump-dom http://127.0.0.1:8765/tests/browser-smoke.html > /tmp/tranzit-ui-result.html 2>/tmp/tranzit-browser.log
+          if ! grep -q 'id="result">TRANZIT_UI_PASS<' /tmp/tranzit-ui-result.html; then
+            echo "Browser UI smoke failed:"
+            grep -o 'id="result">[^<]*' /tmp/tranzit-ui-result.html | tail -1 || true
+            tail -30 /tmp/tranzit-browser.log || true
+            exit 1
+          fi
+          echo "Browser UI flows passed"
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --hide-scrollbars --user-data-dir="$(mktemp -d)" --virtual-time-budget=1500 --window-size=390,844 --screenshot=/tmp/tranzit-portrait.png http://127.0.0.1:8765/ >/dev/null 2>/dev/null
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --hide-scrollbars --user-data-dir="$(mktemp -d)" --virtual-time-budget=1500 --window-size=844,390 --screenshot=/tmp/tranzit-landscape.png http://127.0.0.1:8765/ >/dev/null 2>/dev/null
+      - name: Save viewport evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: tranzit-mobile-ui-screens
+          path: |
+            /tmp/tranzit-portrait.png
+            /tmp/tranzit-landscape.png
+          retention-days: 7
+
