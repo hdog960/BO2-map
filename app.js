@@ -224,6 +224,27 @@ function mapCard(body,eyebrow,title){
  const pop=$("#mapContext");pop.hidden=false;
  pop.innerHTML='<div class="map-card-top"><span>'+esc(eyebrow)+'</span><button type="button" id="closeMapContext" aria-label="Close map information">✕</button></div><h3>'+esc(title)+'</h3>'+body;
 }
+function showCraftOnMap(buildId,partIndex=null,bench=false){
+ const build=buildById(buildId);if(!build)return;
+ state.craftSelected=build.id;
+ state.craftFocus=build.id;
+ state.mapKind="part";
+ const source=bench?D.items.find(i=>i.id===build.benchItemId):partIndex!==null?craftCatalog(build,partIndex)[0]:null;
+ const siteIds=partIndex!==null?craftLocations(build,partIndex):[];
+ state.selected=source?.id||null;
+ if(partIndex===null&&!bench)state.selected=null;
+ go("map");
+ // Whole-map overview shows all candidate part sites at once.
+ if(partIndex===null&&!bench||siteIds.length>1){
+  zoom=1;panX=0;panY=0;renderMapMarkers();applyTransform();
+  return;
+ }
+ const target=source?.zone||build.zone,z=zone(target);
+ if(z){
+  zoom=2.05;panX=360-z.x*zoom;panY=290-z.y*zoom;
+  clampMap();renderMapMarkers();applyTransform();
+ }
+}
 function context(key){
  if(key.startsWith("zone:")){
   const z=zone(key.slice(5));if(!z)return;
@@ -438,7 +459,19 @@ document.addEventListener("click",e=>{
 const b=e.target.closest("button,[data-zone],[data-room],[data-item],[data-group],[data-map-more],[data-map-item],[data-map-key]");
 if(!b)return;
 if(b.dataset.view){go(b.dataset.view);return;}
-if(b.dataset.mapKey){state.mapKind=b.dataset.mapKey;state.selected=null;save();renderMap();return;}
+if(b.dataset.craftSelect){state.craftSelected=b.dataset.craftSelect;save();renderCraftPanel();return;}
+if(b.dataset.craftMap){
+ state.craftFocus=b.dataset.craftMap==="all"?null:b.dataset.craftMap;
+ state.mapKind=state.craftFocus?"part":"all";state.selected=null;
+ if(state.craftFocus)state.craftSelected=state.craftFocus;
+ save();go("map");zoom=1;panX=0;panY=0;renderMapMarkers();applyTransform();return;
+}
+if(b.dataset.craftLocate){
+ const [id,idx]=b.dataset.craftLocate.split(":");
+ showCraftOnMap(id,Number(idx));return;
+}
+if(b.dataset.craftBench){showCraftOnMap(b.dataset.craftBench,null,true);return;}
+if(b.dataset.mapKey){state.craftFocus=null;state.mapKind=b.dataset.mapKey;state.selected=null;save();renderMap();return;}
 if(b.dataset.mapMore){if(!isAccidentalMapClick(e))context("more:"+b.dataset.mapMore);return;}
 if(b.dataset.mapItem){context(b.dataset.mapItem);return;}
 if(b.dataset.mapMode){state.mapMode=b.dataset.mapMode;state.mapFilters=MAP_MODES[state.mapMode].slice();save();renderMap();return;}
@@ -448,14 +481,25 @@ if(b.dataset.quickFind!==undefined){state.atlasFilter="all";$("#atlasSearch").va
 if(b.dataset.zoneTab){state.zone=b.dataset.zoneTab;state.floor=0;save();renderZones();return;}
 if(b.dataset.floor){state.floor=Number(b.dataset.floor);save();renderZones();return;}
 if(b.dataset.showItem){showItem(b.dataset.showItem);return;}
-if(b.dataset.findOnMap){const item=D.items.find(i=>i.id===b.dataset.findOnMap);if(item&&item.mapMode==="site-callout"){$("#modal").close();state.mapKind=item.type;state.selected="group:"+item.zone+"|"+item.type;go("map");}return;}
+if(b.dataset.findOnMap){
+ const item=D.items.find(i=>i.id===b.dataset.findOnMap);
+ if(item&&item.mapMode==="site-callout"){
+  $("#modal").close();
+  if(item.buildId){state.craftSelected=item.buildId;state.craftFocus=item.buildId;state.mapKind="part";state.selected=item.id;}
+  else{state.craftFocus=null;state.mapKind=item.type;state.selected="group:"+item.zone+"|"+item.type;}
+  go("map");
+ }return;
+}
 if(b.dataset.toggleItem){state.found[b.dataset.toggleItem]=!state.found[b.dataset.toggleItem];save();if($("#modal").open)$("#modal").close();renderMap();renderZones();renderAtlas();return;}
 if(b.dataset.openZone){if($("#modal").open)$("#modal").close();selectZone(b.dataset.openZone);return;}
 if(b.dataset.searchZone){state.atlasFilter="all";$("#atlasSearch").value=zone(b.dataset.searchZone).name;go("atlas");return;}
 if(b.dataset.side){state.side=b.dataset.side;save();renderQuest();return;}
 if(b.dataset.questDone!==undefined){const k=state.side+":"+b.dataset.questDone;state.done[k]=!state.done[k];save();renderQuest();return;}
-if(b.dataset.questZone){state.mapKind="all";state.selected="zone:"+b.dataset.questZone;go("map");return;}
-if(b.dataset.part){state.parts[b.dataset.part]=!state.parts[b.dataset.part];save();renderCrew();return;}
+if(b.dataset.questZone){state.craftFocus=null;state.mapKind="all";state.selected="zone:"+b.dataset.questZone;go("map");return;}
+if(b.dataset.part){
+ state.parts[b.dataset.part]=!state.parts[b.dataset.part];save();
+ renderCrew();renderCraftPanel();if(state.view==="map")renderMap();return;
+}
 if(b.dataset.room){const label=$("#roomNotice");if(label)label.textContent=b.dataset.room+" · This conceptual room is not an exact floor plan.";return;}
 if(b.dataset.group){if(!isAccidentalMapClick(e))context("group:"+b.dataset.group);return;}
 if(b.dataset.item){if(!isAccidentalMapClick(e))context(b.dataset.item);return;}
