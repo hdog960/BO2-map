@@ -372,7 +372,7 @@ body{background:var(--bg);color:var(--field-ink)}
 .map-tools button{min-width:44px;min-height:44px;width:44px;height:44px;border-radius:8px}
 .map-context{background:#202321f7;border:1px solid #a17a4e;border-radius:12px}
 .map-context .map-card-top button,.map-card-items button,.map-card-actions .button{min-height:44px}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px;padding:5px max(8px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:#181a19;border-top:1px solid #615238;z-index:30}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;transform:none!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px;padding:5px max(8px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:#181a19;border-top:1px solid #615238;z-index:30}
 .bottom-nav button{min-height:55px!important;border:1px solid #3b3d39;border-radius:8px;background:#232625;color:var(--field-ink);font-size:11px;font-weight:850;letter-spacing:.5px}
 .bottom-nav button.selected{background:#463726;color:#ffe1a2;box-shadow:inset 0 0 0 1px #b28b58}
 .bottom-nav button span{font-size:20px;line-height:1.1}
