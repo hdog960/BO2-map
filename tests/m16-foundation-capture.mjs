@@ -133,6 +133,26 @@ try {
     evidence.push({requested:{width,height},measured:detailInfo,screenshot:await capture(rpc,width,height,"location")});
     await evaluate(rpc,'document.querySelector("#closeMapContext")?.click()');
 
+
+    // M16.3: screenshot both complete source-authored routes and the saved crew
+    // disclosure in real mobile Chromium at *every* requested viewport.
+    await evaluate(rpc,'document.querySelector("nav [data-view=quest]").click()');
+    await evaluate(rpc,'document.querySelector("[data-side=maxis]").click()');
+    await sleep(110);
+    const maxisView=await evaluate(rpc,'({count:document.querySelectorAll("#questPanel [data-quest-step]").length,current:document.querySelectorAll("#questPanel .quest-step-details[open]").length,route:document.querySelector("[data-side=maxis]").getAttribute("aria-pressed")})');
+    if(maxisView.count!==6||maxisView.current!==1||maxisView.route!=="true")fail("Maxis source route screenshot contract failed "+width+"x"+height);
+    evidence.push({requested:{width,height},questRoute:"maxis",measured:maxisView,screenshot:await capture(rpc,width,height,"quest-maxis")});
+    await evaluate(rpc,'document.querySelector("[data-side=richtofen]").click()');
+    await sleep(110);
+    const richtofenView=await evaluate(rpc,'({count:document.querySelectorAll("#questPanel [data-quest-step]").length,current:document.querySelectorAll("#questPanel .quest-step-details[open]").length,route:document.querySelector("[data-side=richtofen]").getAttribute("aria-pressed")})');
+    if(richtofenView.count!==8||richtofenView.current!==1||richtofenView.route!=="true")fail("Richtofen source route screenshot contract failed "+width+"x"+height);
+    evidence.push({requested:{width,height},questRoute:"richtofen",measured:richtofenView,screenshot:await capture(rpc,width,height,"quest-richtofen")});
+    await evaluate(rpc,'document.querySelector("#questCrewDisclosure").open=true');
+    await sleep(80);
+    const crewView=await evaluate(rpc,'({open:document.querySelector("#questCrewDisclosure").open,people:document.querySelectorAll("#questCrewSummary .quest-roster-person").length})');
+    if(!crewView.open||crewView.people!==4)fail("Crew disclosure screenshot contract failed "+width+"x"+height);
+    evidence.push({requested:{width,height},questRoute:"crew-disclosure",measured:crewView,screenshot:await capture(rpc,width,height,"quest-crew")});
+    await evaluate(rpc,'document.querySelector("#questCrewDisclosure").open=false');
     if(width===390&&height===844){
       for(const name of extraViews){
         await evaluate(rpc,'document.querySelector("nav [data-view='+name+']").click()');
@@ -158,6 +178,26 @@ try {
         evidence.push({requested:{width,height},measured:sheet,screenshot:await capture(rpc,width,height,name)});
         await evaluate(rpc,'document.querySelector("#closeSheet").click()');
       }
+      // Genuine Chromium page reload, exercising the deployed v1 localStorage
+      // contract rather than merely seeding a Node VM with a parsed save.
+      const savedBefore=await evaluate(rpc,'localStorage.getItem("tranzit-atlas-save-v1")');
+      await evaluate(rpc,'document.querySelector("nav [data-view=quest]").click()');
+      await evaluate(rpc,'document.querySelector("[data-side=richtofen]").click()');
+      await evaluate(rpc,'document.querySelector("#questPanel [data-quest-done=\"0\"]").click()');
+      await evaluate(rpc,'(() => {const a=document.querySelector("#questPanel [data-assignment=\"1\"]");a.value="2";a.dispatchEvent(new Event("change",{bubbles:true}));return true})()');
+      await evaluate(rpc,'document.querySelector("#crewAccess").click()');
+      await evaluate(rpc,'(() => {const p=document.querySelector("#crewPanel [data-crew=\"2\"]");p.value="Atlas Test Pilot";p.dispatchEvent(new Event("input",{bubbles:true}));return true})()');
+      await evaluate(rpc,'document.querySelector("#closeSheet").click()');
+      await rpc("Page.reload",{ignoreCache:true});
+      await sleep(550);
+      await waitForApp(rpc);
+      const persisted=await evaluate(rpc,'(() => {const s=JSON.parse(localStorage.getItem("tranzit-atlas-save-v1"));return {side:s.side,done:s.done["richtofen:0"],assigned:s.assign["richtofen:1"],name:s.crew[2],maxis:document.querySelectorAll("#questPanel [data-quest-step]").length,step2:document.querySelector("#questPanel .quest-next")?.textContent.includes("STEP 2 OF 8"),active:document.querySelector("#view-quest").classList.contains("active")}})()');
+      if(persisted.side!=="richtofen"||!persisted.done||persisted.assigned!=="2"||persisted.name!=="Atlas Test Pilot"||persisted.maxis!==8||!persisted.step2||!persisted.active)fail("Real browser reload lost quest/crew progress: "+JSON.stringify(persisted));
+      evidence.push({requested:{width,height},questRoute:"real-reload",measured:persisted,screenshot:await capture(rpc,width,height,"quest-reload")});
+      await evaluate(rpc,'localStorage.setItem("tranzit-atlas-save-v1",'+JSON.stringify(savedBefore)+')');
+      await rpc("Page.reload",{ignoreCache:true});
+      await sleep(350);
+      await waitForApp(rpc);
     }
     console.log("Verified baseline Chromium viewport "+width+"x"+height+", 10 site pins, 130 records");
   }
@@ -165,11 +205,11 @@ try {
     baselineCommit:"80cdb6db12efb38edb41a3d43adbfec52ac5a99a",
     candidateCommit:process.env.GITHUB_SHA||"local PR branch",
     browser:"Chromium headless CDP; mobile emulation at deviceScaleFactor=1; not physical iPhone",
-    milestone:"M16.2 map redesign",
+    milestone:"M16.3 Easter Egg redesign",
     screenshotCount:evidence.length,records:evidence
   },null,2)+"\n");
-  if(evidence.length!==20)fail("Expected five map + five filters + five details + five secondary views");
-  console.log("M16_FOUNDATION_CAPTURE_PASS "+evidence.length+" genuine screenshots");
+  if(evidence.length!==36)fail("Expected 20 M16.2 source views plus 15 route/Crew captures at all five sizes and 1 genuine reload");
+  console.log("M16_3_QUEST_CAPTURE_PASS "+evidence.length+" genuine screenshots, including independent routes and real reload");
 }finally {
   try{socket?.close();}catch{}
   try{browser?.kill("SIGTERM");}catch{}
