@@ -191,10 +191,44 @@
    click('nav button[data-view="quest"]');
    check(doc.querySelector("#view-quest").classList.contains("active"),"Easter Egg opens independently from map");
    check(doc.querySelector("#view-quest h2").textContent.includes("Easter Egg Walkthrough"),"walkthrough heading");
+   // M16.3 — the selected route is an interactive, accessible state; one
+   // objective is open by default and every other step remains available.
+   check(doc.querySelectorAll('#questPanel [data-quest-step]').length===6,"Maxis preserves six source-authored objectives");
+   check(doc.querySelector('#questPanel .quest-next')?.textContent.includes("STEP 1 OF 6"),"first unfinished Maxis objective is prominent");
+   check(doc.querySelectorAll('#questPanel .quest-step-details[open]').length===1,"only current objective details open by default");
+   check(!doc.querySelector("#questPrerequisites").open,"prerequisites stay compact but accessible");
+   click("#questPrerequisites summary");
+   check(doc.querySelector("#questPrerequisites").open,"source-backed setup requirements expand");
+   click("#questPrerequisites summary");
+   check(!doc.querySelector("#questPrerequisites").open,"setup requirements collapse again");
+   const crewDisclosure=doc.querySelector("#questCrewDisclosure");
+   check(!crewDisclosure.open,"Crew disclosure starts collapsed");
+   click("#questCrewDisclosure summary");
+   check(crewDisclosure.open,"Crew disclosure expands");
+   check(doc.querySelectorAll("#questCrewSummary .quest-roster-person").length===4,"four saved player slots visible");
+   click("#questCrewDisclosure summary");
+   check(!crewDisclosure.open,"Crew roster can collapse");
    click('[data-side="richtofen"]');
    check(doc.querySelector("#questPanel").textContent.includes("Four-player simultaneous EMP throw"),"Richtofen checklist");
    click('[data-quest-done="0"]');
    check(doc.querySelector("#questPanel").textContent.includes("1/8"),"Richtofen progress check");
+   check(doc.querySelectorAll('#questPanel [data-quest-step]').length===8,"Richtofen retains eight distinct steps");
+   check(doc.querySelector("#questPanel .quest-next")?.textContent.includes("STEP 2 OF 8"),"next incomplete step advances after manual completion");
+   check(doc.querySelector('#questPanel [data-quest-step="0"] .quest-step-details').open===false,"completed objective is collapsed");
+   check(doc.querySelector('#questPanel [data-quest-step="1"] .quest-step-details').open===true,"current objective instructions expand");
+   check(doc.querySelector("#questPanel [data-quest-step='0'] .tick").getAttribute("aria-pressed")==="true","completed checkbox is accessible");
+   const assignR=doc.querySelector('#questPanel [data-assignment="1"]');
+   check(!!assignR,"current step exposes player assignment");
+   assignR.value="2";
+   assignR.dispatchEvent(new win.Event("change",{bubbles:true}));
+   check(JSON.parse(win.localStorage.getItem("tranzit-atlas-save-v1")).assign["richtofen:1"]==="2","Richtofen player assignment persists using v1 save key");
+   check(doc.querySelector("#questCrewSummary").textContent.includes("1 of 8 Richtofen objectives assigned"),"Crew summary updates after assignment");
+   click('[data-side="maxis"]');
+   check(doc.querySelectorAll('#questPanel [data-quest-step]').length===6,"Maxis path is independent from Richtofen");
+   check(!doc.querySelector('#questPanel [data-quest-step="0"]').classList.contains("done"),"Richtofen completion did not mark Maxis");
+   click('[data-side="richtofen"]');
+   check(doc.querySelector("#questPanel").textContent.includes("1/8"),"Richtofen progress preserved across route switch");
+
    click('[data-quest-zone="power"]');
    check(doc.querySelector("#view-map").classList.contains("active"),"Easter egg location button returns to map");
    check(doc.querySelector("#mapContext").textContent.includes("Power Station"),"correct map location sheet opens");
@@ -219,6 +253,8 @@
    click("#closeSheet");
    check(doc.querySelector("#auxSheet").hidden,"sheet close/back restores main screen");
    click('nav button[data-view="quest"]');
+   click("#questCrewDisclosure summary");
+   check(doc.querySelector("#questCrewDisclosure").open,"Crew opens from an actual visible disclosure");
    click("#crewAccess");
    check(!doc.querySelector("#auxSheet").hidden,"Crew secondary panel opens from Easter Egg");
    check(doc.querySelectorAll("details.build-card[data-build]").length===9,"nine buildables preserved");
@@ -232,6 +268,9 @@
    check(parseFloat(win.getComputedStyle(focusClose).minHeight)>=44,"back/close target at least 44 pixels");
    click("#closeSheet");
    check(doc.querySelector("#auxSheet").hidden,"Crew panel dismisses without lost parts");
+   click('nav button[data-view="quest"]');
+   check(doc.querySelector("#questPanel").textContent.includes("1/8"),"quest completion survives opening and closing Crew");
+   check(JSON.parse(win.localStorage.getItem("tranzit-atlas-save-v1")).assign["richtofen:1"]==="2","assigned player survives Crew navigation");
    click("#globalFind");
    check(doc.body.classList.contains("sheet-open"),"secondary search locks background scroll");
    doc.dispatchEvent(new win.KeyboardEvent("keydown",{key:"Escape",bubbles:true}));
