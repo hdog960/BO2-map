@@ -150,7 +150,7 @@ function renderMapMarkers(){
    pins.appendChild(g);
   }
  });
- positionMapOverlays();
+ positionMapOverlays();lastMarkerBand=mapMarkerBand();
 }
 function renderMap(){
  drawMapKey();renderMapLabels();renderMapMarkers();
@@ -186,6 +186,7 @@ function context(key){
  save();
 }
 let mapMetrics=null,mapRaf=0,lastMarkerBand=-1,lastOverlayZoom=NaN,overlayDirty=true;
+let cameraFrames=0,overlayRefreshes=0,gestureEvents=0;
 function refreshMapMetrics(){
  const svg=$("#worldMap"),r=svg.getBoundingClientRect();
  const width=r.width||svg.clientWidth||$("#mapViewport").clientWidth||MAP_W;
@@ -208,11 +209,12 @@ function positionMapOverlays(){
   const x=Number(node.dataset.worldX),y=Number(node.dataset.worldY);
   node.setAttribute("transform","translate("+x+" "+y+") scale("+fixedSize.toFixed(5)+")");
  }
+ overlayRefreshes++;
  lastOverlayZoom=zoom;overlayDirty=false;
 }
 function mapMarkerBand(){return zoom>1.6?2:zoom>1.24?1:0;}
 function applyTransform(){
- mapRaf=0;
+ mapRaf=0;cameraFrames++;
  const profiler=window.TZ_SCAN,stamp=profiler?.active?performance.now():0;
  const band=mapMarkerBand();
  if(band!==lastMarkerBand){lastMarkerBand=band;renderMapMarkers();}
@@ -405,6 +407,7 @@ vp.addEventListener("pointerdown",e=>{
 });
 vp.addEventListener("pointermove",e=>{
  if(!pointers.has(e.pointerId))return;
+ gestureEvents++;
  const prev=pointers.get(e.pointerId),at=pointerToMap(e);
  if(pointers.size===1){
   if(!dragged&&Math.hypot(at.x-prev.startX,at.y-prev.startY)>6){dragged=true;captureDrag(e);}
@@ -449,6 +452,7 @@ $("#modal").addEventListener("click",e=>{if(e.target===$("#modal"))$("#modal").c
 // Read-only diagnostic view; excludes player names, saved match progress and all private data.
 window.TZ_MAP_TELEMETRY=(light=false)=>({
  zoom:Number(zoom.toFixed(3)),panX:Number(panX.toFixed(1)),panY:Number(panY.toFixed(1)),
+ cameraFrames,overlayRefreshes,gestureEvents,
  markers:light?undefined:document.querySelectorAll("#mapPins [data-world-x]").length,
  labels:light?undefined:document.querySelectorAll("#mapLabels [data-world-x]").length,
  expanded:light?undefined:document.getElementById("interactiveMap").classList.contains("map-expanded")
