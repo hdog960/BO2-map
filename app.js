@@ -54,6 +54,18 @@ const MAP_SLOTS={
  bridge:[[484,255],[541,248]]
 };
 let zoom=1,panX=0,panY=0,pointers=new Map(),dragged=false,lastDrag=0;
+
+const MAP_WORLD_LABELS=[
+ ["FARM",170,145],["DINER / GARAGE",503,12],["TOWN CENTER",358,140],
+ ["BUS DEPOT",564,376],["POWER STATION",105,479],["THE TUNNEL",602,138],
+ ["OBELISK / PYLON",205,183],["PROTOTYPE / NACHT",70,161],
+ ["CABIN",255,293],["BRIDGE",495,188]
+];
+const MAP_TEXT_CORNER=[
+ ["GREEN RUN / TRANZIT",19,26],["HAND-DRAWN WORLD ATLAS",19,39],
+ ["REFERENCE GEOGRAPHY · NOT TO SCALE",496,560]
+];
+const MAP_W=720,MAP_H=580;
 if(!state.mapKind||!(state.mapKind==="all"||MAP_SYMBOLS[state.mapKind]))state.mapKind="all";
 function svgEl(type,attrs,children){
  const el=document.createElementNS(svgNS,type);
@@ -89,29 +101,44 @@ function markerSpot(z,index){
  return [Math.max(22,Math.min(699,z.x+Math.cos(angle)*r)),Math.max(26,Math.min(552,z.y+Math.sin(angle)*r))];
 }
 function pinGroup(x,y,attrs){
- const group=svgEl("g",{"class":"pin atlas-pin","role":"button",tabindex:"0",...attrs});
- group.appendChild(svgEl("circle",{cx:x,cy:y,r:19,fill:"transparent","pointer-events":"all","class":"pin-touch"}));
+ // Items are attached to geography via data coordinates. Their SVG shapes live at
+ // local 0,0 so the camera can move their anchors without scaling their graphics.
+ const group=svgEl("g",{"class":"pin atlas-pin","role":"button",tabindex:"0","data-world-x":x,"data-world-y":y,...attrs});
+ group.appendChild(svgEl("circle",{cx:0,cy:0,r:23,fill:"transparent","pointer-events":"all","class":"pin-touch"}));
  return group;
+}
+function renderMapLabels(){
+ const labels=$("#mapLabels");labels.textContent="";
+ for(const [text,x,y] of MAP_WORLD_LABELS){
+  const group=svgEl("g",{"class":"map-location-label","data-world-x":x,"data-world-y":y});
+  group.append(svgEl("text",{x:0,y:0,"text-anchor":"middle","class":"fixed-world-label"},text));
+  labels.appendChild(group);
+ }
+ for(const [text,x,y] of MAP_TEXT_CORNER){
+  const group=svgEl("g",{"class":"map-location-label map-corner-label","data-world-x":x,"data-world-y":y});
+  group.append(svgEl("text",{x:0,y:0,"text-anchor":"start","class":"fixed-world-label"},text));
+  labels.appendChild(group);
+ }
 }
 function renderMapMarkers(){
  const pins=$("#mapPins");pins.textContent="";
  D.zones.forEach(z=>{
   const site=pinGroup(z.x,z.y,{"data-zone":z.id,"aria-label":(z.stop?"Bus stop "+z.stop+" ":"")+z.name});
-  const main=svgEl("circle",{cx:z.x,cy:z.y,r:z.stop?16:13,fill:z.stop?"#eac182":"#88c5b7","class":"site-pin"});
-  const number=svgEl("text",{x:z.x,y:z.y+5,"font-size":z.stop?14:11,"font-weight":"900","text-anchor":"middle",fill:"#101c1f"},z.stop?z.stop:"◆");
+  const main=svgEl("circle",{cx:0,cy:0,r:z.stop?16:13,fill:z.stop?"#eac182":"#88c5b7","class":"site-pin"});
+  const number=svgEl("text",{x:0,y:5,"font-size":z.stop?14:11,"font-weight":"900","text-anchor":"middle",fill:"#101c1f"},z.stop?z.stop:"◆");
   const title=svgEl("title",{},z.name+" — tap to inspect all items");
   site.append(main,number,title);pins.appendChild(site);
   const data=mapItemsFor(z.id);
   data.pins.forEach((item,index)=>{
    const [x,y]=markerSpot(z,index),type=item.type,code=MAP_SYMBOLS[type];
    const group=pinGroup(x,y,{"data-item":item.id,"class":"pin atlas-pin item-pin","aria-label":item.name+" at "+z.name});
-   const radius=zoom>1.6?13:14;
-   group.append(svgEl("rect",{x:x-radius,y:y-radius,width:radius*2,height:radius*2,rx:7,fill:category(type).color,stroke:state.selected===item.id?"#fff":"#10202a","stroke-width":state.selected===item.id?3:1.8}));
-   group.append(svgEl("text",{x:x,y:y+4.6,fill:"#0e2327","font-size":"14","font-weight":"900","text-anchor":"middle"},code));
+   const radius=14;
+   group.append(svgEl("rect",{x:-radius,y:-radius,width:radius*2,height:radius*2,rx:7,fill:category(type).color,stroke:state.selected===item.id?"#fff":"#10202a","stroke-width":state.selected===item.id?3:1.8}));
+   group.append(svgEl("text",{x:0,y:4.6,fill:"#0e2327","font-size":"14","font-weight":"900","text-anchor":"middle"},code));
    if(zoom>1.24||state.mapKind!=="all"){
     const short=item.name.length>17?item.name.slice(0,15)+"…":item.name;
-    const right=x>525?false:true,anchor=right?"start":"end",lx=x+(right?19:-19);
-    const label=svgEl("text",{x:lx,y:y+3.5,"class":"item-map-label","text-anchor":anchor},short);
+    const right=x>525?false:true,anchor=right?"start":"end",lx=right?19:-19;
+    const label=svgEl("text",{x:lx,y:3.5,"class":"item-map-label","text-anchor":anchor},short);
     group.append(label);
    }
    group.append(svgEl("title",{},item.name+" — "+item.room+" — Tap for details"));
@@ -119,15 +146,16 @@ function renderMapMarkers(){
   });
   if(data.hidden>0){
    const [x,y]=markerSpot(z,data.pins.length),g=pinGroup(x,y,{"data-map-more":z.id,"aria-label":data.hidden+" more map items near "+z.name});
-   g.append(svgEl("rect",{x:x-19,y:y-12,width:38,height:24,rx:9,fill:"#172c36",stroke:"#f0c582","stroke-width":2}));
-   g.append(svgEl("text",{x,y:y+4,"font-size":11,"font-weight":"850","text-anchor":"middle",fill:"#f6d69b"},"+"+data.hidden));
+   g.append(svgEl("rect",{x:-19,y:-12,width:38,height:24,rx:9,fill:"#172c36",stroke:"#f0c582","stroke-width":2}));
+   g.append(svgEl("text",{x:0,y:4,"font-size":11,"font-weight":"850","text-anchor":"middle",fill:"#f6d69b"},"+"+data.hidden));
    g.append(svgEl("title",{},data.hidden+" more entries at "+z.name+" — tap to list all"));
    pins.appendChild(g);
   }
  });
+ positionMapOverlays();
 }
 function renderMap(){
- drawMapKey();renderMapMarkers();
+ drawMapKey();renderMapLabels();renderMapMarkers();
  if(state.selected)context(state.selected);else closeMapContext();
 }
 function closeMapContext(){
