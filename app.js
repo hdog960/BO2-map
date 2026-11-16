@@ -41,18 +41,8 @@ const svgNS="http://www.w3.org/2000/svg";
 const MAP_SYMBOLS={perk:"P",weapon:"W",part:"+",bench:"⚒",paid:"$",turbine:"T",special:"!",box:"?",secret:"★",goal:"⚡"};
 const MAP_LABELS={perk:"Perks",weapon:"Wall guns",part:"Parts",bench:"Workbenches",paid:"Paid doors",turbine:"Turbine doors",special:"Special access",box:"Mystery Box",secret:"Secrets",goal:"Easter egg"};
 const MAP_PRIORITY={perk:0,goal:1,box:2,bench:3,turbine:4,paid:5,special:6,weapon:7,part:8,secret:9};
-const MAP_SLOTS={
- depot:[[509,283],[629,287],[626,358],[505,358],[583,256],[676,314],[556,390]],
- diner:[[446,104],[539,103],[587,83],[439,46],[571,45],[488,117],[623,116]],
- farm:[[215,89],[217,128],[110,148],[205,162],[240,48],[78,83],[114,46]],
- town:[[291,162],[418,161],[409,257],[298,266],[351,284],[276,230],[432,219]],
- power:[[129,399],[166,435],[134,489],[37,486],[53,375],[182,478]],
- pylon:[[211,274],[278,238],[177,172],[283,196]],
- nacht:[[53,259],[89,260],[31,159]],
- tunnel:[[604,160],[671,198],[637,114]],
- cabin:[[281,322],[267,355],[216,365]],
- bridge:[[484,255],[541,248]]
-};
+// Category badges are callouts connected to the verified *site*, not in-room pins.
+// See data.js item.mapMode and the complete placement audit in AUDIT_ICON_PLACEMENT.md.
 // Start zoomed enough to actually explore the map with a finger; Reset still fits all.
 let zoom=1.7,panX=-252,panY=-203,pointers=new Map(),dragged=false,lastDrag=0,lastDragPoint=null;
 let nativeTouchSeen=false,nativeTouches=new Map(),nativeDrag=false;
@@ -73,33 +63,44 @@ function svgEl(type,attrs,children){
  if(children!==undefined)el.textContent=String(children);
  return el;
 }
+function isInMappedSite(item,zoneId){
+ return item.mapMode==="site-callout"&&(item.zone===zoneId||item.alternateZones?.includes(zoneId));
+}
+function placedItems(zoneId,type=null){
+ return D.items.filter(i=>isInMappedSite(i,zoneId)&&(!type||i.type===type));
+}
 function drawMapKey(){
- const counts={};for(const type of Object.keys(MAP_SYMBOLS))counts[type]=D.items.filter(i=>i.type===type).length;
- const types=[["all","ALL","All",D.items.length],...Object.keys(MAP_SYMBOLS).map(type=>[type,MAP_SYMBOLS[type],MAP_LABELS[type],counts[type]])];
+ const list=D.items.filter(i=>i.mapMode==="site-callout");
+ const types=[["all","ALL","All",list.length],...Object.keys(MAP_SYMBOLS).map(type=>[type,MAP_SYMBOLS[type],MAP_LABELS[type],list.filter(i=>i.type===type).length])];
  $("#mapLegend").innerHTML=types.map(([kind,symbol,title,count])=>{
   const color=kind==="all"?"#ecd09a":category(kind).color,active=state.mapKind===kind;
-  return '<button type="button" class="legend-button '+(active?"active":"")+'" data-map-key="'+kind+'" aria-pressed="'+active+'"><span class="legend-symbol" style="background:'+color+'">'+esc(symbol)+'</span><span class="legend-label">'+esc(title)+'</span><span class="legend-count">'+count+'</span></button>';
+  return '<button type="button" class="legend-button '+(active?"active":"")+'" data-map-key="'+kind+'" aria-pressed="'+active+'" title="Site-based category marker, not an exact object coordinate"><span class="legend-symbol" style="background:'+color+'">'+esc(symbol)+'</span><span class="legend-label">'+esc(title)+'</span><span class="legend-count">'+count+'</span></button>';
  }).join("");
 }
 function mapItemsFor(zoneId){
- const candidates=D.items.filter(item=>item.zone===zoneId&&item.type!=="stop"&&(state.mapKind==="all"||state.mapKind===item.type));
- candidates.sort((a,b)=>(MAP_PRIORITY[a.type]??10)-(MAP_PRIORITY[b.type]??10));
- const dense=zoom>1.6, mid=zoom>1.24;
- const limit=state.mapKind==="all"?(dense?8:mid?4:2):(dense?12:6);
+ const items=placedItems(zoneId,state.mapKind==="all"?null:state.mapKind);
+ const groups=Object.keys(MAP_SYMBOLS).map(type=>({type,items:items.filter(i=>i.type===type)})).filter(g=>g.items.length);
+ groups.sort((a,b)=>(MAP_PRIORITY[a.type]??10)-(MAP_PRIORITY[b.type]??10));
+ const picked=groups.slice(0,state.mapKind==="all"?(zoom>1.6?6:zoom>1.24?4:2):groups.length);
  const selected=state.selected&&D.items.find(i=>i.id===state.selected);
- const picked=candidates.slice(0,limit);
- // Search results can always be highlighted directly on the map even when omitted from the overview.
- if(selected&&selected.zone===zoneId&&!picked.some(i=>i.id===selected.id)&&(state.mapKind==="all"||state.mapKind===selected.type)){
-  if(picked.length===limit)picked.pop();picked.push(selected);
+ if(selected&&isInMappedSite(selected,zoneId)&&!picked.some(g=>g.type===selected.type)){
+  const wanted=groups.find(g=>g.type===selected.type);
+  if(wanted){if(picked.length>=6)picked.pop();picked.push(wanted);}
  }
- return {pins:picked,hidden:Math.max(0,candidates.length-picked.length),total:candidates.length};
+ const displayedItems=picked.reduce((n,g)=>n+g.items.length,0);
+ return {groups:picked,hidden:items.length-displayedItems,total:items.length};
 }
-function markerSpot(z,index){
- const slots=MAP_SLOTS[z.id]||[];
- if(index<slots.length)return slots[index];
- const extra=index-slots.length;
- const angle=extra*2.399963+0.5,r=55+Math.floor(extra/9)*19;
- return [Math.max(22,Math.min(699,z.x+Math.cos(angle)*r)),Math.max(26,Math.min(552,z.y+Math.sin(angle)*r))];
+function calloutSpot(z,index){
+ // Every badge is visually tethered to the central verified site marker.
+ // Badge offsets are *interface layout*, never alleged game coordinates.
+ const orientations={
+  depot:0,diner:2,farm:1,town:2,power:0,
+  pylon:1,nacht:0,tunnel:2,cabin:0,bridge:1
+ };
+ const base=orientations[z.id]||0;
+ const offsets=[[40,-29],[40,30],[-40,-29],[-40,30],[0,-55],[0,55],[-59,0],[59,0]];
+ const off=offsets[(index+base)%offsets.length];
+ return [Math.max(28,Math.min(690,z.x+off[0])),Math.max(30,Math.min(546,z.y+off[1]))];
 }
 function pinGroup(x,y,attrs){
  // Items are attached to geography via data coordinates. Their SVG shapes live at
@@ -127,29 +128,35 @@ function renderMapMarkers(){
   const site=pinGroup(z.x,z.y,{"data-zone":z.id,"aria-label":(z.stop?"Bus stop "+z.stop+" ":"")+z.name});
   const main=svgEl("circle",{cx:0,cy:0,r:z.stop?16:13,fill:z.stop?"#eac182":"#88c5b7","class":"site-pin"});
   const number=svgEl("text",{x:0,y:5,"font-size":z.stop?14:11,"font-weight":"900","text-anchor":"middle",fill:"#101c1f"},z.stop?z.stop:"◆");
-  const title=svgEl("title",{},z.name+" — tap to inspect all items");
+  const title=svgEl("title",{},z.name+" — tap to inspect items in this area");
   site.append(main,number,title);pins.appendChild(site);
   const data=mapItemsFor(z.id);
-  data.pins.forEach((item,index)=>{
-   const [x,y]=markerSpot(z,index),type=item.type,code=MAP_SYMBOLS[type];
-   const group=pinGroup(x,y,{"data-item":item.id,"class":"pin atlas-pin item-pin","aria-label":item.name+" at "+z.name});
+  data.groups.forEach((categoryGroup,index)=>{
+   const [x,y]=calloutSpot(z,index),type=categoryGroup.type,count=categoryGroup.items.length;
+   const dx=z.x-x,dy=z.y-y;
+   // A leader line clearly identifies these as site-linked category callouts.
+   const leader=svgEl("line",{x1:x,y1:y,x2:z.x,y2:z.y,"stroke":"#debe84","stroke-width":1.25,"stroke-dasharray":"3 5",opacity:.66,"pointer-events":"none"});
+   pins.appendChild(leader);
+   const group=pinGroup(x,y,{"data-group":z.id+"|"+type,"class":"pin atlas-pin item-pin site-callout",
+      "aria-label":count+" "+MAP_LABELS[type]+" associated with "+z.name+"; tap for rooms, not exact map coordinate"});
    const radius=14;
-   group.append(svgEl("rect",{x:-radius,y:-radius,width:radius*2,height:radius*2,rx:7,fill:category(type).color,stroke:state.selected===item.id?"#fff":"#10202a","stroke-width":state.selected===item.id?3:1.8}));
-   group.append(svgEl("text",{x:0,y:4.6,fill:"#0e2327","font-size":"14","font-weight":"900","text-anchor":"middle"},code));
+   group.append(svgEl("rect",{x:-radius,y:-radius,width:radius*2,height:radius*2,rx:7,fill:category(type).color,stroke:"#16262d","stroke-width":2}));
+   group.append(svgEl("text",{x:0,y:4.6,fill:"#0e2327","font-size":"14","font-weight":"900","text-anchor":"middle"},MAP_SYMBOLS[type]));
+   if(count>1)group.append(svgEl("text",{x:13,y:-11,"class":"callout-count","text-anchor":"middle"},count));
    if(zoom>1.24||state.mapKind!=="all"){
-    const short=item.name.length>17?item.name.slice(0,15)+"…":item.name;
-    const right=x>525?false:true,anchor=right?"start":"end",lx=right?19:-19;
-    const label=svgEl("text",{x:lx,y:3.5,"class":"item-map-label","text-anchor":anchor},short);
-    group.append(label);
+    const right=x<525,anchor=right?"start":"end",lx=right?19:-19;
+    group.append(svgEl("text",{x:lx,y:3.5,"class":"item-map-label","text-anchor":anchor},MAP_LABELS[type]));
    }
-   group.append(svgEl("title",{},item.name+" — "+item.room+" — Tap for details"));
+   group.append(svgEl("title",{},MAP_LABELS[type]+" at "+z.name+" — "+count+" entries. Tap for exact room descriptions."));
    pins.appendChild(group);
   });
   if(data.hidden>0){
-   const [x,y]=markerSpot(z,data.pins.length),g=pinGroup(x,y,{"data-map-more":z.id,"aria-label":data.hidden+" more map items near "+z.name});
+   const [x,y]=calloutSpot(z,data.groups.length);
+   const g=pinGroup(x,y,{"data-map-more":z.id,"aria-label":data.hidden+" other site-linked entries at "+z.name});
+   pins.append(svgEl("line",{x1:x,y1:y,x2:z.x,y2:z.y,stroke:"#debe84","stroke-width":1,"stroke-dasharray":"3 5",opacity:.6,"pointer-events":"none"}));
    g.append(svgEl("rect",{x:-19,y:-12,width:38,height:24,rx:9,fill:"#172c36",stroke:"#f0c582","stroke-width":2}));
    g.append(svgEl("text",{x:0,y:4,"font-size":11,"font-weight":"850","text-anchor":"middle",fill:"#f6d69b"},"+"+data.hidden));
-   g.append(svgEl("title",{},data.hidden+" more entries at "+z.name+" — tap to list all"));
+   g.append(svgEl("title",{},data.hidden+" additional site-linked entries at "+z.name+" — opens item list"));
    pins.appendChild(g);
   }
  });
