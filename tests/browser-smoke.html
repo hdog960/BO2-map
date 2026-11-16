@@ -20,7 +20,7 @@
    check((await fetch("../world-art.svg")).ok,"local map artwork is served");
 
    // Interactive camera regression: world geometry zooms, on-map graphics do not.
-   const fixedPin=doc.querySelector('#mapPins [data-zone="farm"] .site-pin');
+   let fixedPin=doc.querySelector('#mapPins [data-zone="farm"] .site-pin');
    const fixedLabel=doc.querySelector('#mapLabels .fixed-world-label');
    check(fixedPin&&fixedLabel,"pin and fixed world label are present");
    const iconWidth=fixedPin.getBoundingClientRect().width;
@@ -29,6 +29,7 @@
    const root=doc.querySelector("#worldMap");
    const preWidth=root.getBoundingClientRect().width;
    click("#zoomIn");click("#zoomIn");
+   fixedPin=doc.querySelector('#mapPins [data-zone="farm"] .site-pin');
    check(terrain.getAttribute("transform").includes("scale("),"zoom transforms terrain group");
    check(Math.abs(fixedPin.getBoundingClientRect().width-iconWidth)<1.2,"icon physical size must not grow on zoom");
    check(Math.abs(fixedLabel.getBoundingClientRect().height-labelHeight)<1.2,"map label physical size must stay fixed on zoom");
@@ -49,6 +50,7 @@
    send("pointerup",62,px+90,py);
    send("pointerup",61,px-45,py);
    check(terrain.getAttribute("transform")!==cameraBefore,"pinch gesture updates the world camera");
+   fixedPin=doc.querySelector('#mapPins [data-zone="farm"] .site-pin');
    check(Math.abs(fixedPin.getBoundingClientRect().width-iconWidth)<1.2,"pinch zoom keeps icons a fixed size");
    check(Math.abs(fixedLabel.getBoundingClientRect().height-labelHeight)<1.2,"pinch zoom keeps map labels fixed size");
    click("#resetMap");
