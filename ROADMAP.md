@@ -72,3 +72,25 @@ Delivered:
 3. Choose Maxis or Richtofen, complete one quest checklist step and ensure the Map shortcut advances.
 4. In Crew, enter names, check one Jet Gun part, reload, and verify it remains checked.
 5. Try portrait, landscape and airplane mode after an online load. Report any contrast, tap or scrolling issues with screenshots.
+
+
+## M10 — Map-first interactive atlas based on player feedback
+
+**Direction:** The main screen is a real clickable world map, not a dashboard. Its geography remains based on the user-provided Afrochubman/BradyGames reference; the original map illustration remains independent. The entire Easter egg is in the separately labeled **EASTER EGG** tab.
+
+Completed:
+- Removed front-page map preset buttons and the mission teaser that pushed the actual map down.
+- Added an **always-visible MAP KEY**, with colored and lettered symbols for all ten categories: perks, wall buys, parts, crafting benches, cash doors, Turbine doors, special entrances, Mystery Boxes, hidden secrets and Easter egg locations. Key options focus corresponding items.
+- Added site-based **individually tappable item icons** over the world map (alongside numbered bus-stop markers). Each icon opens in-map details showing item name, known room, price or prerequisite and notes.
+- Added an obvious **+N extra items** marker for dense regions. Selecting it opens a directly tappable on-map list of every item at the relevant site; no reference item is silently dropped or represented as a fictional exact coordinate.
+- Default overview displays a manageable selection of high-value points of interest; focusing the legend or zooming reveals more. Every one of the existing catalog entries is reachable by a site marker or its +N index.
+- Added inline found/opened tracking in the map detail card, a closing control, and an expanded fullscreen map view.
+- Linked Find results to highlighted map information and changed the Easter egg's Locate buttons to open the corresponding map landmark, not an unrelated floor-plan screen.
+- Kept all existing content, both quest paths, local saved progress and 9 buildable trackers.
+- Added native, scripted Chrome interactions checking SVG marker taps, map-key filtering, popover details, fullscreen, separate Easter egg tab, search and site/crew navigation. Updated source-level tests.
+- Captured portrait and landscape headless Chromium snapshots and inspected portrait rendering. Corrected map-key labels wrapping badly on narrow screens.
+- Versioned offline cache to v5 to refresh the interface in installed PWAs.
+
+**Truth boundary:** Map icons are anchored to known sites; they are not measured game-map pickup coordinates. Randomized spawns and global profile secrets retain area-level descriptions. Indoor floor plans remain conceptual. Real physical-iPhone and gameplay verification must not be claimed until performed.
+
+Next work: precise line-drawn interiors, spatially verified per-part room placements, lamp locations for the four-player EMP finale, direct field feedback on click targets/legibility, and offline airplane-mode confirmation.
