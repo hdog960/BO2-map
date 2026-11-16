@@ -416,3 +416,8 @@ body.sheet-open{overflow:hidden;touch-action:pan-y}
  .sheet-bar{padding:3px 12px}
  .aux-sheet .view{padding:10px 14px}
 }
+
+/* M16.1 minimum interactive size, including secondary index and room sheets. */
+.chip,.quick-find button,.floor-toggle button,.choice button,.craft-map-choice,
+.site-picker select,.site-picker button,.crew-card input,.filterbar button,
+.map-card-items button,.map-card-actions button{min-height:44px}
