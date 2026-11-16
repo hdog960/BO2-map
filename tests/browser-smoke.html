@@ -14,7 +14,7 @@
    check(doc.querySelector("#view-map").classList.contains("active"),"interactive map must be initial view");
    check(doc.querySelector("#mapLegend"),"map key must exist");
    check(doc.querySelectorAll("#mapLegend [data-map-key]").length===11,"all ten icon categories plus All");
-   check(doc.querySelectorAll("#mapPins [data-item]").length>=15,"real individually clickable item pins should be shown on map");
+   check(doc.querySelectorAll("#mapPins [data-group]").length>=12,"site-linked category pins should be shown without fake item coordinates");
    check(doc.querySelectorAll("#mapPins [data-zone]").length===10,"all ten mapped site pins");
    check(doc.querySelector("#worldMap image").getAttribute("href")==="./world-art.svg","reference vector artwork is present");
    check((await fetch("../world-art.svg")).ok,"local map artwork is served");
@@ -109,14 +109,16 @@
    check(Math.abs(fixedPin.getBoundingClientRect().width-iconWidth)<1.2,"native touch pinch keeps icon size constant");
    click("#resetMap");
 
-   click('#mapPins [data-item^="perk-"]');
-   check(!doc.querySelector("#mapContext").hidden,"tapping a perk icon opens map sheet");
-   check(doc.querySelector("#mapContext").textContent.includes("Where:"),"map item sheet has location details");
+   click('#mapPins [data-group="depot|perk"]');
+   check(!doc.querySelector("#mapContext").hidden,"tapping a perk category opens location-index sheet");
+   check(doc.querySelector("#mapContext").textContent.includes("Quick Revive"),"depot's real perk is in site list");
+   click('#mapContext [data-map-item^="perk-depot-quick-revive"]');
+   check(doc.querySelector("#mapContext").textContent.includes("Where:"),"individual item sheet contains real room description");
    click("#closeMapContext");
    check(doc.querySelector("#mapContext").hidden,"map sheet dismisses cleanly");
    click('[data-map-key="turbine"]');
    check(doc.querySelector('[data-map-key="turbine"]').getAttribute("aria-pressed")==="true","turbine category is active");
-   check(doc.querySelectorAll('#mapPins [data-item^="turbine-"]').length>=2,"turbine doors shown on the map");
+   check(doc.querySelectorAll('#mapPins [data-group$="|turbine"]').length>=3,"Turbine door category badges are linked to affected sites");
    click('[data-map-key="all"]');
    check(doc.querySelector('[data-map-key="all"]').getAttribute("aria-pressed")==="true","All resets map key");
    click('#mapPins [data-map-more="town"]');
