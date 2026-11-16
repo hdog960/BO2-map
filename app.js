@@ -56,15 +56,12 @@ const MAP_SLOTS={
 let zoom=1,panX=0,panY=0,pointers=new Map(),dragged=false,lastDrag=0;
 
 const MAP_WORLD_LABELS=[
- ["FARM",170,145],["DINER / GARAGE",503,12],["TOWN CENTER",358,140],
+ ["FARM",170,145],["DINER / GARAGE",503,26],["TOWN CENTER",358,140],
  ["BUS DEPOT",564,376],["POWER STATION",105,479],["THE TUNNEL",602,138],
  ["OBELISK / PYLON",205,183],["PROTOTYPE / NACHT",70,161],
  ["CABIN",255,293],["BRIDGE",495,188]
 ];
-const MAP_TEXT_CORNER=[
- ["GREEN RUN / TRANZIT",19,26],["HAND-DRAWN WORLD ATLAS",19,39],
- ["REFERENCE GEOGRAPHY · NOT TO SCALE",496,560]
-];
+const MAP_TEXT_CORNER=[["NOT TO SCALE",535,558]];
 const MAP_W=720,MAP_H=580;
 if(!state.mapKind||!(state.mapKind==="all"||MAP_SYMBOLS[state.mapKind]))state.mapKind="all";
 function svgEl(type,attrs,children){
