@@ -53,7 +53,10 @@ const MAP_SLOTS={
  cabin:[[281,322],[267,355],[216,365]],
  bridge:[[484,255],[541,248]]
 };
-let zoom=1,panX=0,panY=0,pointers=new Map(),dragged=false,lastDrag=0,lastDragPoint=null;
+// Start zoomed enough to actually explore the map with a finger; Reset still fits all.
+let zoom=1.7,panX=-252,panY=-203,pointers=new Map(),dragged=false,lastDrag=0,lastDragPoint=null;
+let nativeTouchSeen=false,nativeTouches=new Map(),nativeDrag=false;
+let nativeTouchHandled=0,pointerHandled=0,panChanged=0,panAtBoundary=0,gestureStarts=0,pointerCaptureLost=0;
 
 const MAP_WORLD_LABELS=[
  ["FARM",170,145],["DINER / GARAGE",503,26],["TOWN CENTER",358,140],
@@ -153,7 +156,7 @@ function renderMapMarkers(){
  positionMapOverlays();lastMarkerBand=mapMarkerBand();
 }
 function renderMap(){
- drawMapKey();renderMapLabels();renderMapMarkers();
+ drawMapKey();renderMapLabels();renderMapMarkers();applyTransform();
  if(state.selected)context(state.selected);else closeMapContext();
 }
 function closeMapContext(){
@@ -236,7 +239,7 @@ function flushMapFrame(){
 function clampMap(){
  // Allow a small drag at full overview scale. At higher zoom, bound the camera to
  // all four edges of the world so the full geography remains reachable.
- const slack=zoom<=1.001?55:0;
+ const slack=zoom<=1.001?110:0;
  panX=Math.max(MAP_W*(1-zoom)-slack,Math.min(slack,panX));
  panY=Math.max(MAP_H*(1-zoom)-slack,Math.min(slack,panY));
 }
@@ -256,7 +259,6 @@ function setMapExpanded(expanded){
  document.body.classList.toggle("atlas-expanded",expanded);
  $("#mapExit").hidden=!expanded;
  $("#mapFullScreen").textContent=expanded?"Close map":"Full map";
- zoom=1;panX=0;panY=0;
  refreshMapMetrics();renderMapMarkers();applyTransform();
 }
 function roomSvg(rooms){
