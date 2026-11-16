@@ -86,10 +86,11 @@ function stop(){
  const frames=scan.frameIntervals;
  const over33=frames.filter(x=>x>33.4).length,over50=frames.filter(x=>x>50).length;
  const info=scan.mapEnd||scan.mapStart||{};
+ const change=field=>Math.max(0,(Number(info[field])||0)-(Number(scan.mapStart?.[field])||0));
  const ua=navigator.userAgent||"Unavailable";
  const display=window.visualViewport;
  const lines=[
-  "TRANZIT MAP PERFORMANCE SCAN v1",
+  "TRANZIT MAP PERFORMANCE SCAN v2",
   "Captured: "+new Date().toISOString(),
   "Duration: "+round(elapsed/1000,2)+" s (target 15 s)",
   "Result: "+(scan.moves<5?"INSUFFICIENT MOVEMENT — run again while dragging and pinching":"TOUCH ACTIVITY CAPTURED"),
@@ -116,6 +117,14 @@ function stop(){
   "Pointer moves: "+scan.moves+" (touch "+scan.touchMoves+", mouse/other "+scan.mouseMoves+")",
   "Finger travel: "+round(scan.distancePx,0)+" CSS px",
   "Max concurrent pointers: "+scan.maxPointers,
+  "Native touch events processed: "+change("nativeTouchHandled"),
+  "Pointer events processed by map: "+change("pointerHandled"),
+  "Camera movement accepted: "+change("panChanged"),
+  "Camera movement blocked by edge/limit: "+change("panAtBoundary"),
+  "Map camera frames: "+change("cameraFrames"),
+  "Overlay position refreshes: "+change("overlayRefreshes"),
+  "Map gesture starts: "+change("gestureStarts"),
+  "Pointer capture interruptions: "+change("pointerCaptureLost"),
   "Largest touch-move gap: "+(scan.longestMoveGap?round(scan.longestMoveGap,1)+" ms":"not measured"),
   "",
   "[FRAME PACING — requestAnimationFrame]",
