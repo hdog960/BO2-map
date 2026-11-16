@@ -84,7 +84,8 @@ function openSheet(view){
  else if(view==="zones")renderZones();
  else renderCrew();
  $("#auxSheet").scrollTop=0;
- $("#closeSheet").focus?.();
+ if(view==="atlas")$("#atlasSearch").focus?.();
+ else $("#closeSheet").focus?.();
 }
 function go(view){
  if(secondaryViews.has(view)){openSheet(view);return;}
