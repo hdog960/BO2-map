@@ -646,9 +646,9 @@ document.addEventListener("keydown",e=>{
  if(!$("#mapContext").hidden){closeMapContext();return;}
  if($("#interactiveMap").classList.contains("map-expanded"))setMapExpanded(false);
 });
-document.addEventListener("change",e=>{if(e.target.dataset.assignment!==undefined){state.assign[state.side+":"+e.target.dataset.assignment]=e.target.value;save();}
+document.addEventListener("change",e=>{if(e.target.dataset.assignment!==undefined){const stepNumber=e.target.dataset.assignment;state.assign[state.side+":"+stepNumber]=e.target.value;save();renderQuestCrewSummary();const step=e.target.closest?.(".quest-step");const status=step?.querySelector?.(".step-count");if(status)status.textContent=e.target.value!==""?"Assigned: "+state.crew[Number(e.target.value)]:"No player assigned";}
 if(e.target.id==="zoneSelect"){state.zone=e.target.value;state.floor=0;save();renderZones();}});
-document.addEventListener("input",e=>{if(e.target.id==="atlasSearch")renderAtlas();if(e.target.dataset.crew!==undefined){state.crew[Number(e.target.dataset.crew)]=e.target.value||"Player "+(Number(e.target.dataset.crew)+1);save();}});
+document.addEventListener("input",e=>{if(e.target.id==="atlasSearch")renderAtlas();if(e.target.dataset.crew!==undefined){state.crew[Number(e.target.dataset.crew)]=e.target.value||"Player "+(Number(e.target.dataset.crew)+1);save();if(state.view==="quest")renderQuest();}});
 $("#worldMap").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-zone],[data-item],[data-group],[data-map-more]")){e.preventDefault();e.target.dispatchEvent(new MouseEvent("click",{bubbles:true}));}});
 const vp=$("#mapViewport");
 function moveCamera(dx,dy){
