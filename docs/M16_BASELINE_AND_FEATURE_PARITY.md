@@ -71,3 +71,20 @@ The existing `app.js` state keys are: `view`, `side`, `done`, `parts`, `found`, 
 - **M16.5:** Exact-head CI, real Chromium mobile captures, UI accessibility, PWA/offline tests, user-run physical iPhone checklist. **Do not merge or deploy without approval.**
 
 **Baseline audit restrictions:** Do not touch Mythwrought or other repositories, `data.js`, `world-art.svg`, `app.js`, `styles.css`, `index.html`, `sw.js`, saved data or the published GitHub Pages deployment during M16.0.
+
+## M16.0 exact-head browser evidence and visual review (2026-11-16)
+
+**First successful audit head:** `0d5a81d9efdc3e351a05bc22ff544ef469571aa1`.
+
+- Standard PR Actions `43900631551`: **SUCCESS**, 66 / 66 Node tests passed (0 failed); JavaScript syntax, SVG XML parse, complete original-Chromium browser UI flows and two legacy screenshot captures passed.
+- Separate M16 capture Actions `43900631893`: **SUCCESS**, another 66 / 66 Node tests (0 failed), genuine Chromium CDP screenshot pass (`M16_BASELINE_CAPTURE_PASS 10`). Artifact `m16-baseline-five-viewports` (ID `14239754811`) contains ten real PNG files and `baseline-layout.json`.
+- Independently downloaded artifact and **visually inspected all ten captures as a contact sheet**, then compared each recorded PNG dimension and browser CSS viewport against the requested size. Five map captures: `390×844`, `440×956`, `667×375`, `844×390`, `932×430`. Five additional 390×844 captures: `quest`, `atlas`, `craft`, `zones`, `crew`.
+- In all five map captures: 130 indexed records, 10 site pins, 9 buildables, six original bottom-nav entries, 6 Maxis and 8 Richtofen quest steps. Each screenshot's PNG physical dimensions equal its emulated CSS viewport size. No document horizontal overflow detected in the measured baseline screenshots.
+
+**Observed current UX deficits (baseline, not regressions introduced by M16):**
+1. Landscape map is substantially below the header and prose; its top is **223 px** down the screen, while the fixed navigation starts at **323, 338, and 378 px** for 667×375, 844×390, and 932×430. This leaves approximately **100, 115, and 155 px** of the map visible above the nav at initial scroll, despite the much taller map canvas.
+2. At 390×844 the map begins around 270 px from the top, displays a map viewport approximately **293 px** tall, then presents an extensive legend and separate craft filter strip. The bottom nav consumes approximately **77 px** and splits six destinations into small labels.
+3. Existing screens show long top explanations, stacked controls and dense visual blocks, especially Find and Sites. These features must move to accessible secondary surfaces, not vanish.
+4. The initial view is zoomed into a portion of the world rather than a fully fitted route; retain functional drag/pinch but reassess the initial framing and route discoverability in M16.2.
+
+**M16.0 acceptance result:** Source/parity audit, exact-head CI, screenshot sizes, real-browser capture, visual review and strict three-file branch diff passed. The physical iPhone check remains pending and **must not** be represented as accomplished. M16.1 may begin in a subsequent explicitly authorized continuation on the same protected draft branch; no merge or deploy was performed.
