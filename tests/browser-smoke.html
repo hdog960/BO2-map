@@ -212,8 +212,10 @@
    click("#closeSheet");
    check(doc.querySelector("#auxSheet").hidden,"Crew panel dismisses without lost parts");
    click("#globalFind");
-   click("#closeSheet");
-   check(doc.querySelector("#auxSheet").hidden,"search overlay returns to map");
+   check(doc.body.classList.contains("sheet-open"),"secondary search locks background scroll");
+   doc.dispatchEvent(new win.KeyboardEvent("keydown",{key:"Escape",bubbles:true}));
+   check(doc.querySelector("#auxSheet").hidden,"Escape closes secondary search");
+   check(!doc.body.classList.contains("sheet-open"),"sheet close restores background scrolling");
    check(JSON.parse(win.localStorage.getItem("tranzit-atlas-save-v1")).parts["jet:1"]===true,"secondary navigation preserves checklist progress");
    result.textContent="TRANZIT_MAP_PASS";
   }catch(error){result.textContent="UI_FAIL: "+String(error&&error.message||error);document.body.setAttribute("data-failed","1");}
