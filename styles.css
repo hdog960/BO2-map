@@ -220,3 +220,13 @@ body.atlas-expanded{overflow:hidden}
 @media(min-width:700px){.map-legend{grid-template-columns:repeat(6,minmax(0,1fr));max-width:850px}.legend-label{font-size:11px}.legend-symbol{width:26px;height:26px}.map-context{left:12px;right:auto;bottom:12px;width:min(390px,calc(100% - 24px));max-height:73%}.atlas-heading h2{font-size:34px}#view-map{padding-top:20px}}
 @media(max-width:389px){.map-legend{grid-template-columns:repeat(3,minmax(0,1fr))}.legend-button{padding:7px 5px}.atlas-heading h2{font-size:26px}.atlas-heading #mapFullScreen{padding:7px 9px;font-size:12px}.map-key-head{align-items:flex-start}.map-key-head span{max-width:220px}}
 @media(orientation:landscape) and (max-height:470px){#view-map{padding-top:8px}.atlas-heading{margin-bottom:7px}.atlas-heading h2{font-size:23px}.map-legend{grid-template-columns:repeat(6,minmax(0,1fr))}.map-key-head{margin-top:7px}}
+
+
+/* iPhone key: prioritize complete readable category names over redundant counts */
+.map-legend{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.legend-button{min-height:46px;gap:7px;padding:8px 9px}
+.legend-label{font-size:11px;line-height:1.2;white-space:normal;overflow-wrap:normal;word-break:normal;hyphens:none}
+@media(max-width:599px){.legend-count{display:none}}
+@media(max-width:345px){.map-legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:700px){.map-legend{grid-template-columns:repeat(5,minmax(0,1fr));max-width:850px}.legend-count{display:inline}}
+@media(orientation:landscape) and (max-height:470px){.map-legend{grid-template-columns:repeat(5,minmax(0,1fr))}}
