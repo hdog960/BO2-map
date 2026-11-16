@@ -221,3 +221,60 @@ test('M16.1 room and search overlays return to map without rewriting part progre
  click({view:'craft'});assert.equal(els.auxSheet.hidden,true);
  assert.equal(saved().view,'craft');assert.equal(saved().parts['jet:0'],true);
 });
+
+
+test('M16.3 first Maxis objective is prominent while future steps stay collapsed',()=>{
+ const {els,saved}=boot();
+ assert.equal(saved().side,'maxis');
+ const html=els.questPanel.innerHTML;
+ assert.match(html,/YOUR NEXT OBJECTIVE/);
+ assert.match(html,/STEP 1 OF 6/);
+ assert.match(html,/data-quest-step="0" aria-current="step"/);
+ assert.equal((html.match(/data-quest-step="\d+"/g)||[]).length,6);
+ assert.equal((html.match(/class="step-reveal quest-step-details" open/g)||[]).length,1);
+ assert.match(html,/id="questPrerequisites"/);
+ assert.match(html,/Original difficulty/);
+ assert.match(els.questCrewSummary.innerHTML,/PLAYER 4/);
+});
+test('M16.3 completed step collapses and advances first unfinished step',()=>{
+ const {els,click,saved}=boot();
+ click({questDone:'0'});
+ assert.equal(saved().done['maxis:0'],true);
+ assert.match(els.questPanel.innerHTML,/STEP 2 OF 6/);
+ assert.match(els.questPanel.innerHTML,/data-quest-step="1" aria-current="step"/);
+ assert.match(els.questPanel.innerHTML,/class="step quest-step done/);
+ assert.equal((els.questPanel.innerHTML.match(/class="step-reveal quest-step-details" open/g)||[]).length,1);
+ click({questDone:'0'});
+ assert.equal(saved().done['maxis:0'],false);
+ assert.match(els.questPanel.innerHTML,/STEP 1 OF 6/);
+});
+test('M16.3 old save retains independent route completion, names and assignments',()=>{
+ const seed=JSON.stringify({view:'quest',side:'richtofen',done:{'richtofen:0':true,'maxis:1':true},assign:{'richtofen:1':'2'},crew:['Marlton','Misty','Samuel','Russman'],parts:{'jet:0':true}});
+ const {els,saved,click}=boot(seed);
+ assert.match(els.questPanel.innerHTML,/STEP 2 OF 8/);
+ assert.match(els.questPanel.innerHTML,/Assigned: Samuel/);
+ assert.match(els.questCrewSummary.innerHTML,/Samuel/);
+ assert.equal(saved().done['richtofen:0'],true);
+ assert.equal(saved().done['maxis:1'],true);
+ assert.equal(saved().parts['jet:0'],true);
+ click({side:'maxis'});
+ assert.match(els.questPanel.innerHTML,/1\/6/);
+ assert.equal(saved().done['richtofen:0'],true);
+ click({side:'richtofen'});
+ assert.match(els.questPanel.innerHTML,/1\/8/);
+ assert.equal(saved().assign['richtofen:1'],'2');
+});
+test('M16.3 crew editor and step assignment use unchanged persisted keys',()=>{
+ const {els,document,click,saved}=boot();
+ click({view:'quest'});
+ click({},'crewAccess');
+ assert.equal(els.auxSheet.hidden,false);
+ document.events.change({target:{id:'questAssign0',dataset:{assignment:'0'},value:'1'}});
+ assert.equal(saved().assign['maxis:0'],'1');
+ assert.match(els.questCrewSummary.innerHTML,/1 of 6 Maxis objectives assigned/);
+ document.events.input({target:{dataset:{crew:'1'},value:'Field Operator'}});
+ assert.equal(saved().crew[1],'Field Operator');
+ assert.match(els.questCrewSummary.innerHTML,/Field Operator/);
+ assert.match(els.questPanel.innerHTML,/Assigned: Field Operator/);
+ click({},'closeSheet');assert.equal(els.auxSheet.hidden,true);
+});
