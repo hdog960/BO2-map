@@ -162,3 +162,21 @@ Remaining gate: physical Safari/installed-PWA testing on the user's iPhone. Head
 **CI:** \`tests/icon-placement-audit.test.mjs\` hard-fails incomplete placement classification and unsourced coordinate-slot logic. Existing UI, native touch, quest, part tracking and PWA validation remain in place. Offline cache v12. Browser screenshot audit also reduced the default density to two visible site-category badges per location, with more revealed by the legend or deep zoom.
 
 **Not complete:** no item/floor XY can be certified 100% until matched against exact, independently checked gameplay views or authoritative geometry. Complete site-level associations must not be mislabeled as a complete pixel-exact map. The visual layout is a schematic reference map, not an extraction of game scene geometry.
+
+
+## M15 — Color-coded craftables and one-tap part navigation
+
+**Problem:** The map displayed every component under the same generic Parts category. Locating the Jet Gun's four pieces, for example, meant repeatedly cross-referencing the index with the main map.
+
+**Delivered:**
+- Added a standalone **CRAFT** tab with all nine craftable/buildable groups and individually distinguishable codes/colors: TB, ZS, TR, ET, PS, JG, PAP, NAV and BUS.
+- Shared structured metadata now links all **27** existing part-location catalog entries and **8** construction benches to the nine buildables and the existing saved part keys. Bus upgrades have no invented bench.
+- Added buildable-specific part lists, counts, room and possible-area descriptions, a build progress bar, and the relevant workbench or bus installation notes.
+- Added direct **Show only this on map** action, per-part **Map** / **Show areas** buttons, and a horizontal buildable filter strip below the map key.
+- The selected build's map displays only matching part-site callouts and its bench, with the same color/code and readable part labels, while other map categories are hidden. Tap any one to see its room notes and check the part collected.
+- Part tracking, the map, Field Index, and Crew now share these names and colors. The original match-save schema is unchanged.
+- Confirmed Jet Gun areas: engine → Tunnel, wires → Power Station, handbrake → Nacht/Prototype, pressure gauge → Hunter's Cabin; construction bench → Town bar. Pack-a-Punch uses a shared three-part bank reference, not invented individual positions. Bus upgrades are four possible powered rooms, one empty.
+- Continued the source audit boundary: **site-level callouts, not verified object XYZ coordinates**, including alternate spawns. User-facing descriptions state this plainly.
+- Automated test coverage validates all nine unique identities, source refs, alternate sites, stored part progress and browser navigation. Offline cache version **v13**.
+
+**Remaining QA gate:** Exact-head GitHub Actions, PWA publication and on-device iPhone visual/gesture acceptance. Keep future exact floor-plan work separate.
