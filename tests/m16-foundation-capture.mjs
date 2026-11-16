@@ -183,10 +183,10 @@ try {
       const savedBefore=await evaluate(rpc,'localStorage.getItem("tranzit-atlas-save-v1")');
       await evaluate(rpc,'document.querySelector("nav [data-view=quest]").click()');
       await evaluate(rpc,'document.querySelector("[data-side=richtofen]").click()');
-      await evaluate(rpc,'document.querySelector("#questPanel [data-quest-done=\"0\"]").click()');
-      await evaluate(rpc,'(() => {const a=document.querySelector("#questPanel [data-assignment=\"1\"]");a.value="2";a.dispatchEvent(new Event("change",{bubbles:true}));return true})()');
+      await evaluate(rpc,'document.querySelector("#questPanel [data-quest-done]").click()');
+      await evaluate(rpc,'(() => {const a=document.querySelector("#questAssign1");a.value="2";a.dispatchEvent(new Event("change",{bubbles:true}));return true})()');
       await evaluate(rpc,'document.querySelector("#crewAccess").click()');
-      await evaluate(rpc,'(() => {const p=document.querySelector("#crewPanel [data-crew=\"2\"]");p.value="Atlas Test Pilot";p.dispatchEvent(new Event("input",{bubbles:true}));return true})()');
+      await evaluate(rpc,'(() => {const p=document.querySelector("#crewName2");p.value="Atlas Test Pilot";p.dispatchEvent(new Event("input",{bubbles:true}));return true})()');
       await evaluate(rpc,'document.querySelector("#closeSheet").click()');
       await rpc("Page.reload",{ignoreCache:true});
       await sleep(550);
