@@ -131,3 +131,17 @@ dialog{padding:17px 17px 22px;background:#14262e;border-color:#85917c;max-height
 @media(max-width:390px){.view{padding-left:11px;padding-right:11px}.section-head h2{font-size:27px}.map-mode-bar button{font-size:11px}.notice{font-size:8px;letter-spacing:.35px}.brand h1{font-size:18px}.brand-mark{padding:7px 10px 7px 6px}.map-mission .mission-step{font-size:16px}}
 @media(orientation:landscape) and (max-height:470px){.app{padding-bottom:68px}.top{padding:7px 14px;height:auto;min-height:58px}.view{padding-top:12px}.bottom-nav{padding-top:3px;padding-bottom:max(4px,env(safe-area-inset-bottom))}.bottom-nav button{min-height:44px}.bottom-nav button span{font-size:19px;line-height:19px}.map-viewport{height:min(62dvh,410px);min-height:250px}.map-mission{padding:9px 12px}.map-mission .mission-step{font-size:15px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* Clear presentation for redesigned quest/setup, location screens and compact tracker */
+.quest-prep{background:#272b2b;border:1px solid #615f4d;border-left:3px solid #e6b56e;border-radius:12px;margin:7px 0 14px}
+.quest-prep summary{font-weight:800;cursor:pointer;color:#f7d293;padding:12px 15px;font-size:12px;min-height:44px;line-height:1.5}
+.quest-prep p{margin:0 15px 15px;color:#dbcdbc;font-size:12px;line-height:1.65}
+.quest-stats{margin-top:8px}
+.site-overview{margin-top:9px;margin-bottom:15px}.site-overview h3{font-size:20px;margin:5px 0 7px}
+.site-overview p{line-height:1.6}
+.site-diagram-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:21px 2px 8px;border-bottom:1px solid #334c50;padding-bottom:8px}
+.site-diagram-heading strong{font-size:17px;color:#e9efea;letter-spacing:-.1px}
+.site-diagram-heading span{font-size:11px;color:#9eb8b0;text-align:right}
+.reference-details p{color:#c6d4cb;font-size:12px;line-height:1.6}
+.map-mission .mission-link:focus-visible,.map-mode-bar button:focus-visible,.quick-find button:focus-visible,.build-card summary:focus-visible,.step-reveal summary:focus-visible{outline:2px solid #e8bf79;outline-offset:2px}
+@media(max-width:370px){.mission-row{gap:5px}.map-mission .mission-link{padding:7px 8px;white-space:normal}.site-picker{grid-template-columns:1fr}.site-picker .button{width:100%}}
