@@ -94,3 +94,20 @@ Completed:
 **Truth boundary:** Map icons are anchored to known sites; they are not measured game-map pickup coordinates. Randomized spawns and global profile secrets retain area-level descriptions. Indoor floor plans remain conceptual. Real physical-iPhone and gameplay verification must not be claimed until performed.
 
 Next work: precise line-drawn interiors, spatially verified per-part room placements, lamp locations for the four-player EMP finale, direct field feedback on click targets/legibility, and offline airplane-mode confirmation.
+
+
+## M11 — Correct iPhone pan and zoom behavior
+
+User-reported defects: dragging the map was unreliable and zooming enlarged map icons and text.
+
+Implementation:
+- Replaced whole-SVG CSS scaling with a **bounded world camera**: roads, terrain and buildings move/zoom inside a dedicated \`mapWorld\` SVG group while the root viewport is stationary.
+- Moved embedded map labels out of the zooming artwork and into the separate \`mapLabels\` layer. Original title geometry is retained as authored text with fixed pixel size across zoom changes.
+- Rebuilt all map markers at local coordinates attached to geographic world coordinates; \`positionMapOverlays\` recalculates anchored locations without scaling icons, symbols, labels or hit areas.
+- Pointer gestures now translate actual screen movement into map/viewBox coordinates, handle two-finger pinch around the gesture midpoint, clamp panning to the enlarged map, and preserve one-finger pan while zoomed.
+- Scroll-wheel and +/- controls share the same center-aware zoom math; Reset and the fullscreen view preserve overlay alignment.
+- Moved away from a blanket post-drag tap-block to only suppress the accidental click at the drag release point.
+- Expanded automated source checks plus real Chrome gesture checks verify pan distance, pinch zoom and the **same on-screen icon and text dimensions before and after zoom**. Existing gameplay guide content, progress, Easter egg tabs and location links are unchanged.
+- Advanced the PWA offline cache to v6 for the new map code and artwork.
+
+Remaining gate: physical Safari/installed-PWA testing on the user's iPhone. Headless Chromium phone-size viewports are not physical iPhone confirmation. Detailed indoor map accuracy remains on the earlier milestones.
