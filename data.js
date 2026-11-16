@@ -1,16 +1,16 @@
 /* TranZit Field Atlas data — authored map schematic, source-grounded labels. */
 window.TZ_DATA=(function(){
 const zones=[
-{id:"depot",name:"Bus Depot",short:"DEPOT",x:840,y:583,stop:1,description:"Starting hall, Turbine bench, Quick Revive, 750-point exit and two Turbine-access doors."},
-{id:"tunnel",name:"Tunnel",short:"TUNNEL",x:894,y:333,description:"Bus slows; jump off for the M16 and Jet Gun engine."},
-{id:"diner",name:"Diner & Garage",short:"DINER",x:700,y:147,stop:2,description:"Speed Cola, first Mystery Box, Zombie Shield, Galvaknuckles and bus-part shed."},
-{id:"farm",name:"Farm",short:"FARM",x:265,y:153,stop:3,description:"Barn, farmhouse, Double Tap, Turret, weapon-storage fridge, bus-part shed."},
-{id:"nacht",name:"Nacht der Untoten",short:"NACHT",x:331,y:317,description:"Hidden in cornfield; Jet Gun handbrake and possible NAV radio."},
-{id:"pylon",name:"Pylon / Cornfield",short:"PYLON",x:258,y:386,description:"Tower of Babble objective and NAV Table workbench."},
-{id:"power",name:"Power Station",short:"POWER",x:144,y:624,stop:4,description:"Power switch, Tombstone, Electric Trap, Pack-a-Punch remote door."},
-{id:"cabin",name:"Hunter's Cabin",short:"CABIN",x:325,y:580,description:"Bowie Knife and Jet Gun pressure gauge."},
-{id:"town",name:"Town",short:"TOWN",x:514,y:454,stop:5,description:"Bank, bar, Juggernog, Stamin-Up, Jet Gun bench, Pack-a-Punch."},
-{id:"bridge",name:"Bridge",short:"BRIDGE",x:715,y:527,description:"Return route toward Bus Depot; collapses after first bus crossing."}
+{id:"depot",name:"Bus Depot",short:"DEPOT",x:566,y:321,stop:1,description:"Starting hall, Turbine bench, Quick Revive, 750-point exit and two Turbine-access doors."},
+{id:"tunnel",name:"Tunnel",short:"TUNNEL",x:647,y:157,description:"Bus slows; jump off for the M16 and Jet Gun engine."},
+{id:"diner",name:"Diner & Garage",short:"DINER",x:502,y:48,stop:2,description:"Speed Cola, first Mystery Box, Zombie Shield, Galvaknuckles and bus-part shed."},
+{id:"farm",name:"Farm",short:"FARM",x:161,y:87,stop:3,description:"Barn, farmhouse, Double Tap, Turret, weapon-storage fridge, bus-part shed."},
+{id:"nacht",name:"The Prototype / Nacht der Untoten",short:"NACHT",x:52,y:210,description:"Hidden in cornfield; Jet Gun handbrake and possible NAV radio."},
+{id:"pylon",name:"Obelisk Tower / Pylon",short:"PYLON",x:216,y:220,description:"Tower of Babble objective and NAV Table workbench."},
+{id:"power",name:"Power Station",short:"POWER",x:78,y:433,stop:4,description:"Power switch, Tombstone, Electric Trap, Pack-a-Punch remote door."},
+{id:"cabin",name:"Hunter's Cabin",short:"CABIN",x:240,y:320,description:"Bowie Knife and Jet Gun pressure gauge."},
+{id:"town",name:"Town",short:"TOWN",x:348,y:206,stop:5,description:"Bank, bar, Juggernog, Stamin-Up, Jet Gun bench, Pack-a-Punch."},
+{id:"bridge",name:"Bridge",short:"BRIDGE",x:494,y:209,description:"Return route toward Bus Depot; collapses after first bus crossing."}
 ];
 const types={
 stop:{name:"Stops",color:"#e7b969",short:"S"},perk:{name:"Perks",color:"#79d2a0",short:"P"},weapon:{name:"Wall buys",color:"#8ba9e3",short:"W"},part:{name:"Parts",color:"#dbb274",short:"+"},bench:{name:"Benches",color:"#9fd7d2",short:"B"},paid:{name:"Paid doors",color:"#e79a68",short:"$"},turbine:{name:"Turbine doors",color:"#e6da73",short:"T"},special:{name:"Special doors",color:"#d19cda",short:"!"},box:{name:"Mystery Box",color:"#bba2f1",short:"?"},secret:{name:"Secrets",color:"#b5c58b",short:"★"},goal:{name:"Quest points",color:"#e48d84",short:"⚡"}
