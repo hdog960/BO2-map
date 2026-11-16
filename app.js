@@ -53,7 +53,7 @@ const MAP_SLOTS={
  cabin:[[281,322],[267,355],[216,365]],
  bridge:[[484,255],[541,248]]
 };
-let zoom=1,panX=0,panY=0,pointers=new Map(),dragged=false,lastDrag=0;
+let zoom=1,panX=0,panY=0,pointers=new Map(),dragged=false,lastDrag=0,lastDragPoint=null;
 
 const MAP_WORLD_LABELS=[
  ["FARM",170,145],["DINER / GARAGE",503,26],["TOWN CENTER",358,140],
@@ -324,12 +324,18 @@ function renderCrew(){
 function help(){
  modal("TranZit interactive map",'<div class="stack"><p><b>Map:</b> All major locations and important item icons appear directly on the geography. Tap a numbered stop, perk, weapon, part, bench or door marker to open its details. A <b>+number</b> marker lists the other items at that location.</p><p><b>Map key:</b> Each symbol has a color and meaning. Tap a category in the key to show more icons of that type, or <b>All</b> to restore the overview. Pinch to zoom, drag to pan, or expand the map.</p><p><b>Easter Egg:</b> The separate <b>EASTER EGG</b> tab contains the Maxis and Richtofen steps, progress checks and four-player assignments. A Locate button brings you back to the correct map site.</p><p><b>Sites, Find and Crew:</b> Room notes, searchable listings, buildable part checklists and names remain available without cluttering the main map.</p><p><b>Offline:</b> Safari Share → Add to Home Screen. Launch once online, then test airplane mode. Information is saved only on your phone, not synced with the game.</p><p><b>Accuracy:</b> Roads and buildings follow the supplied reference map; icons are site-level guides, not measured in-game pickup coordinates. Alternate spawns are listed in details.</p></div>');
 }
+function isAccidentalMapClick(e){
+ // Only disregard the single ghost click generated at the end of a drag,
+ // not a separate tap elsewhere during the next fraction of a second.
+ return !!(e.isTrusted&&lastDragPoint&&Date.now()-lastDrag<130&&
+   Math.hypot((e.clientX??-1000)-lastDragPoint.x,(e.clientY??-1000)-lastDragPoint.y)<12);
+}
 document.addEventListener("click",e=>{
 const b=e.target.closest("button,[data-zone],[data-room],[data-item],[data-group],[data-map-more],[data-map-item],[data-map-key]");
 if(!b)return;
 if(b.dataset.view){go(b.dataset.view);return;}
 if(b.dataset.mapKey){state.mapKind=b.dataset.mapKey;state.selected=null;save();renderMap();return;}
-if(b.dataset.mapMore&&Date.now()-lastDrag>250){context("more:"+b.dataset.mapMore);return;}
+if(b.dataset.mapMore){if(!isAccidentalMapClick(e))context("more:"+b.dataset.mapMore);return;}
 if(b.dataset.mapItem){context(b.dataset.mapItem);return;}
 if(b.dataset.mapMode){state.mapMode=b.dataset.mapMode;state.mapFilters=MAP_MODES[state.mapMode].slice();save();renderMap();return;}
 if(b.dataset.filter){const id=b.dataset.filter;state.mapFilters=state.mapFilters.includes(id)?state.mapFilters.filter(x=>x!==id):state.mapFilters.concat(id);state.mapMode="custom";save();renderMap();return;}
@@ -347,9 +353,9 @@ if(b.dataset.questDone!==undefined){const k=state.side+":"+b.dataset.questDone;s
 if(b.dataset.questZone){state.mapKind="all";state.selected="zone:"+b.dataset.questZone;go("map");return;}
 if(b.dataset.part){state.parts[b.dataset.part]=!state.parts[b.dataset.part];save();renderCrew();return;}
 if(b.dataset.room){const label=$("#roomNotice");if(label)label.textContent=b.dataset.room+" · This conceptual room is not an exact floor plan.";return;}
-if(b.dataset.group&&Date.now()-lastDrag>350){context("group:"+b.dataset.group);return;}
-if(b.dataset.item&&Date.now()-lastDrag>350){context(b.dataset.item);return;}
-if(b.dataset.zone&&Date.now()-lastDrag>350){context("zone:"+b.dataset.zone);return;}
+if(b.dataset.group){if(!isAccidentalMapClick(e))context("group:"+b.dataset.group);return;}
+if(b.dataset.item){if(!isAccidentalMapClick(e))context(b.dataset.item);return;}
+if(b.dataset.zone){if(!isAccidentalMapClick(e))context("zone:"+b.dataset.zone);return;}
 if(b.id==="resetSession"){modal("Reset this match?",'<p>This will clear quest checks, collected parts, marked doors/items and assignments on this phone. Your player names will remain.</p><div class="actions"><button class="button danger" id="confirmReset">Yes, reset progress</button><button class="button ghost" id="cancelReset">Cancel</button></div>');return;}
 if(b.id==="confirmReset"){state.done={};state.parts={};state.found={};state.assign={};state.selected=null;save();$("#modal").close();renderCrew();return;}
 if(b.id==="cancelReset"||b.id==="closeModal"){$("#modal").close();return;}
@@ -408,7 +414,7 @@ vp.addEventListener("pointermove",e=>{
 });
 function finishMapGesture(e){
  if(!pointers.has(e.pointerId))return;
- if(dragged)lastDrag=Date.now();
+ if(dragged){lastDrag=Date.now();lastDragPoint={x:e.clientX,y:e.clientY};}
  pointers.delete(e.pointerId);
  if(!pointers.size){dragged=false;applyTransform();}
 }
