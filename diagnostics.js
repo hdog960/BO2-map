@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id);
 const panel=$("mapScanPanel");
 if(!panel)return;
 const durationMs=15000;
-const scan={active:false,timer:null,tick:null,raf:null,lastFrame:0,started:0,frameIntervals:[],workMs:[],longTasks:[],pointerCount:0,maxPointers:0,downs:0,ups:0,cancels:0,moves:0,touchMoves:0,mouseMoves:0,distancePx:0,lastMoveAt:null,longestMoveGap:0,activePointers:new Map(),mapStart:null,mapEnd:null,zoomMin:1,zoomMax:1,hiddenMs:0,hiddenSince:null,report:""};
+const scan={active:false,timer:null,tick:null,raf:null,lastFrame:0,started:0,frameIntervals:[],workMs:[],longTasks:[],pointerCount:0,maxPointers:0,downs:0,ups:0,cancels:0,moves:0,touchMoves:0,mouseMoves:0,distancePx:0,lastMoveAt:null,longestMoveGap:0,activePointers:new Map(),mapStart:null,mapEnd:null,zoomMin:1,zoomMax:1,hiddenMs:0,hiddenSince:null,longTaskSupported:false,report:""};
 const now=()=>performance.now();
 const round=(v,d=1)=>Number.isFinite(v)?Number(v.toFixed(d)):0;
 const sorted=a=>a.slice().sort((x,y)=>x-y);
@@ -14,9 +14,9 @@ function percentile(values,p){
  const a=sorted(values),idx=Math.min(a.length-1,Math.max(0,Math.ceil(p*a.length)-1));
  return round(a[idx],2);
 }
-function safeMapState(){
+function safeMapState(light=false){
  try{
-  const value=window.TZ_MAP_TELEMETRY?.();
+  const value=window.TZ_MAP_TELEMETRY?.(light);
   if(value&&typeof value==="object")return value;
  }catch(_){}
  return null;
@@ -34,7 +34,7 @@ function frame(timestamp){
   if(delta>0&&delta<5000&&scan.frameIntervals.length<15000)scan.frameIntervals.push(delta);
  }
  scan.lastFrame=timestamp;
- const st=safeMapState();
+ const st=safeMapState(true);
  if(st){scan.zoomMin=Math.min(scan.zoomMin,st.zoom);scan.zoomMax=Math.max(scan.zoomMax,st.zoom);}
  scan.raf=requestAnimationFrame(frame);
 }
@@ -57,6 +57,7 @@ function start(){
  $("mapScanReport").hidden=true;
  $("mapScanHint").textContent="Drag around, then pinch-zoom a few times. The scan finishes automatically.";
  const canLongTask=typeof PerformanceObserver!=="undefined"&&PerformanceObserver.supportedEntryTypes?.includes("longtask");
+ scan.longTaskSupported=!!canLongTask;
  if(canLongTask){
   try{observer=new PerformanceObserver(list=>{
    if(!scan.active)return;
@@ -134,7 +135,7 @@ function stop(){
   "Total transform work: "+round(scan.workMs.reduce((x,y)=>x+y,0),0)+" ms",
   "",
   "[BROWSER LONG TASKS]",
-  "Long tasks observed: "+scan.longTasks.length+(observer===null?" (browser support may be limited)":""),
+  "Long tasks observed: "+scan.longTasks.length+(scan.longTaskSupported?" (supported API)":" (not supported by browser)"),
   "Worst long task: "+reportValue(scan.longTasks.length?round(Math.max(...scan.longTasks),2):null)+" ms",
   "",
   "[NOTES]",
@@ -153,6 +154,7 @@ function stop(){
 function pointerDown(e){
  if(!scan.active)return;
  scan.downs++;
+ if(!scan.activePointers.size)scan.lastMoveAt=null;
  scan.activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
  scan.maxPointers=Math.max(scan.maxPointers,scan.activePointers.size);
 }
