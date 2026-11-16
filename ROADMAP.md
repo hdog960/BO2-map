@@ -13,7 +13,7 @@ Responsive safe-area layout, portrait/landscape, offline precache, local progres
 
 ## M2 Hybrid interactive world
 Grounded route and geography, five bus stops, pass-through landmarks, all side paths, walking shortcuts, fog, lava, cornfield paths, streetlights; touch pinch/drag/zoom, filters and marker details.
-**Now:** original approximate SVG map implemented; accuracy refinement pending.
+**Now:** original high-resolution vector map redrawn against the user-supplied Afrochubman/BradyGames reference, including recognizable roads, Town junction, Farm, Diner, Depot, Power Station, the Prototype/Nacht, opposing Obelisk/Pylon, tunnel and bridge. Site markers use verified area groupings instead of randomly invented item coordinates. Terrain lengths and interior doors still require detailed verification.
 
 ## M3 Interior floor plans
 Unique accurate line-drawn interiors for Depot, Diner/Garage/Roof, Farm/Barn/Farmhouse, Power Station/Reactor, Town/Bank/Bar/Jugger/underground; verified doors/stairs/room access.
