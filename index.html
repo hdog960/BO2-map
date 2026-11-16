@@ -16,9 +16,9 @@
 <section id="view-map" class="view active" aria-label="Interactive TranZit map">
 <div class="atlas-heading"><div><span class="eyebrow">INTERACTIVE WORLD ATLAS</span><h2>TranZit Map</h2><p>Find what you need right on the map. Tap any marker for details.</p></div><button type="button" class="button ghost" id="mapFullScreen" aria-label="Expand map to full screen">Full map</button></div>
 <div class="map-wrap" id="interactiveMap">
-  <div class="map-topline"><span>GREEN RUN · TRANZIT</span><span>DRAG & PINCH TO EXPLORE</span></div>
+  <div class="map-topline"><span>GREEN RUN · TRANZIT</span><span>DRAG TO PAN · PINCH TO ZOOM</span></div>
   <div class="map-tools"><button type="button" id="zoomIn" aria-label="Zoom in">+</button><button type="button" id="zoomOut" aria-label="Zoom out">−</button><button type="button" id="resetMap" aria-label="Reset map zoom">↺</button><button type="button" id="mapExit" aria-label="Exit expanded map" hidden>✕</button></div>
-  <div class="map-viewport" id="mapViewport"><svg id="worldMap" viewBox="0 0 720 580" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Interactive TranZit map with clickable icons for perks, weapons, doors, parts, benches and Easter egg landmarks"><image href="./world-art.svg" x="0" y="0" width="720" height="580" preserveAspectRatio="xMidYMid meet"/><g id="routeLabels"></g><g id="mapPins"></g></svg></div>
+  <div class="map-viewport" id="mapViewport"><svg id="worldMap" viewBox="0 0 720 580" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Interactive TranZit map with clickable icons for perks, weapons, doors, parts, benches and Easter egg landmarks"><g id="mapWorld"><image href="./world-art.svg" x="0" y="0" width="720" height="580" preserveAspectRatio="xMidYMid meet"/></g><g id="mapLabels"></g><g id="mapPins"></g></svg></div>
   <div id="mapContext" class="map-context" aria-live="polite" hidden></div>
 </div>
 <div class="map-key-head"><strong>MAP KEY</strong><span>Tap an icon to focus it. Tap All to restore everything.</span></div>
