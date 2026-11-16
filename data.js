@@ -111,6 +111,39 @@ add("secret","town","Diner → Town walking shortcut","Fog route via church appr
 add("secret","bridge","Collapsing bridge","Town return leg","","Collapse on first bus crossing; bus still navigates.");
 add("secret","pylon","NAV Table / NAV Card","Under pylon","","Separate cross-map secret; not a Tower of Babble prerequisite.");
 add("secret","depot","Persistent upgrades (perma-perks)","Across map","","Hidden upgrades depend on specific actions and online profile.");
+// Verified hidden interactions, achievements and player-reference landmarks.
+add("secret","farm","Farmhouse radio TV","Farmhouse interior","","Interact with the old television for cryptic messages and radio transmissions.");
+add("secret","town","Town Morse-code traffic light","Town streets","","Traffic signal blinks an encoded message about energy, light and the future.");
+add("secret","pylon","Ghostly laughter","Under the Pylon","","An eerie child's laugh can be heard in the cornfield.");
+add("secret","depot","Bus Depot power announcements","Depot hall","","Announcements can play over the depot speakers after activating main power.");
+add("secret","depot","POWER! and Nuke Donkey posters","Depot starting hall","","Look at the wall posters and the tower hint.");
+add("secret","diner","Sniper-scope pre-apocalypse reflection","Diner area / sniper scopes","","A sniper scope reflection shows the area before the Moon events; visual Easter egg.");
+add("secret","town","Bank teammate point sharing","Bank vault / teller counter","","Hit the keys with Galvaknuckles or appropriate upgraded knife, then spend 1100 to drop 1000 for a teammate.");
+add("secret","town","Bank storage limit and fee","Bank vault","","Store up to 250,000. Each 1000-point withdrawal returns 900 after a 100-point fee.");
+add("secret","farm","Weapon Locker restrictions","Farmhouse fridge","","Stores one supported weapon, not the M1911, Ballistic Knife or wonder weapons.");
+add("secret","diner","First Mystery Box and EMP Grenades","Diner garage","","Mystery Box starts here. EMP grenades are needed for Richtofen's end step and useful against Avogadro.");
+add("secret","depot","Persistent Quick Revive upgrade","Map-wide profile bonus (reference pin only)","","Revive speed bonus from repeated revives; consult source reference for version-specific conditions.");
+add("secret","depot","Persistent Juggernog upgrade","Map-wide profile bonus (reference pin only)","","A hidden health upgrade triggered by early deaths; not the Juggernog machine.");
+add("secret","depot","Persistent headshot damage upgrade","Map-wide profile bonus (reference pin only)","","Bonus from repeated multi-headshot kills. Lost through poor headshot performance.");
+add("secret","depot","Persistent steel barriers","Map-wide profile bonus (reference pin only)","","Repairing many barricades over rounds can strengthen the boards.");
+add("secret","depot","Persistent Insta-Kill bonus","Map-wide profile bonus (reference pin only)","","Hidden insta-kill behavior triggered by specific kill/pickup timing.");
+add("secret","depot","Persistent Double Points discount","Map-wide profile bonus (reference pin only)","","Hidden Half-Off bonus associated with Double Points performance.");
+add("secret","depot","Persistent sniper and pistol bonuses","Map-wide profile bonus (reference pin only)","","Hidden points upgrades based on weapon use; see sourced conditions in references.");
+add("secret","depot","Persistent Better Box bonus","Map-wide profile bonus (reference pin only)","","Hidden Mystery Box bonus obtained through repeated early purchases.");
+add("secret","depot","Persistent cash-back perk bonus","Map-wide profile bonus (reference pin only)","","May refund points after perk purchases depending on profile conditions.");
+add("secret","depot","Persistent Olympia Ray Gun wall-buy","Bus Depot / Olympia","Secret upgrade","Can replace Olympia wall buy when persistent condition is active; not guaranteed each match.");
+add("secret","depot","Persistent Tombstone bonus","Map-wide profile bonus (reference pin only)","","Hidden perk retention upgrade distinct from buying Tombstone Soda.");
+add("secret","depot","Persistent Steel Carpenter bonus","Map-wide profile bonus (reference pin only)","","Hidden Carpenter interaction with window kills.");
+add("secret","pylon","Achievement: Tower of Babble","Pylon · main quest","75G","Complete either Maxis or Richtofen quest branch on Original.");
+add("secret","depot","Achievement: Don't Fire Until You See","Every zone · start tracking here","30G","Open all TranZit doors in one run without being set on fire. Avoid lava and burning-zombie explosions.");
+add("secret","depot","Achievement: Standard Equipment May Vary","Map-wide buildables","25G","Acquire four distinct items from Turbine, Shield, Turret, Electric Trap, Jet Gun in a game.");
+add("secret","depot","Achievement: Undead Man's Party Bus","Bus upgrades","15G","Fit all three bus upgrades; do not spend roof hatch on the Diner.");
+add("secret","pylon","Achievement: You Have No Power Over Me","Avogadro encounter","10G","Defeat Avogadro without getting attacked by it.");
+add("secret","pylon","Achievement: I Don't Think They Exist","Fog / Denizen territory","10G","Kill a Denizen while latched onto you.");
+add("secret","diner","Achievement: Fuel Efficient","Denizen portal at streetlight","10G","Use the alternative streetlight portal transit system.");
+add("secret","depot","Achievement: Happy Hour","Two perks before main power","10G","Use Turbines to buy two different perks before activating the power switch.");
+add("secret","diner","Achievement: The Lights of Their Eyes","Group of zombies / EMP","5G","Pacify ten or more zombies with one EMP Grenade.");
+add("secret","power","Achievement: Dance On My Grave","Tombstone Soda / co-op","5G","Acquire your Tombstone after giving up when downed and returning for it next round.");
 const builds=[
 {id:"turbine",name:"Turbine",zone:"depot",location:"Depot hall",parts:[["Mannequin","By route map"],["Fan","Waiting seats"],["Tail","Hall floor / pay phones"]]},
 {id:"shield",name:"Zombie Shield",zone:"diner",location:"Garage",parts:[["Car door","Garage: bathroom / car lift / table"],["Hand trolley","Diner: behind counter / far booth"]]},
@@ -154,6 +187,9 @@ const references=[
 {name:"ZFRR TranZit perks",url:"https://zfrr.me/hub/tranzit-perks-and-power/"},
 {name:"ZFRR TranZit weapons",url:"https://zfrr.me/hub/tranzit-weapons/"},
 {name:"ZFRR Tower of Babble",url:"https://zfrr.me/hub/tranzit-easter-egg/"},
+{name:"Secrets and Easter eggs reference",url:"https://zfrr.me/hub/tranzit-secrets/"},
+{name:"Persistent-upgrades reference",url:"https://zfrr.me/hub/tranzit-persistent-upgrades/"},
+{name:"Ten achievements reference",url:"https://zfrr.me/hub/tranzit-achievements/"},
 {name:"Original-era door checklist",url:"https://www.neoseeker.com/call-of-duty-black-ops-ii/faqs/272171-call-of-duty-bo2.html"},
 {name:"Call of Duty Zombies Richtofen quest",url:"https://www.callofdutyzombies.com/zombie-library/zombies-library/black-ops_ii/tranzit/side-quest-easter-egg-%E2%80%93-tower-of-babble-~-obey-richtofen-r297/"}
 ];
