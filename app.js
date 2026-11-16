@@ -33,8 +33,9 @@ function go(view){state.view=view;save();renderNav();if(view==="map")renderMap()
 function selectZone(id){state.zone=id;state.floor=0;save();go("zones");}
 function showItem(id){
  const item=D.items.find(x=>x.id===id);if(!item)return;
- const z=zone(item.zone);
- modal(item.name,'<div class="kicker">'+esc(category(item.type).name)+' · '+esc(z.name)+'</div><p>'+esc(item.detail||"Check the area described below.")+'</p><div class="info"><b>Where:</b> '+esc(item.room||z.description||z.name)+(item.price?"<br><b>Price / requirement:</b> "+esc(item.price):"")+'</div><div class="actions"><button type="button" class="button" data-find-on-map="'+esc(item.id)+'">⌖ Show on map</button><button type="button" class="button ghost" data-toggle-item="'+esc(item.id)+'">'+(state.found[id]?"✓ Tracked":"Mark found / opened")+'</button></div><p class="footer-note">Map icons locate the site or relevant room area; variable spawn locations are listed in the item notes.</p>');
+ const z=zone(item.zone),onMap=item.mapMode==="site-callout";
+ const alt=item.alternateZones?.length?'<p><strong>Other possible area(s):</strong> '+item.alternateZones.map(x=>esc(zone(x).name)).join(", ")+'</p>':"";
+ modal(item.name,'<div class="kicker">'+esc(category(item.type).name)+' · '+esc(z.name)+'</div><p>'+esc(item.detail||"Check the area described below.")+'</p><div class="info"><b>Where:</b> '+esc(item.room||z.description||z.name)+(item.price?"<br><b>Price / requirement:</b> "+esc(item.price):"")+'</div>'+alt+'<div class="actions">'+(onMap?'<button type="button" class="button" data-find-on-map="'+esc(item.id)+'">⌖ Show location area</button>':"")+'<button type="button" class="button ghost" data-toggle-item="'+esc(item.id)+'">'+(state.found[id]?"✓ Tracked":"Mark found / opened")+'</button></div><p class="footer-note">'+esc(onMap?"Location-group callout only; the exact floor/world position is not verified.":"No fixed map pin: "+item.mapReason)+'</p>');
 }
 /* Interactive atlas. Pins are anchored to known sites, not invented exact in-room coordinates. */
 const svgNS="http://www.w3.org/2000/svg";
@@ -177,20 +178,20 @@ function context(key){
  if(key.startsWith("zone:")){
   const z=zone(key.slice(5));if(!z)return;
   state.selected=key;
-  const arr=D.items.filter(i=>i.zone===z.id&&i.type!=="stop");
+  const arr=placedItems(z.id);
   const notable=arr.slice().sort((a,b)=>(MAP_PRIORITY[a.type]??10)-(MAP_PRIORITY[b.type]??10)).slice(0,6);
-  mapCard('<p>'+esc(z.description)+'</p><div class="map-card-items">'+notable.map(i=>'<button type="button" data-map-item="'+esc(i.id)+'"><span class="inline-pin" style="background:'+category(i.type).color+'">'+esc(MAP_SYMBOLS[i.type])+'</span>'+esc(i.name)+'</button>').join("")+'</div><div class="map-card-actions"><button type="button" class="button" data-map-more="'+z.id+'">All '+arr.length+' items here</button><button type="button" class="button ghost" data-open-zone="'+z.id+'">Room guide</button></div>',
+  mapCard('<p>'+esc(z.description)+'</p><p class="placement-warning">Category badges are linked to this site, not to verified in-building coordinates.</p><div class="map-card-items">'+notable.map(i=>'<button type="button" data-map-item="'+esc(i.id)+'"><span class="inline-pin" style="background:'+category(i.type).color+'">'+esc(MAP_SYMBOLS[i.type])+'</span>'+esc(i.name)+'</button>').join("")+'</div><div class="map-card-actions"><button type="button" class="button" data-map-more="'+z.id+'">All '+arr.length+' items here</button><button type="button" class="button ghost" data-open-zone="'+z.id+'">Room guide</button></div>',
    z.stop?"BUS STOP "+z.stop:"LANDMARK",z.name);
  }else if(key.startsWith("more:")||key.startsWith("group:")){
   const ref=key.slice(key.indexOf(":")+1),parts=ref.split("|"),z=zone(parts[0]);if(!z)return;
-  const type=parts[1],arr=D.items.filter(i=>i.zone===z.id&&i.type!=="stop"&&(!type||i.type===type));
+  const type=parts[1],arr=placedItems(z.id,type);
   state.selected=key;
-  mapCard('<p>'+esc(z.name)+' — tap any entry for its price, location, requirements and notes.</p><div class="map-card-list">'+arr.map(i=>'<button type="button" data-map-item="'+esc(i.id)+'"><span class="inline-pin" style="background:'+category(i.type).color+'">'+esc(MAP_SYMBOLS[i.type])+'</span><span><strong>'+esc(i.name)+'</strong><small>'+esc(i.room)+'</small></span><span class="map-list-arrow">›</span></button>').join("")+'</div><div class="map-card-actions"><button type="button" class="button ghost" data-open-zone="'+z.id+'">Room guide</button></div>',
+  mapCard('<p>'+esc(z.name)+' — tap any entry for its verified area/room description. Badge positions are callouts, not exact coordinates.</p><div class="map-card-list">'+arr.map(i=>'<button type="button" data-map-item="'+esc(i.id)+'"><span class="inline-pin" style="background:'+category(i.type).color+'">'+esc(MAP_SYMBOLS[i.type])+'</span><span><strong>'+esc(i.name)+'</strong><small>'+esc(i.room)+'</small></span><span class="map-list-arrow">›</span></button>').join("")+'</div><div class="map-card-actions"><button type="button" class="button ghost" data-open-zone="'+z.id+'">Room guide</button></div>',
    "LOCATION INDEX",z.name+" · "+arr.length+" entries");
  }else{
   const item=D.items.find(i=>i.id===key);if(!item)return;
   state.selected=key;
-  mapCard('<p><strong>Where:</strong> '+esc(item.room||zone(item.zone).description)+'</p>'+(item.price?'<div class="map-price">'+esc(item.price)+(isNaN(Number(item.price))?"":" points")+'</div>':"")+'<p>'+esc(item.detail||"See the location notes.")+'</p><div class="map-card-actions"><button type="button" class="button" data-toggle-item="'+esc(item.id)+'">'+(state.found[item.id]?"✓ Tracked":"Mark found / opened")+'</button><button type="button" class="button ghost" data-map-more="'+item.zone+'">More at '+esc(zone(item.zone).name)+'</button></div>',
+  mapCard('<p><strong>Where:</strong> '+esc(item.room||zone(item.zone).description)+'</p>'+(item.price?'<div class="map-price">'+esc(item.price)+(isNaN(Number(item.price))?"":" points")+'</div>':"")+'<p>'+esc(item.detail||"See the location notes.")+'</p><p class="placement-warning">'+esc(item.mapReason)+'</p><div class="map-card-actions"><button type="button" class="button" data-toggle-item="'+esc(item.id)+'">'+(state.found[item.id]?"✓ Tracked":"Mark found / opened")+'</button><button type="button" class="button ghost" data-map-more="'+item.zone+'">More at '+esc(zone(item.zone).name)+'</button></div>',
    MAP_LABELS[item.type]+" · "+zone(item.zone).name,item.name);
  }
  save();
@@ -374,7 +375,7 @@ if(b.dataset.quickFind!==undefined){state.atlasFilter="all";$("#atlasSearch").va
 if(b.dataset.zoneTab){state.zone=b.dataset.zoneTab;state.floor=0;save();renderZones();return;}
 if(b.dataset.floor){state.floor=Number(b.dataset.floor);save();renderZones();return;}
 if(b.dataset.showItem){showItem(b.dataset.showItem);return;}
-if(b.dataset.findOnMap){const item=D.items.find(i=>i.id===b.dataset.findOnMap);if(item){$("#modal").close();state.mapKind=item.type;state.selected=item.id;go("map");}return;}
+if(b.dataset.findOnMap){const item=D.items.find(i=>i.id===b.dataset.findOnMap);if(item&&item.mapMode==="site-callout"){$("#modal").close();state.mapKind=item.type;state.selected="group:"+item.zone+"|"+item.type;go("map");}return;}
 if(b.dataset.toggleItem){state.found[b.dataset.toggleItem]=!state.found[b.dataset.toggleItem];save();if($("#modal").open)$("#modal").close();renderMap();renderZones();renderAtlas();return;}
 if(b.dataset.openZone){if($("#modal").open)$("#modal").close();selectZone(b.dataset.openZone);return;}
 if(b.dataset.searchZone){state.atlasFilter="all";$("#atlasSearch").value=zone(b.dataset.searchZone).name;go("atlas");return;}
