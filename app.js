@@ -397,47 +397,133 @@ if(e.target.id==="zoneSelect"){state.zone=e.target.value;state.floor=0;save();re
 document.addEventListener("input",e=>{if(e.target.id==="atlasSearch")renderAtlas();if(e.target.dataset.crew!==undefined){state.crew[Number(e.target.dataset.crew)]=e.target.value||"Player "+(Number(e.target.dataset.crew)+1);save();}});
 $("#worldMap").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-zone],[data-item],[data-group],[data-map-more]")){e.preventDefault();e.target.dispatchEvent(new MouseEvent("click",{bubbles:true}));}});
 const vp=$("#mapViewport");
+function moveCamera(dx,dy){
+ const wasX=panX,wasY=panY;
+ panX+=dx;panY+=dy;
+ clampMap();
+ if(Math.abs(panX-wasX)+Math.abs(panY-wasY)>0.0001){
+  panChanged++;
+  requestMapFrame();
+ }else panAtBoundary++;
+}
+function pinchCamera(oldMid,nextMid,oldSpan,newSpan){
+ const oldZoom=zoom;
+ const wx=(oldMid.x-panX)/zoom,wy=(oldMid.y-panY)/zoom;
+ if(oldSpan>1)zoom=Math.min(4,Math.max(1,zoom*newSpan/oldSpan));
+ const oldX=panX,oldY=panY;
+ panX=nextMid.x-wx*zoom;panY=nextMid.y-wy*zoom;
+ clampMap();
+ if(Math.abs(zoom-oldZoom)+Math.abs(panX-oldX)+Math.abs(panY-oldY)>0.0001){
+  panChanged++;
+  requestMapFrame();
+ }else panAtBoundary++;
+}
 function captureDrag(e){
  try{if(!vp.hasPointerCapture?.(e.pointerId))vp.setPointerCapture?.(e.pointerId)}catch(_){}
 }
+// Native touch streams are more reliable than pointer capture in iOS Home Screen apps.
+// They are processed separately; synthetic/desktop PointerEvents remain a fallback.
+function nativePoint(t){
+ return {id:t.identifier,...pointerToMap(t),clientX:t.clientX,clientY:t.clientY};
+}
+function nativeTouchStart(e){
+ nativeTouchSeen=true;
+ pointers.clear();
+ if(!nativeTouches.size){refreshMapMetrics();nativeDrag=false;}
+ const incoming=Array.from(e.touches||[]).map(nativePoint);
+ if(!nativeTouches.size)gestureStarts++;
+ if(incoming.length>1)nativeDrag=true;
+ const prior=nativeTouches;
+ nativeTouches=new Map(incoming.map(t=>{
+  const old=prior.get(t.id);
+  return [t.id,{...t,startX:old?.startX??t.x,startY:old?.startY??t.y}];
+ }));
+}
+function nativeTouchMove(e){
+ if(!nativeTouchSeen||!nativeTouches.size)return;
+ if(e.cancelable)e.preventDefault();
+ const incoming=Array.from(e.touches||[]).map(nativePoint);
+ if(!incoming.length)return;
+ nativeTouchHandled++;
+ if(incoming.length===1){
+  const at=incoming[0],old=nativeTouches.get(at.id);
+  if(!old)return;
+  if(!nativeDrag&&Math.hypot(at.x-old.startX,at.y-old.startY)>3)nativeDrag=true;
+  if(nativeDrag)moveCamera(at.x-old.x,at.y-old.y);
+ }else{
+  const first=incoming[0],second=incoming[1];
+  const oldA=nativeTouches.get(first.id),oldB=nativeTouches.get(second.id);
+  if(oldA&&oldB){
+   nativeDrag=true;
+   const before=Math.hypot(oldA.x-oldB.x,oldA.y-oldB.y);
+   const after=Math.hypot(first.x-second.x,first.y-second.y);
+   pinchCamera(
+    {x:(oldA.x+oldB.x)/2,y:(oldA.y+oldB.y)/2},
+    {x:(first.x+second.x)/2,y:(first.y+second.y)/2},
+    before,after
+   );
+  }
+ }
+ nativeTouches=new Map(incoming.map(t=>{
+  const old=nativeTouches.get(t.id);
+  return [t.id,{...t,startX:old?.startX??t.x,startY:old?.startY??t.y}];
+ }));
+}
+function nativeTouchEnd(e){
+ if(!nativeTouchSeen)return;
+ const previousDrag=nativeDrag;
+ const remaining=Array.from(e.touches||[]).map(nativePoint);
+ nativeTouches=new Map(remaining.map(t=>[t.id,{...t,startX:t.x,startY:t.y}]));
+ if(!remaining.length){
+  if(previousDrag){
+   const t=Array.from(e.changedTouches||[])[0];
+   lastDrag=Date.now();
+   if(t)lastDragPoint={x:t.clientX,y:t.clientY};
+  }
+  nativeDrag=false;
+  flushMapFrame();
+ }
+}
+vp.addEventListener("touchstart",nativeTouchStart,{passive:true});
+vp.addEventListener("touchmove",nativeTouchMove,{passive:false});
+vp.addEventListener("touchend",nativeTouchEnd,{passive:true});
+vp.addEventListener("touchcancel",nativeTouchEnd,{passive:true});
+vp.addEventListener("gesturestart",e=>{if(e.cancelable)e.preventDefault();},{passive:false});
+// Desktop/mouse and PointerEvent-only devices retain direct dragging and pinching.
 vp.addEventListener("pointerdown",e=>{
+ if(nativeTouchSeen&&e.pointerType==="touch")return;
  if(!pointers.size)refreshMapMetrics();
  const at=pointerToMap(e);
  pointers.set(e.pointerId,{x:at.x,y:at.y,startX:at.x,startY:at.y});
  if(pointers.size>=2){dragged=true;captureDrag(e);}
- else dragged=false;
+ else{dragged=false;gestureStarts++;}
 });
 vp.addEventListener("pointermove",e=>{
+ if(nativeTouchSeen&&e.pointerType==="touch")return;
  if(!pointers.has(e.pointerId))return;
- gestureEvents++;
+ gestureEvents++;pointerHandled++;
  const prev=pointers.get(e.pointerId),at=pointerToMap(e);
  if(pointers.size===1){
-  if(!dragged&&Math.hypot(at.x-prev.startX,at.y-prev.startY)>6){dragged=true;captureDrag(e);}
-  if(dragged){
-   panX+=at.x-prev.x;panY+=at.y-prev.y;
-   clampMap();requestMapFrame();
-  }
+  if(!dragged&&Math.hypot(at.x-prev.startX,at.y-prev.startY)>3){dragged=true;captureDrag(e);}
+  if(dragged)moveCamera(at.x-prev.x,at.y-prev.y);
  }else{
   const other=[...pointers].find(([id])=>id!==e.pointerId)?.[1];
   if(other){
    dragged=true;captureDrag(e);
-   const previousSpan=Math.hypot(prev.x-other.x,prev.y-other.y);
-   const newSpan=Math.hypot(at.x-other.x,at.y-other.y);
-   const oldMid={x:(prev.x+other.x)/2,y:(prev.y+other.y)/2};
-   const nextMid={x:(at.x+other.x)/2,y:(at.y+other.y)/2};
-   const oldZoom=zoom;
-   const worldX=(oldMid.x-panX)/oldZoom,worldY=(oldMid.y-panY)/oldZoom;
-   if(previousSpan>1)zoom=Math.min(4,Math.max(1,oldZoom*newSpan/previousSpan));
-   panX=nextMid.x-worldX*zoom;
-   panY=nextMid.y-worldY*zoom;
-   clampMap();
-   requestMapFrame();
+   pinchCamera(
+    {x:(prev.x+other.x)/2,y:(prev.y+other.y)/2},
+    {x:(at.x+other.x)/2,y:(at.y+other.y)/2},
+    Math.hypot(prev.x-other.x,prev.y-other.y),
+    Math.hypot(at.x-other.x,at.y-other.y)
+   );
   }
  }
  pointers.set(e.pointerId,{...prev,x:at.x,y:at.y});
 });
 function finishMapGesture(e){
+ if(nativeTouchSeen&&e.pointerType==="touch")return;
  if(!pointers.has(e.pointerId))return;
+ if(e.type==="lostpointercapture")pointerCaptureLost++;
  if(dragged){lastDrag=Date.now();lastDragPoint={x:e.clientX,y:e.clientY};}
  pointers.delete(e.pointerId);
  if(!pointers.size){dragged=false;flushMapFrame();}
@@ -454,7 +540,7 @@ $("#modal").addEventListener("click",e=>{if(e.target===$("#modal"))$("#modal").c
 // Read-only diagnostic view; excludes player names, saved match progress and all private data.
 window.TZ_MAP_TELEMETRY=(light=false)=>({
  zoom:Number(zoom.toFixed(3)),panX:Number(panX.toFixed(1)),panY:Number(panY.toFixed(1)),
- cameraFrames,overlayRefreshes,gestureEvents,
+ cameraFrames,overlayRefreshes,gestureEvents,nativeTouchHandled,pointerHandled,panChanged,panAtBoundary,gestureStarts,pointerCaptureLost,
  markers:light?undefined:document.querySelectorAll("#mapPins [data-world-x]").length,
  labels:light?undefined:document.querySelectorAll("#mapLabels [data-world-x]").length,
  expanded:light?undefined:document.getElementById("interactiveMap").classList.contains("map-expanded")
