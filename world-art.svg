@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 720 580" width="720" height="580" role="img" aria-label="Original vector atlas redrawn to follow the player's Black Ops II TranZit map reference">
+<title>TranZit world geography — faithful schematic redraw</title>
+<defs>
+<radialGradient id="ground" cx=".5" cy=".35" r=".8"><stop offset="0" stop-color="#2a3937"/><stop offset=".72" stop-color="#14262a"/><stop offset="1" stop-color="#0a151c"/></radialGradient>
+<pattern id="terrain" width="41" height="41" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r=".8" fill="#8b9d86" opacity=".18"/><path d="M13 29 L22 27 M34 12 L37 18" stroke="#6b8075" stroke-width=".6" opacity=".24"/></pattern>
+<radialGradient id="urban" cx=".35" cy=".25"><stop offset="0" stop-color="#974e43"/><stop offset="1" stop-color="#532e2e"/></radialGradient>
+<style>
+.site-label{font:800 10px system-ui,-apple-system,sans-serif;letter-spacing:1.2px;fill:#f3d6a6;paint-order:stroke;stroke:#101f23;stroke-width:3.8px;stroke-linejoin:round}
+.building{fill:url(#urban);stroke:#101418;stroke-width:4;stroke-linejoin:round}
+.building.large{fill:#8c3c35}
+.building.alt{fill:#35403f;stroke-width:3}
+.building.small{fill:#79533d;stroke-width:3}
+.roof-light{fill:#d7a779;stroke:#24292b;stroke-width:1.2}
+.interior{fill:none;stroke:#d7ac8a;stroke-width:1.6;stroke-linecap:square;opacity:.87}
+.arrow-number{font:900 10px system-ui,sans-serif;fill:#e5bc77}
+.lamp circle{filter:none}
+</style>
+</defs>
+<rect width="720" height="580" fill="url(#ground)"/><rect width="720" height="580" fill="url(#terrain)"/>
+<g fill="none" stroke="#657a6e" stroke-width="1.25" opacity=".18"><path d="M-12 42 Q116 2 208 43 T400 41 T748 57"/><path d="M-15 105 Q65 55 149 109 T335 121 T754 88"/><path d="M-19 274 Q53 246 108 283 T270 286 T473 300 T743 264"/><path d="M-10 386 Q70 339 135 389 T310 394 T502 400 T745 383"/><path d="M-10 541 Q93 505 170 538 T395 533 T725 552"/></g>
+<g fill="#36453b" opacity=".45">
+<path d="M80 154L273 146L287 248L193 291L80 275Z"/><path d="M134 254L339 258L319 373L191 380Z"/>
+<path d="M340 246L452 253L486 372L372 382Z"/>
+<path d="M608 115L693 109L706 268L640 273Z"/>
+</g>
+<g stroke="#688478" stroke-width="1" stroke-dasharray="3 9" opacity=".3" fill="none">
+<path d="M107 178Q88 227 142 260T160 349"/><path d="M265 175Q227 205 230 246T266 293"/>
+</g>
+<g class="route-shadow"><path d="M565 317 C598 323 626 312 641 283 C665 240 672 198 661 153 C652 101 621 57 568 42 C535 30 500 37 455 37 L430 37 C420 42 427 66 411 78 C396 91 374 96 355 97 C337 96 332 93 314 86 C294 78 270 77 248 76 C224 73 210 82 204 101 C199 124 184 136 166 146 C151 156 135 157 119 170 C109 189 111 207 118 215 C138 226 152 230 160 257 C169 290 169 337 154 357 C139 380 111 390 98 414 C93 432 92 449 116 451 C139 454 165 456 180 450 C195 441 197 415 203 384 C208 356 214 336 244 325 C270 316 298 302 322 282 C342 263 350 232 354 209 L544 210 C544 238 544 272 547 291 C550 311 553 317 565 317 Z" stroke="#050a0e" stroke-width="31"/><path d="M354 207 C341 179 338 155 342 134 C344 119 339 105 354 97" stroke="#050a0e" stroke-width="24"/></g>
+<g class="route-surface"><path d="M565 317 C598 323 626 312 641 283 C665 240 672 198 661 153 C652 101 621 57 568 42 C535 30 500 37 455 37 L430 37 C420 42 427 66 411 78 C396 91 374 96 355 97 C337 96 332 93 314 86 C294 78 270 77 248 76 C224 73 210 82 204 101 C199 124 184 136 166 146 C151 156 135 157 119 170 C109 189 111 207 118 215 C138 226 152 230 160 257 C169 290 169 337 154 357 C139 380 111 390 98 414 C93 432 92 449 116 451 C139 454 165 456 180 450 C195 441 197 415 203 384 C208 356 214 336 244 325 C270 316 298 302 322 282 C342 263 350 232 354 209 L544 210 C544 238 544 272 547 291 C550 311 553 317 565 317 Z" stroke="#4e3234" stroke-width="28"/><path d="M565 317 C598 323 626 312 641 283 C665 240 672 198 661 153 C652 101 621 57 568 42 C535 30 500 37 455 37 L430 37 C420 42 427 66 411 78 C396 91 374 96 355 97 C337 96 332 93 314 86 C294 78 270 77 248 76 C224 73 210 82 204 101 C199 124 184 136 166 146 C151 156 135 157 119 170 C109 189 111 207 118 215 C138 226 152 230 160 257 C169 290 169 337 154 357 C139 380 111 390 98 414 C93 432 92 449 116 451 C139 454 165 456 180 450 C195 441 197 415 203 384 C208 356 214 336 244 325 C270 316 298 302 322 282 C342 263 350 232 354 209 L544 210 C544 238 544 272 547 291 C550 311 553 317 565 317 Z" stroke="#862b2c" stroke-width="23"/><path d="M565 317 C598 323 626 312 641 283 C665 240 672 198 661 153 C652 101 621 57 568 42 C535 30 500 37 455 37 L430 37 C420 42 427 66 411 78 C396 91 374 96 355 97 C337 96 332 93 314 86 C294 78 270 77 248 76 C224 73 210 82 204 101 C199 124 184 136 166 146 C151 156 135 157 119 170 C109 189 111 207 118 215 C138 226 152 230 160 257 C169 290 169 337 154 357 C139 380 111 390 98 414 C93 432 92 449 116 451 C139 454 165 456 180 450 C195 441 197 415 203 384 C208 356 214 336 244 325 C270 316 298 302 322 282 C342 263 350 232 354 209 L544 210 C544 238 544 272 547 291 C550 311 553 317 565 317 Z" stroke="#b54838" stroke-width="16"/><path d="M565 317 C598 323 626 312 641 283 C665 240 672 198 661 153 C652 101 621 57 568 42 C535 30 500 37 455 37 L430 37 C420 42 427 66 411 78 C396 91 374 96 355 97 C337 96 332 93 314 86 C294 78 270 77 248 76 C224 73 210 82 204 101 C199 124 184 136 166 146 C151 156 135 157 119 170 C109 189 111 207 118 215 C138 226 152 230 160 257 C169 290 169 337 154 357 C139 380 111 390 98 414 C93 432 92 449 116 451 C139 454 165 456 180 450 C195 441 197 415 203 384 C208 356 214 336 244 325 C270 316 298 302 322 282 C342 263 350 232 354 209 L544 210 C544 238 544 272 547 291 C550 311 553 317 565 317 Z" stroke="#cf6542" stroke-width="7" opacity=".47"/><path d="M354 207 C341 179 338 155 342 134 C344 119 339 105 354 97" stroke="#922f31" stroke-width="18"/><path d="M354 207 C341 179 338 155 342 134 C344 119 339 105 354 97" stroke="#d06145" stroke-width="7" opacity=".55"/></g>
+<g fill="none" stroke="#f0a25d" stroke-width="1.5" stroke-dasharray="4 13" stroke-linecap="round" opacity=".77"><path d="M565 317 C598 323 626 312 641 283 C665 240 672 198 661 153 C652 101 621 57 568 42 C535 30 500 37 455 37 L430 37 C420 42 427 66 411 78 C396 91 374 96 355 97 C337 96 332 93 314 86 C294 78 270 77 248 76 C224 73 210 82 204 101 C199 124 184 136 166 146 C151 156 135 157 119 170 C109 189 111 207 118 215 C138 226 152 230 160 257 C169 290 169 337 154 357 C139 380 111 390 98 414 C93 432 92 449 116 451 C139 454 165 456 180 450 C195 441 197 415 203 384 C208 356 214 336 244 325 C270 316 298 302 322 282 C342 263 350 232 354 209 L544 210 C544 238 544 272 547 291 C550 311 553 317 565 317 Z"/></g>
+<g fill="none" stroke-linecap="round"><path d="M118 214 C101 213 78 215 55 211" stroke="#152025" stroke-width="18"/><path d="M118 214 C101 213 78 215 55 211" stroke="#78352d" stroke-width="13"/><path d="M340 207 C306 214 271 217 244 216 L244 244" stroke="#141e21" stroke-width="8"/><path d="M340 207 C306 214 271 217 244 216 L244 244" stroke="#7d5949" stroke-width="4" stroke-dasharray="4 5"/></g>
+<!-- Extra reference-map route features; these are road surface junctions, not extra stops. -->
+<g fill="none" stroke="#d39a62" stroke-width="2" stroke-dasharray="6 7" opacity=".8"><path d="M118 214 C101 213 78 215 55 211"/></g>
+<g class="lamp"><circle cx="116" cy="175" r="9" fill="#6bdd83" opacity=".19"/><circle cx="116" cy="175" r="4.3" fill="#a5f69e" stroke="#385848" stroke-width="1.5"/></g><g class="lamp"><circle cx="158" cy="352" r="9" fill="#6bdd83" opacity=".19"/><circle cx="158" cy="352" r="4.3" fill="#a5f69e" stroke="#385848" stroke-width="1.5"/></g><g class="lamp"><circle cx="246" cy="320" r="9" fill="#6bdd83" opacity=".19"/><circle cx="246" cy="320" r="4.3" fill="#a5f69e" stroke="#385848" stroke-width="1.5"/></g><g class="lamp"><circle cx="408" cy="200" r="9" fill="#6bdd83" opacity=".19"/><circle cx="408" cy="200" r="4.3" fill="#a5f69e" stroke="#385848" stroke-width="1.5"/></g><g class="lamp"><circle cx="544" cy="210" r="9" fill="#6bdd83" opacity=".19"/><circle cx="544" cy="210" r="4.3" fill="#a5f69e" stroke="#385848" stroke-width="1.5"/></g><g class="lamp"><circle cx="395" cy="97" r="9" fill="#6bdd83" opacity=".19"/><circle cx="395" cy="97" r="4.3" fill="#a5f69e" stroke="#385848" stroke-width="1.5"/></g><g class="lamp"><circle cx="436" cy="59" r="9" fill="#6bdd83" opacity=".19"/><circle cx="436" cy="59" r="4.3" fill="#a5f69e" stroke="#385848" stroke-width="1.5"/></g>
+
+<g id="buildings">
+<!-- Farm cluster: three separated structures -->
+<path d="M135 44 L146 31 L162 34 L171 23 L183 33 L177 47 L194 54 L186 76 L196 89 L183 113 L166 124 L140 118 L133 95 L139 75 L128 63 Z" class="building large"/>
+<path d="M103 100 L137 99 L135 137 L102 138 Z" class="building "/>
+<path d="M192 20 L206 10 L218 22 L218 47 L200 49 L191 37 Z" class="building small"/>
+<rect x="153" y="40" width="11" height="12" class="roof-light"/> <rect x="176" y="58" width="9" height="12" class="roof-light"/> <rect x="112" y="107" width="13" height="10" class="roof-light"/>
+<path d="M147 83 L173 83 M145 99 L172 102 M159 48 L166 61" class="interior"/>
+<!-- Diner and garage -->
+<path d="M442 16 L477 16 L477 26 L582 24 L584 55 L532 57 L528 67 L465 64 L465 75 L416 75 L414 47 L443 42 Z" class="building large"/>
+<path d="M449 18 L491 18 L491 56 L448 56 Z" class="building alt"/>
+<path d="M492 27 L574 27 M492 41 L574 41 M499 48 L574 48 M444 56 L473 56" class="interior"/>
+<rect x="506" y="26" width="14" height="6" class="roof-light"/><rect x="526" y="26" width="14" height="6" class="roof-light"/><rect x="548" y="26" width="14" height="6" class="roof-light"/>
+<!-- Town center, central block -->
+<path d="M320 152 L350 150 L351 168 L371 165 L390 173 L387 201 L393 221 L383 233 L390 252 L354 260 L333 245 L314 253 L298 238 L296 191 L314 190 Z" class="building large"/>
+<path d="M348 164 L374 166 L374 190 L349 190 Z" class="building alt"/>
+<path d="M299 198 L333 198 L333 241 L299 241 Z" class="building "/>
+<path d="M344 202 L381 202 L381 236 L344 236 Z" class="building alt"/>
+<path d="M333 197 L333 238 M344 220 L383 220 M348 177 L368 177 M319 188 L338 188" class="interior"/>
+<rect x="354" y="170" width="12" height="10" class="roof-light"/><rect x="352" y="205" width="9" height="8" class="roof-light"/><rect x="318" y="209" width="9" height="10" class="roof-light"/>
+<!-- Depot, southeast -->
+<path d="M524 293 L547 288 L550 279 L570 286 L600 282 L612 297 L618 329 L609 346 L585 346 L580 356 L551 354 L550 344 L526 340 L520 318 Z" class="building large"/>
+<path d="M534 298 L562 297 L562 335 L532 335 Z" class="building "/>
+<path d="M567 296 L601 296 L601 335 L567 335 Z" class="building alt"/>
+<path d="M566 294 L566 347 M535 311 L559 311 M580 303 L595 303 M578 329 L604 329" class="interior"/>
+<rect x="576" y="305" width="13" height="9" class="roof-light"/>
+<!-- Power station approach and reactor lower footprint -->
+<path d="M48 409 L73 400 L88 407 L105 413 L115 434 L100 458 L75 463 L51 456 L43 437 Z" class="building large"/>
+<path d="M82 490 C91 474 111 475 125 486 C135 494 138 509 129 520 L148 520 L152 535 L136 547 L111 532 L95 544 L80 534 L83 516 C77 508 78 499 82 490 Z" class="building alt"/>
+<path d="M128 538 L159 537 L166 559 L141 569 L128 554 Z" class="building "/>
+<path d="M91 487 C107 475 129 488 128 510 C127 531 96 532 89 510 C86 500 88 493 91 487 Z" fill="none" stroke="#f4c78d" stroke-width="4"/>
+<path d="M96 497 L108 487 L119 498 L110 518 L98 517 Z" class="interior"/>
+<!-- Prototype/Nacht -->
+<path d="M33 178 L57 174 L57 188 L78 191 L77 229 L61 232 L61 242 L41 237 L38 227 L30 228 Z" class="building "/>
+<path d="M44 183 L44 231 M44 203 L74 203 M43 218 L72 218" class="interior"/>
+<!-- Obelisk tower and small NAV site -->
+<path d="M206 211L216 201L226 214L216 229Z" fill="#dcb46e" stroke="#15191b" stroke-width="3"/>
+<path d="M215 203 L215 232 M198 220 L232 220" stroke="#e8c178" stroke-width="3"/>
+<circle cx="216" cy="219" r="20" fill="none" stroke="#dcad66" stroke-width="1.5" stroke-dasharray="4 5"/>
+<path d="M238 227 L253 226 L253 251 L267 255 L258 266 L242 260 Z" class="building small"/>
+<!-- Hunter's Cabin and east tunnel debris -->
+<path d="M229 307 L246 301 L259 315 L248 331 L230 331 Z" class="building small"/>
+<path d="M633 148 L655 142 L667 163 L650 180 L632 174 Z" fill="#65423b" stroke="#2e3338" stroke-width="3"/>
+<path d="M623 165 L654 145 M632 176 L662 153" stroke="#b3835d" stroke-width="3" opacity=".65"/>
+<!-- Bridge across Town to Depot road -->
+<rect x="469" y="196" width="56" height="29" rx="2" fill="#584d42" stroke="#171d22" stroke-width="2"/>
+<path d="M477 197V224 M488 197V224 M499 197V224 M511 197V224 M520 197V224" stroke="#b48659" stroke-width="4"/>
+</g>
+<g class="hairlines" stroke="#68857d" stroke-width="1" opacity=".62"><path d="M160 130 L160 123"/><path d="M217 186 L216 199"/><path d="M67 166 L61 176"/><path d="M253 292 L247 307"/><path d="M494 192 L495 199"/></g>
+<g><g transform="translate(612 74) rotate(43)"><path d="M-11 -10L3 0-11 10" fill="none" stroke="#f0c985" stroke-width="3.8" stroke-linecap="round"/><circle cx="-23" cy="0" r="11" fill="#1c2d30" stroke="#e1b269" stroke-width="1.5"/><text x="-23" y="3.8" class="arrow-number" text-anchor="middle">1</text></g><g transform="translate(329 82) rotate(185)"><path d="M-11 -10L3 0-11 10" fill="none" stroke="#f0c985" stroke-width="3.8" stroke-linecap="round"/><circle cx="-23" cy="0" r="11" fill="#1c2d30" stroke="#e1b269" stroke-width="1.5"/><text x="-23" y="3.8" class="arrow-number" text-anchor="middle">2</text></g><g transform="translate(154 341) rotate(96)"><path d="M-11 -10L3 0-11 10" fill="none" stroke="#f0c985" stroke-width="3.8" stroke-linecap="round"/><circle cx="-23" cy="0" r="11" fill="#1c2d30" stroke="#e1b269" stroke-width="1.5"/><text x="-23" y="3.8" class="arrow-number" text-anchor="middle">3</text></g><g transform="translate(258 311) rotate(-18)"><path d="M-11 -10L3 0-11 10" fill="none" stroke="#f0c985" stroke-width="3.8" stroke-linecap="round"/><circle cx="-23" cy="0" r="11" fill="#1c2d30" stroke="#e1b269" stroke-width="1.5"/><text x="-23" y="3.8" class="arrow-number" text-anchor="middle">4</text></g><g transform="translate(479 211) rotate(0)"><path d="M-11 -10L3 0-11 10" fill="none" stroke="#f0c985" stroke-width="3.8" stroke-linecap="round"/><circle cx="-23" cy="0" r="11" fill="#1c2d30" stroke="#e1b269" stroke-width="1.5"/><text x="-23" y="3.8" class="arrow-number" text-anchor="middle">5</text></g></g>
+<g><text x="170" y="145" text-anchor="middle" class="site-label">FARM</text><text x="503" y="12" text-anchor="middle" class="site-label">DINER / GARAGE</text><text x="358" y="140" text-anchor="middle" class="site-label">TOWN CENTER</text><text x="564" y="376" text-anchor="middle" class="site-label">BUS DEPOT</text><text x="105" y="479" text-anchor="middle" class="site-label">POWER STATION</text><text x="602" y="138" text-anchor="middle" class="site-label">THE TUNNEL</text><text x="205" y="183" text-anchor="middle" class="site-label">OBELISK / PYLON</text><text x="70" y="161" text-anchor="middle" class="site-label">PROTOTYPE / NACHT</text><text x="255" y="293" text-anchor="middle" class="site-label">CABIN</text><text x="495" y="188" text-anchor="middle" class="site-label">BRIDGE</text></g>
+<g fill="#a7b5ad" font-family="system-ui,sans-serif" font-size="9" font-weight="700" letter-spacing="1">
+<text x="19" y="26">GREEN RUN / TRANZIT</text><text x="19" y="39" fill="#d6ae77">HAND-DRAWN WORLD ATLAS</text>
+<text x="496" y="560" fill="#9daea9">REFERENCE GEOGRAPHY · NOT TO SCALE</text>
+</g>
+<g transform="translate(24 548)">
+<circle cx="0" cy="0" r="4.3" fill="#a5f69e"/>
+<text x="10" y="3.5" fill="#b7c9ba" font-size="9.5" font-family="system-ui">Denizen portal lamp area</text>
+<path d="M186 0h21" stroke="#d16949" stroke-width="8" stroke-linecap="round"/>
+<text x="214" y="3.5" fill="#b7c9ba" font-size="9.5" font-family="system-ui">Bus road</text></g>
+</svg>
