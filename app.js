@@ -10,6 +10,8 @@ try{state=Object.assign({},defaults,JSON.parse(localStorage.getItem(KEY)||"{}"))
 if(!Array.isArray(state.mapFilters))state.mapFilters=defaults.mapFilters.slice();
 if(!Array.isArray(state.crew)||state.crew.length!==4)state.crew=defaults.crew.slice();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn("Progress storage unavailable",e)}};
+// Migrate position-based IDs from the initial release to stable item IDs.
+let migrated=false;for(const i of D.items){if(i.legacyId && state.found[i.legacyId] && !state.found[i.id]){state.found[i.id]=true;migrated=true;}}if(migrated)save();
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const zone=id=>D.zones.find(x=>x.id===id);
 const markPrice=v=>v?'<span class="meta">'+esc(v)+(v==="Turbine"||v==="Grenade"||v==="Power or Turbine"||v==="Remote Turbine"?"":" pts")+"</span>":"";
