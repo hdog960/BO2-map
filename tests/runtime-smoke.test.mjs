@@ -56,7 +56,7 @@ test('interiors switch to upper floor without crashing',()=>{
 });
 test('in-app details dialog opens and closes',()=>{
  const {els,click}=boot();click({showItem:'perk-depot-quick-revive-depot-hall-hallway-near-main-door'});
- assert.equal(els.modal.open,true);assert.match(els.modalBody.innerHTML,/Quic|Speed|Double|Tombstone|Juggernog|Stamin-Up/);
+ assert.equal(els.modal.open,true);assert.equal(els.modalTitle.textContent,"Quick Revive");assert.match(els.modalBody.innerHTML,/Depot hall/);
 });
 
 test('clicking a map category cluster lists real area items',()=>{
