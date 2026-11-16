@@ -268,3 +268,11 @@ body.atlas-expanded{overflow:hidden}
 .map-scan-panel.scan-running .scan-actions{margin-top:7px}
 .map-scan-panel.scan-running #mapScanState{color:#f6d18b;font-weight:780}
 @media(max-width:410px){.atlas-heading{gap:8px}.atlas-heading h2{font-size:24px}.atlas-actions{gap:4px}.atlas-actions .button{padding:8px 9px;font-size:11px;min-height:42px}.map-scan-panel{padding:12px}.map-scan-panel .scan-actions .button{font-size:12px}}
+
+/* Placement audit: visible dashed tethers identify icons as site-based callouts. */
+.site-callout .item-map-label{font-weight:750;fill:#f9ebd0}
+#mapPins .callout-count{font:900 10px system-ui,sans-serif;fill:#fff3d3;stroke:#0d1e24;stroke-width:3.5px;paint-order:stroke;stroke-linejoin:round}
+.placement-warning{font-size:11px!important;color:#efcca1!important;background:#253537;border-left:3px solid #d4a96c;border-radius:6px;padding:8px 10px;line-height:1.45}
+.map-key-head{align-items:flex-start}
+.map-key-head strong{white-space:normal;max-width:49%}
+.map-key-head span{max-width:53%}
