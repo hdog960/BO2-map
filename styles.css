@@ -246,3 +246,25 @@ body.atlas-expanded{overflow:hidden}
 #mapPins [data-world-x]{touch-action:none}
 #mapViewport{touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none}
 #mapViewport *{-webkit-user-select:none;user-select:none}
+
+
+/* iPhone map diagnostics — passive and hidden unless the player opens it. */
+[hidden]{display:none!important}
+.atlas-actions{display:flex;align-items:center;flex-shrink:0;gap:6px}
+.atlas-actions .button{white-space:nowrap}
+#openMapScan{background:#17343a;color:#e3eadd;border-color:#63988f}
+.map-scan-panel{margin:0 0 14px;padding:13px 14px;border:1px solid #84a69a;border-radius:14px;background:linear-gradient(115deg,#1b3539,#14242b);box-shadow:0 6px 18px #0004}
+.map-scan-panel .scan-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.map-scan-panel .scan-panel-head>div{display:grid;gap:2px}
+.map-scan-panel strong{font-size:14px;color:#f2d99e}
+.map-scan-panel #mapScanState{font-size:11px;color:#b2d8cd;line-height:1.4}
+.map-scan-panel p{margin:11px 0;font-size:12px;line-height:1.55;color:#c4d7d0}
+.map-scan-panel .scan-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.map-scan-panel .scan-actions .button{min-height:44px;flex:1;min-width:130px}
+.map-scan-panel #mapScanReport{display:block;width:100%;min-height:180px;max-height:50vh;margin:10px 0 7px;padding:11px 12px;border-radius:9px;border:1px solid #86a7a3;background:#0b1923;color:#e6ece8;resize:vertical;white-space:pre;overflow:auto;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}
+.map-scan-panel .scan-note{color:#a4c5bb;font-size:11px}
+.map-scan-panel.scan-running{border-color:#eac582;background:#24332f}
+.map-scan-panel.scan-running #mapScanInstructions,.map-scan-panel.scan-running #mapScanHint{display:none}
+.map-scan-panel.scan-running .scan-actions{margin-top:7px}
+.map-scan-panel.scan-running #mapScanState{color:#f6d18b;font-weight:780}
+@media(max-width:410px){.atlas-heading{gap:8px}.atlas-heading h2{font-size:24px}.atlas-actions{gap:4px}.atlas-actions .button{padding:8px 9px;font-size:11px;min-height:42px}.map-scan-panel{padding:12px}.map-scan-panel .scan-actions .button{font-size:12px}}
