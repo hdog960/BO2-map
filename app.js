@@ -217,7 +217,7 @@ function applyTransform(){
 function clampMap(){
  // Allow a small drag at full overview scale. At higher zoom, bound the camera to
  // all four edges of the world so the full geography remains reachable.
- const slack=zoom<=1.001?22:0;
+ const slack=zoom<=1.001?55:0;
  panX=Math.max(MAP_W*(1-zoom)-slack,Math.min(slack,panX));
  panY=Math.max(MAP_H*(1-zoom)-slack,Math.min(slack,panY));
 }
@@ -371,15 +371,58 @@ if(e.target.id==="zoneSelect"){state.zone=e.target.value;state.floor=0;save();re
 document.addEventListener("input",e=>{if(e.target.id==="atlasSearch")renderAtlas();if(e.target.dataset.crew!==undefined){state.crew[Number(e.target.dataset.crew)]=e.target.value||"Player "+(Number(e.target.dataset.crew)+1);save();}});
 $("#worldMap").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-zone],[data-item],[data-group],[data-map-more]")){e.preventDefault();e.target.dispatchEvent(new MouseEvent("click",{bubbles:true}));}});
 const vp=$("#mapViewport");
-vp.addEventListener("pointerdown",e=>{pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});dragged=false;});
-vp.addEventListener("pointermove",e=>{
-if(!pointers.has(e.pointerId))return;const prev=pointers.get(e.pointerId);if(Math.abs(e.clientX-prev.x)+Math.abs(e.clientY-prev.y)>5){dragged=true;try{if(!vp.hasPointerCapture?.(e.pointerId))vp.setPointerCapture?.(e.pointerId)}catch(_){}}
-if(pointers.size===1){panX+=e.clientX-prev.x;panY+=e.clientY-prev.y;}else if(pointers.size===2){const other=[...pointers].find(([id])=>id!==e.pointerId)?.[1];if(other){const before=Math.hypot(prev.x-other.x,prev.y-other.y),after=Math.hypot(e.clientX-other.x,e.clientY-other.y);if(before>3){const old=zoom;zoom=Math.min(3.6,Math.max(1,zoom*after/before));const rect=vp.getBoundingClientRect(),cx=(e.clientX+other.x)/2-rect.left,cy=(e.clientY+other.y)/2-rect.top;panX=cx-(cx-panX)*zoom/old;panY=cy-(cy-panY)*zoom/old;}}}
-pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});clampMap();applyTransform();
+function captureDrag(e){
+ try{if(!vp.hasPointerCapture?.(e.pointerId))vp.setPointerCapture?.(e.pointerId)}catch(_){}
+}
+vp.addEventListener("pointerdown",e=>{
+ const at=pointerToMap(e);
+ pointers.set(e.pointerId,{x:at.x,y:at.y,startX:at.x,startY:at.y});
+ if(pointers.size>=2){dragged=true;captureDrag(e);}
+ else dragged=false;
 });
-const end=e=>{if(dragged)lastDrag=Date.now();pointers.delete(e.pointerId);if(!pointers.size&&dragged)renderMapMarkers();};
-vp.addEventListener("pointerup",end);vp.addEventListener("pointercancel",end);vp.addEventListener("lostpointercapture",end);
-vp.addEventListener("wheel",e=>{e.preventDefault();setZoom(zoom*(e.deltaY<0?1.15:1/1.15));},{passive:false});
+vp.addEventListener("pointermove",e=>{
+ if(!pointers.has(e.pointerId))return;
+ const prev=pointers.get(e.pointerId),at=pointerToMap(e);
+ if(pointers.size===1){
+  if(!dragged&&Math.hypot(at.x-prev.startX,at.y-prev.startY)>6){dragged=true;captureDrag(e);}
+  if(dragged){
+   panX+=at.x-prev.x;panY+=at.y-prev.y;
+   clampMap();applyTransform();
+  }
+ }else{
+  const other=[...pointers].find(([id])=>id!==e.pointerId)?.[1];
+  if(other){
+   dragged=true;captureDrag(e);
+   const previousSpan=Math.hypot(prev.x-other.x,prev.y-other.y);
+   const newSpan=Math.hypot(at.x-other.x,at.y-other.y);
+   const oldMid={x:(prev.x+other.x)/2,y:(prev.y+other.y)/2};
+   const nextMid={x:(at.x+other.x)/2,y:(at.y+other.y)/2};
+   const oldZoom=zoom;
+   const worldX=(oldMid.x-panX)/oldZoom,worldY=(oldMid.y-panY)/oldZoom;
+   if(previousSpan>1)zoom=Math.min(4,Math.max(1,oldZoom*newSpan/previousSpan));
+   panX=nextMid.x-worldX*zoom;
+   panY=nextMid.y-worldY*zoom;
+   clampMap();
+   if((oldZoom<=1.6)!==(zoom<=1.6)||(oldZoom<=1.24)!==(zoom<=1.24))renderMapMarkers();
+   applyTransform();
+  }
+ }
+ pointers.set(e.pointerId,{...prev,x:at.x,y:at.y});
+});
+function finishMapGesture(e){
+ if(!pointers.has(e.pointerId))return;
+ if(dragged)lastDrag=Date.now();
+ pointers.delete(e.pointerId);
+ if(!pointers.size){dragged=false;applyTransform();}
+}
+vp.addEventListener("pointerup",finishMapGesture);
+vp.addEventListener("pointercancel",finishMapGesture);
+vp.addEventListener("lostpointercapture",finishMapGesture);
+vp.addEventListener("wheel",e=>{
+ e.preventDefault();
+ setZoom(zoom*(e.deltaY<0?1.15:1/1.15),pointerToMap(e));
+},{passive:false});
+window.addEventListener("resize",()=>{clampMap();applyTransform();});
 $("#modal").addEventListener("click",e=>{if(e.target===$("#modal"))$("#modal").close();});
 function network(){const b=$("#networkStatus");b.textContent=navigator.onLine?"CACHE PENDING":"OFFLINE MODE";b.classList.toggle("warn",!navigator.onLine);}
 window.addEventListener("online",network);window.addEventListener("offline",network);network();
