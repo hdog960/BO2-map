@@ -5,10 +5,11 @@ const D=window.TZ_DATA;if(!D){document.body.textContent="TranZit atlas data fail
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
 const KEY="tranzit-atlas-save-v1";
 const defaults={view:"map",side:"maxis",done:{},parts:{},found:{},crew:["Player 1","Player 2","Player 3","Player 4"],assign:{},mapFilters:[],mapMode:"route",atlasFilter:"all",zone:"depot",floor:0,selected:null};
-let state;
-try{state=Object.assign({},defaults,JSON.parse(localStorage.getItem(KEY)||"{}"));}catch(e){state=Object.assign({},defaults);}
+let state,priorState={};
+try{priorState=JSON.parse(localStorage.getItem(KEY)||"{}")||{};state=Object.assign({},defaults,priorState);}catch(e){state=Object.assign({},defaults);}
 if(!Array.isArray(state.mapFilters))state.mapFilters=defaults.mapFilters.slice();
-if(!state.mapMode)state.mapMode=state.mapFilters.length?"custom":"route";
+// Older installs saved filters before map-view presets existed: preserve their chosen layers.
+if(!Object.prototype.hasOwnProperty.call(priorState,"mapMode"))state.mapMode=state.mapFilters.length?"custom":"route";
 const MAP_MODES={route:[],quest:["goal","bench"],gear:["perk","weapon","part","bench","box"],doors:["paid","turbine","special"]};
 if(!Object.keys(MAP_MODES).includes(state.mapMode)&&state.mapMode!=="custom")state.mapMode="route";
 if(!Array.isArray(state.crew)||state.crew.length!==4)state.crew=defaults.crew.slice();
@@ -206,7 +207,7 @@ function renderCrew(){
  panel.innerHTML=html;
  panel.dataset.ready="1";
 }
-function help(){modal("Using the field atlas",'<div class="stack"><p><b>Map:</b> drag and pinch to zoom. Tap a named stop, or switch on marker categories, then tap an icon.</p><p><b>Interiors:</b> select a zone and a floor. Room diagrams are approximate navigation aids; item descriptions specify known in-game areas.</p><p><b>Quest:</b> choose Maxis or Richtofen; tick each step, assign your four players and tap "Locate".</p><p><b>Crew:</b> track each buildable part and player name. Progress saves on this phone only.</p><p><b>Install:</b> in Safari use Share → Add to Home Screen. Open once online to cache files for offline play. The app does not connect to your BO2 session.</p><p><b>Safety:</b> Pay attention to zombies, fog Denizens, and lava; the map does not represent real-time enemy positions.</p></div>');}
+function help(){modal("How to use TranZit Atlas",'<div class="stack"><p><b>Map:</b> Start with Route, Easter egg, Gear or Doors. Pinch to zoom, drag to pan, and tap a stop. Open <b>More map layers</b> for individual categories.</p><p><b>Quest:</b> Your next step appears on the Map and Quest screens. Pick Maxis or Richtofen, open a step for instructions, and tap its number to check it off.</p><p><b>Find:</b> Tap the magnifier or FIND at the bottom, search an item name, or choose a quick suggestion.</p><p><b>Sites:</b> Select any location from the picker, then switch floors. Interiors are schematic and do not claim exact game-file geometry.</p><p><b>Crew:</b> Enter four names; expand a buildable to check off parts. Data stays on this phone, with no live multiplayer syncing.</p><p><b>Install:</b> Open in Safari, tap Share → Add to Home Screen, then launch once online to cache resources. Test airplane mode before your match.</p><p><b>Note:</b> Neither the atlas nor checklists read your BO2 session. All map and quest tracking is manual.</p></div>');}
 document.addEventListener("click",e=>{
 const b=e.target.closest("button,[data-zone],[data-room],[data-item],[data-group]");
 if(!b)return;
