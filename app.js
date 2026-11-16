@@ -209,8 +209,10 @@ function positionMapOverlays(){
  }
 }
 function applyTransform(){
+ const profiler=window.TZ_SCAN,stamp=profiler?.active?performance.now():0;
  $("#mapWorld").setAttribute("transform","translate("+panX.toFixed(3)+" "+panY.toFixed(3)+") scale("+zoom.toFixed(5)+")");
  positionMapOverlays();
+ if(stamp)profiler.recordMapWork(performance.now()-stamp);
 }
 function clampMap(){
  // Allow a small drag at full overview scale. At higher zoom, bound the camera to
@@ -428,6 +430,13 @@ vp.addEventListener("wheel",e=>{
 },{passive:false});
 window.addEventListener("resize",()=>{clampMap();applyTransform();});
 $("#modal").addEventListener("click",e=>{if(e.target===$("#modal"))$("#modal").close();});
+// Read-only diagnostic view; excludes player names, saved match progress and all private data.
+window.TZ_MAP_TELEMETRY=()=>({
+ zoom:Number(zoom.toFixed(3)),panX:Number(panX.toFixed(1)),panY:Number(panY.toFixed(1)),
+ markers:document.querySelectorAll("#mapPins [data-world-x]").length,
+ labels:document.querySelectorAll("#mapLabels [data-world-x]").length,
+ expanded:document.getElementById("interactiveMap").classList.contains("map-expanded")
+});
 function network(){const b=$("#networkStatus");b.textContent=navigator.onLine?"CACHE PENDING":"OFFLINE MODE";b.classList.toggle("warn",!navigator.onLine);}
 window.addEventListener("online",network);window.addEventListener("offline",network);network();
 if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("./sw.js").then(()=>navigator.serviceWorker.ready).then(()=>{$("#networkStatus").textContent=navigator.onLine?"OFFLINE READY":"OFFLINE MODE";}).catch(()=>{$("#networkStatus").textContent="ONLINE ONLY";$("#networkStatus").classList.add("warn")});}else if(location.protocol!=="https:"){$("#networkStatus").textContent="HTTPS REQUIRED";}
