@@ -1,0 +1,42 @@
+name: M16 baseline viewport evidence
+on:
+  pull_request:
+    paths:
+      - 'docs/M16_BASELINE_AND_FEATURE_PARITY.md'
+      - 'tests/m16-baseline-capture.mjs'
+      - '.github/workflows/m16-baseline.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify unchanged six-tab baseline source
+        run: |
+          node --check tests/m16-baseline-capture.mjs
+          node --test tests/*.test.mjs
+      - name: Capture genuine Chromium baselines at all five viewport sizes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/m16-http-server.log 2>&1 &
+          CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          if [ -z "$CHROME_BIN" ]; then echo "Chromium not present"; exit 1; fi
+          export CHROME_BIN
+          sleep 1
+          node tests/m16-baseline-capture.mjs
+          test -f m16-baseline-evidence/baseline-layout.json
+      - name: Upload baseline viewport captures and layout diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m16-baseline-five-viewports
+          path: m16-baseline-evidence/
+          if-no-files-found: warn
+          retention-days: 30
