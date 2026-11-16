@@ -35,7 +35,7 @@
    click("#stopMapScan");
    const report=doc.querySelector("#mapScanReport").value;
    check(!win.TZ_SCAN.active,"scan stops after requested capture");
-   check(report.includes("TRANZIT MAP PERFORMANCE SCAN v1"),"scan generates copyable text");
+   check(report.includes("TRANZIT MAP PERFORMANCE SCAN v2"),"scan generates copyable text");
    check(report.includes("Pointer moves:"),"scan includes touch counts");
    check(report.includes("Median transform:"),"scan includes map update duration");
    check(report.includes("P95 frame interval:"),"scan includes frame pacing");
@@ -79,6 +79,34 @@
    fixedPin=doc.querySelector('#mapPins [data-zone="farm"] .site-pin');
    check(Math.abs(fixedPin.getBoundingClientRect().width-iconWidth)<1.2,"pinch zoom keeps icons a fixed size");
    check(Math.abs(fixedLabel.getBoundingClientRect().height-labelHeight)<1.2,"pinch zoom keeps map labels fixed size");
+   // Exercise Safari-style native TouchEvent stream; desktop pointer simulation alone
+   // cannot validate the handling path used by iOS Home Screen apps.
+   click("#resetMap");
+   click("#zoomIn");click("#zoomIn"); // zoom > 1, with genuine room to pan
+   const beforeNative=win.TZ_MAP_TELEMETRY();
+   const nativeAnchor=terrain.getAttribute("transform");
+   const touch=(identifier,x,y)=>({identifier,clientX:x,clientY:y});
+   const nt=(type,touches,changed=touches)=>{
+    const evt=new win.Event(type,{bubbles:true,cancelable:true});
+    Object.defineProperty(evt,"touches",{value:touches});
+    Object.defineProperty(evt,"changedTouches",{value:changed});
+    viewport.dispatchEvent(evt);
+   };
+   nt("touchstart",[touch(7,px,py)]);
+   nt("touchmove",[touch(7,px+48,py+15)]);
+   nt("touchmove",[touch(7,px+94,py+38)]);
+   nt("touchend",[],[touch(7,px+94,py+38)]);
+   const afterNative=win.TZ_MAP_TELEMETRY();
+   check(afterNative.nativeTouchHandled>=beforeNative.nativeTouchHandled+2,"native touch input must reach map");
+   check(afterNative.panChanged>beforeNative.panChanged,"native drag must change camera, not merely count touches");
+   check(terrain.getAttribute("transform")!==nativeAnchor,"native touch drag actually moves map");
+   const initialNativeZoom=afterNative.zoom;
+   nt("touchstart",[touch(8,px-32,py),touch(9,px+32,py)]);
+   nt("touchmove",[touch(8,px-32,py),touch(9,px+82,py)]);
+   nt("touchend",[],[touch(8,px-32,py),touch(9,px+82,py)]);
+   check(win.TZ_MAP_TELEMETRY().zoom>initialNativeZoom,"native two-finger pinch zooms map");
+   fixedPin=doc.querySelector('#mapPins [data-zone="farm"] .site-pin');
+   check(Math.abs(fixedPin.getBoundingClientRect().width-iconWidth)<1.2,"native touch pinch keeps icon size constant");
    click("#resetMap");
 
    click('#mapPins [data-item^="perk-"]');
