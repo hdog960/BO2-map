@@ -21,12 +21,12 @@ const markPrice=v=>v?'<span class="meta">'+esc(v)+(v==="Turbine"||v==="Grenade"|
 function category(type){return D.types[type]||D.types.secret}
 function modal(title,body){$("#modalTitle").textContent=title;$("#modalBody").innerHTML=body;const d=$("#modal");if(!d.open)d.showModal();}
 function renderNav(){
- $(".bottom-nav button").forEach(b=>{
+ $$(".bottom-nav button").forEach(b=>{
   const active=b.dataset.view===state.view;
   b.classList.toggle("selected",active);
   if(active)b.setAttribute("aria-current","page");else b.removeAttribute?.("aria-current");
  });
- $(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+state.view));
+ $$(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+state.view));
 }
 function go(view){state.view=view;save();renderNav();if(view==="map")renderMap();if(view==="zones")renderZones();if(view==="quest")renderQuest();if(view==="atlas")renderAtlas();if(view==="crew")renderCrew();window.scrollTo({top:0,behavior:"auto"});}
 function selectZone(id){state.zone=id;state.floor=0;save();go("zones");}
@@ -43,7 +43,7 @@ function renderMissionShortcut(){
 function drawFilters(){
  const box=$("#filterBar");
  box.innerHTML=Object.entries(D.types).filter(([id])=>id!=="stop").map(([id,t])=>'<button class="chip '+(state.mapFilters.includes(id)?"on":"")+'" type="button" data-filter="'+id+'" aria-pressed="'+state.mapFilters.includes(id)+'"><span class="dot" style="background:'+t.color+'"></span>'+esc(t.name)+'</button>').join("");
- $("#mapModeBar button").forEach(b=>{const active=b.dataset.mapMode===state.mapMode;b.classList.toggle("on",active);b.setAttribute("aria-pressed",String(active));});
+ $$("#mapModeBar button").forEach(b=>{const active=b.dataset.mapMode===state.mapMode;b.classList.toggle("on",active);b.setAttribute("aria-pressed",String(active));});
  $("#mapLayerStatus").textContent=state.mapMode==="custom"?"Custom · "+state.mapFilters.length+" visible":state.mapFilters.length+" active layers";
 }
 const svgNS="http://www.w3.org/2000/svg";let zoom=1,panX=0,panY=0,pointers=new Map(),dragged=false,lastDrag=0;
