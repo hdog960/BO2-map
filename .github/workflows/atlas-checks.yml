@@ -1,0 +1,24 @@
+name: TranZit Atlas checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  atlas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check source syntax
+        run: |
+          node --check data.js
+          node --check app.js
+          node --check sw.js
+      - name: Run source and PWA regression tests
+        run: node --test tests/atlas.test.mjs
