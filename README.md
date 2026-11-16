@@ -13,6 +13,18 @@ An independent, unofficial **Black Ops II TranZit** interactive atlas for **four
 - Manually saved local progress, part tracker, no account or backend.
 - Offline service worker and Home Screen manifest.
 
+## Craftables and colored part tracking
+
+Use the new **CRAFT** tab to choose from nine groups: Turbine (TB, gold), Zombie Shield (ZS, blue), Turret (TR, green), Electric Trap (ET, purple), Power Switch (PS, orange), Jet Gun (JG, cyan), Pack-a-Punch (PAP, red), NAV Table (NAV, pink), and Bus Upgrades (BUS, tan).
+
+Each buildable shows a linked list of its actual part names, known area and possible alternate spawns, part counts, and workbench (or installation instructions for bus upgrades). Tap **Show only this on map** to isolate matching part-site callouts and that craftable's bench, or **Map** by a specific part to jump to its area. The map's own craftable filter strip offers one-tap switching.
+
+The color, abbreviation and buildable name also appear in the field index and the Crew tracker. The progress checkboxes are shared: checking a part in CRAFT or on the map updates its existing on-device save key and Crew checklist.
+
+Important: the labels identify the **correct associated area** from the underlying source records; they are not fabricated exact pickup coordinates. Jet Gun parts have multiple in-area spawns. The three bus upgrades can appear across four powered rooms, one empty. Pack-a-Punch parts share an underground-bank source reference.
+
+References: [ZFRR TranZit buildables](https://zfrr.me/hub/tranzit-buildables/) and the [original BO2 community buildable guide](https://www.callofdutyzombies.com/zombie-library/zombies-library/black-ops_ii/tranzit/buildables-r283/).
+
 ## Icon placement accuracy audit
 
 **Status: all 130 catalog records reviewed; NOT exact-coordinate-certified.** The main ten landmark pins are aligned to the supplied Afrochubman/BradyGames-style fan map at the general-site level. Indoor pickup and door XY positions are not available from that source, and part spawns sometimes vary between games.
