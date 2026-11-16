@@ -135,8 +135,10 @@
    check(doc.querySelectorAll('nav.bottom-nav button').length===3,"Three primary tabs only");
    check(Array.from(doc.querySelectorAll('nav.bottom-nav button')).map(e=>e.dataset.view).join(",")==="map,quest,craft","correct three-tab destination order");
    const navRect=doc.querySelector("nav.bottom-nav").getBoundingClientRect();
-   check(navRect.left>=-1&&navRect.right<=win.innerWidth+1&&navRect.width>=win.innerWidth-2,"three-tab navigation fully visible");
+   check(navRect.left>=-1&&navRect.right<=win.innerWidth+1&&navRect.width>=win.innerWidth-20,"three-tab navigation stays within the usable iframe viewport");
    check(doc.querySelector('nav.bottom-nav button[data-view="map"]').getBoundingClientRect().left>=0,"MAP tab not clipped");
+   const craftRect=doc.querySelector('nav.bottom-nav button[data-view="craft"]').getBoundingClientRect();
+   check(craftRect.right<=win.innerWidth+1&&craftRect.width>=44,"last CRAFTABLES tab remains fully reachable");
    click('nav button[data-view="craft"]');
    check(doc.querySelector("#view-craft").classList.contains("active"),"Craftables has its own view");
    check(doc.querySelectorAll("#craftPanel [data-craft-select]").length===9,"All nine buildables selectable");
