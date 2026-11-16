@@ -127,13 +127,26 @@ function roomSvg(rooms){
 return '<div class="zone-art"><svg viewBox="0 0 610 355" role="img" aria-label="Conceptual room-adjacency diagram"><g stroke="#9f9575" stroke-width="3" opacity=".6" stroke-dasharray="6 8"><path d="M10 336 H600"/></g>'+rooms.map((r,i)=>'<g data-room="'+esc(r.name)+'" style="cursor:pointer"><rect class="room-shape '+(i%2?"alt":"")+'" x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" rx="5"/><text class="room-text" x="'+(r.x+r.w/2)+'" y="'+(r.y+r.h/2)+'">'+esc(r.name.length>24?r.name.slice(0,21)+"…":r.name)+'</text></g>').join("")+'</svg><div id="roomNotice" class="footer-note">Tap a room to highlight its name. Diagram is not a measured footprint or verified doorway layout.</div></div>';
 }
 function renderZones(){
-$("#zoneTabs").innerHTML=D.zones.map(z=>'<button class="chip '+(state.zone===z.id?"on":"")+'" data-zone-tab="'+z.id+'">'+esc(z.name)+'</button>').join("");
-const z=zone(state.zone)||D.zones[0];const plan=D.plans[z.id];const all=D.items.filter(i=>i.zone===z.id && i.type!=="stop");
-let html='<div class="card"><div class="kicker">'+(z.stop?"BUS STOP "+z.stop:"OFF-ROUTE")+'</div><h3>'+esc(z.name)+'</h3><p>'+esc(z.description)+'</p></div>';
-if(plan){const floor=plan.floors[Math.max(0,Math.min(state.floor,plan.floors.length-1))];html+='<div class="floor-toggle">'+plan.floors.map((f,i)=>'<button data-floor="'+i+'" class="'+(i===state.floor?"on":"")+'">'+esc(f.name)+'</button>').join("")+'</div>'+roomSvg(floor.rooms);}
-else html+='<div class="info">Off-route site: item locations below are in-game area descriptions. No invented interior walls are shown.</div>';
-for(const [type,t] of Object.entries(D.types)){const arr=all.filter(i=>i.type===type);if(!arr.length)continue;html+='<div class="location-group"><h3><span style="color:'+t.color+'">●</span> '+t.name+' · '+arr.length+'</h3>'+arr.map(i=>'<div class="row-item"><div class="left"><strong>'+esc(i.name)+'</strong><small>'+esc(i.room)+(i.price?" · "+esc(i.price):"")+'</small></div><button class="button ghost" data-show-item="'+i.id+'">Details</button></div>').join("")+'</div>';}
-$("#zonePlan").innerHTML=html;
+ const selector=$("#zoneSelect");
+ const stops=D.zones.filter(z=>z.stop).sort((a,b)=>a.stop-b.stop);
+ const hidden=D.zones.filter(z=>!z.stop);
+ selector.innerHTML='<optgroup label="Bus stops">'+stops.map(z=>'<option value="'+z.id+'">'+z.stop+'. '+esc(z.name)+'</option>').join("")+'</optgroup><optgroup label="Between stops & hidden areas">'+hidden.map(z=>'<option value="'+z.id+'">'+esc(z.name)+'</option>').join("")+'</optgroup>';
+ selector.value=state.zone;
+ $("#zoneTabs").innerHTML=stops.map(z=>'<button type="button" class="chip '+(state.zone===z.id?"on":"")+'" data-zone-tab="'+z.id+'">'+z.stop+'. '+esc(z.name.replace(" & Garage","").replace(" Station",""))+'</button>').join("");
+ const z=zone(state.zone)||D.zones[0],plan=D.plans[z.id];
+ const all=D.items.filter(i=>i.zone===z.id&&i.type!=="stop");
+ let html='<div class="card site-overview"><div class="kicker">'+(z.stop?"BUS STOP "+z.stop:"OFF-ROUTE LOCATION")+'</div><h3>'+esc(z.name)+'</h3><p>'+esc(z.description)+'</p><div class="actions"><button type="button" class="button ghost" data-search-zone="'+z.id+'">Find all '+all.length+' entries here</button></div></div>';
+ if(plan){
+  const floor=plan.floors[Math.max(0,Math.min(state.floor,plan.floors.length-1))];
+  html+='<div class="site-diagram-heading"><strong>Room guide</strong><span>Schematic · not measured</span></div><div class="floor-toggle">'+plan.floors.map((f,i)=>'<button type="button" data-floor="'+i+'" class="'+(i===state.floor?"on":"")+'" aria-pressed="'+(i===state.floor)+'">'+esc(f.name)+'</button>').join("")+'</div>'+roomSvg(floor.rooms);
+ }else html+='<div class="info">No verified interior plan for this landmark. Use the listed in-game area descriptions rather than guessing building geometry.</div>';
+ html+='<div class="site-diagram-heading"><strong>What is here?</strong><span>'+all.length+' entries</span></div>';
+ for(const [type,t] of Object.entries(D.types)){
+  const arr=all.filter(i=>i.type===type);if(!arr.length)continue;
+  html+='<div class="location-group"><h3><span style="color:'+t.color+'">●</span> '+esc(t.name)+' · '+arr.length+'</h3>'+
+  arr.map(i=>'<div class="row-item"><div class="left"><strong>'+esc(i.name)+'</strong><small>'+esc(i.room)+(i.price?" · "+esc(i.price):"")+'</small></div><button type="button" class="button ghost" data-show-item="'+i.id+'">Details</button></div>').join("")+'</div>';
+ }
+ $("#zonePlan").innerHTML=html;
 }
 function renderQuest(){
 $$("[data-side]").forEach(b=>b.classList.toggle("on",b.dataset.side===state.side));
