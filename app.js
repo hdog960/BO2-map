@@ -94,6 +94,30 @@ function isInMappedSite(item,zoneId){
 function placedItems(zoneId,type=null){
  return D.items.filter(i=>isInMappedSite(i,zoneId)&&(!type||i.type===type));
 }
+function renderCraftMapStrip(){
+ const box=$("#craftMapStrip");
+ if(!box)return;
+ box.innerHTML='<button type="button" class="craft-map-choice all '+(!state.craftFocus?"active":"")+'" data-craft-map="all">ALL</button>'+
+ D.builds.map(b=>'<button type="button" data-craft-map="'+b.id+'" class="craft-map-choice '+(state.craftFocus===b.id?"active":"")+'" style="--craft-color:'+b.color+'" aria-pressed="'+(state.craftFocus===b.id)+'"><span>'+esc(b.code)+'</span><small>'+esc(b.name)+'</small></button>').join("");
+}
+function buildMarkersAtSite(z,pins){
+ const b=buildById(state.craftFocus);if(!b)return;
+ const entries=D.items.filter(i=>i.buildId===b.id&&(i.type==="part"||i.type==="bench")&&isInMappedSite(i,z.id));
+ entries.forEach((item,index)=>{
+  const [x,y]=calloutSpot(z,index);
+  pins.appendChild(svgEl("line",{x1:x,y1:y,x2:z.x,y2:z.y,stroke:b.color,"stroke-width":1.5,"stroke-dasharray":"4 5",opacity:.8,"pointer-events":"none"}));
+  const g=pinGroup(x,y,{"data-item":item.id,"data-craft-pin":b.id,"class":"pin atlas-pin item-pin craft-source-pin",
+    "aria-label":b.name+" "+(item.type==="bench"?"workbench":item.name)+" at "+z.name+"; location callout"});
+  const mark=item.type==="bench"?"⚒":b.code,done=item.buildPartIndex!==null&&item.buildPartIndex!==undefined&&state.parts[b.id+":"+item.buildPartIndex];
+  g.append(svgEl("rect",{x:-17,y:-16,width:34,height:32,rx:8,fill:done?"#72b899":b.color,stroke:state.selected===item.id?"#fff":"#14252b","stroke-width":state.selected===item.id?3:2}));
+  g.append(svgEl("text",{x:0,y:5,fill:"#0b1b21","font-size":mark.length>2?10.5:13,"font-weight":"900","text-anchor":"middle"},done?"✓":mark));
+  const label=item.type==="bench"?"Workbench":item.name.replace(/^(Jet Gun|Turbine|Shield|Turret|Electric Trap|NAV) /,"");
+  const right=x<=520,tx=right?21:-21;
+  g.append(svgEl("text",{x:tx,y:4,"class":"item-map-label craft-map-label","text-anchor":right?"start":"end"},label.length>21?label.slice(0,19)+"…":label));
+  g.append(svgEl("title",{},b.name+" · "+item.name+" · "+z.name+" · "+item.room+(item.alternateZones.length?" · possible alternate area":"")));
+  pins.appendChild(g);
+ });
+}
 function drawMapKey(){
  const list=D.items.filter(i=>i.mapMode==="site-callout");
  const types=[["all","ALL","All",list.length],...Object.keys(MAP_SYMBOLS).map(type=>[type,MAP_SYMBOLS[type],MAP_LABELS[type],list.filter(i=>i.type===type).length])];
@@ -156,6 +180,7 @@ function renderMapMarkers(){
   const number=svgEl("text",{x:0,y:5,"font-size":z.stop?14:11,"font-weight":"900","text-anchor":"middle",fill:"#101c1f"},z.stop?z.stop:"◆");
   const title=svgEl("title",{},z.name+" — tap to inspect items in this area");
   site.append(main,number,title);pins.appendChild(site);
+  if(state.craftFocus){buildMarkersAtSite(z,pins);return;}
   const data=mapItemsFor(z.id);
   data.groups.forEach((categoryGroup,index)=>{
    const [x,y]=calloutSpot(z,index),type=categoryGroup.type,count=categoryGroup.items.length;
