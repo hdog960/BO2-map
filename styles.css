@@ -519,3 +519,95 @@ body.sheet-open{overflow:hidden;touch-action:pan-y}
  #interactiveMap.map-expanded .map-context{max-height:85%}
 }
 @media(max-width:370px){.map-filter-scroll .map-legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* M16.3 — Tower of Babble: one objective at a time, source-backed instructions.
+   Presentation only; D.quests, save keys, map links and player identities remain intact. */
+#view-quest{padding-top:9px;padding-bottom:calc(102px + env(safe-area-inset-bottom));max-width:850px;margin:0 auto}
+#view-quest .quest-heading{margin:0 0 11px;align-items:start}
+#view-quest .quest-heading h2{font-size:clamp(23px,5vw,29px);line-height:1.1;letter-spacing:-.65px;margin:2px 0 5px;color:#f2eadb}
+#view-quest .quest-heading p{max-width:none;font-size:12px;line-height:1.4;color:#c1c7be}
+#view-quest .quest-heading .eyebrow{font-size:10px;letter-spacing:1.4px;color:#e3b773}
+.quest-route-label{font-size:10px;font-weight:900;letter-spacing:1.25px;color:#d4b786;margin:0 0 5px}
+#view-quest .quest-route-choice{margin:0 0 9px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-radius:10px;background:#1c211f;border:1px solid #555046;padding:4px;gap:4px}
+#view-quest .quest-route-choice button{padding:7px 8px;min-height:51px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:#292d29;border-color:#454942;color:#deddd2;border-radius:8px;font-size:14px;letter-spacing:1px;font-weight:900}
+#view-quest .quest-route-choice button small{display:block;font-size:10px;color:#c0c2b7;font-weight:600;letter-spacing:.2px}
+#view-quest .quest-route-choice button.on{background:#ddae69;border-color:#f1c884;color:#201e18;box-shadow:inset 0 0 0 1px #f6d29c}
+#view-quest .quest-route-choice button.on small{color:#3d2c1b}
+#view-quest .quest-route-choice button:focus-visible{outline:2px solid #ffe5ac;outline-offset:3px}
+.quest-crew-disclosure{margin:0 0 9px;background:#202624;border:1px solid #4b5650;border-radius:9px;overflow:hidden}
+.quest-crew-disclosure>summary{display:flex;gap:8px;align-items:center;justify-content:space-between;min-height:44px;padding:8px 12px;font-size:11px;font-weight:850;letter-spacing:.55px;color:#f0d5a0;cursor:pointer;list-style:none}
+.quest-crew-disclosure>summary::-webkit-details-marker{display:none}
+.quest-crew-disclosure>summary span{font-size:10px;letter-spacing:0;font-weight:600;color:#bfc9c0}
+.quest-crew-disclosure[open]>summary{border-bottom:1px solid #49534a}
+.quest-crew-summary{padding:10px}
+.quest-roster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.quest-roster-person{padding:7px 9px;background:#2a312e;border:1px solid #3e4c44;border-radius:7px;min-width:0;display:grid;gap:2px}
+.quest-roster-person span{font-size:9px;letter-spacing:.9px;font-weight:800;color:#c5ae84}
+.quest-roster-person strong{font-size:12px;font-weight:750;overflow-wrap:anywhere;color:#f3e9d5}
+.quest-crew-footnote{font-size:11px;line-height:1.5;color:#c2c9c0;margin:9px 0}
+.quest-crew-disclosure .crew-access{width:calc(100% - 20px);margin:0 10px 10px;min-height:44px}
+.quest-progress{background:#1d2321;border:1px solid #414a41;padding:10px 12px 8px;border-radius:9px;margin:0 0 9px}
+.quest-progress-text{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;font-weight:850;letter-spacing:.75px;color:#d0d1c2}
+.quest-progress-text strong{font-size:17px;letter-spacing:-.4px;color:#f3d5a0}
+.quest-progress .progress-track{margin:7px 0 0;height:6px;background:#3d443f}
+.quest-progress .progress-bar{background:#d7ae6c}
+#view-quest .quest-prep{margin:0 0 9px;border:1px solid #716344;border-left:3px solid #dfb26b;background:#272923;border-radius:9px;overflow:hidden}
+#view-quest .quest-prep summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:6px;font-weight:850;font-size:11px;letter-spacing:.3px;color:#f1d9a9;padding:9px 11px}
+#view-quest .quest-prep summary span{color:#c6c2ae;font-size:10px;letter-spacing:0;font-weight:650}
+.quest-prep-content{padding:0 12px 10px}
+#view-quest .quest-prep p{margin:5px 0;color:#d0cbbb;font-size:12px;line-height:1.55}
+#view-quest .quest-next{background:linear-gradient(125deg,#3b3529,#262b26 62%);border:1px solid #d4a966;border-top:4px solid #e8bb74;border-radius:12px;padding:13px 14px 12px;margin:0 0 13px}
+#view-quest .quest-next .num{display:flex;justify-content:space-between;gap:8px;color:#f1c780;font-size:10px;letter-spacing:1.15px;font-weight:950}
+#view-quest .quest-next .num span{white-space:nowrap;color:#e9d6af;letter-spacing:0}
+#view-quest .quest-next h3{font-size:clamp(18px,4.5vw,23px);line-height:1.2;color:#fff0d2;letter-spacing:-.35px;margin:8px 0 7px}
+#view-quest .quest-next>p{font-size:12px;line-height:1.58;color:#e0e1d6;margin:0 0 9px;overflow-wrap:anywhere}
+.quest-next-meta{display:flex;flex-wrap:wrap;gap:6px 8px;margin:8px 0}
+.quest-next-meta span{display:inline-flex;align-items:center;min-height:27px;padding:4px 8px;border:1px solid #70634e;background:#252925;border-radius:6px;color:#efd5ab;font-size:11px;font-weight:750}
+#view-quest .quest-next-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:12px 0 5px}
+#view-quest .quest-next-actions button{min-height:48px;white-space:normal;line-height:1.2;text-align:center;padding:8px 9px;border-radius:8px}
+#view-quest .quest-next-actions .quest-location{background:#d7a966;color:#1d211d;border-color:#ebc689}
+#view-quest .quest-next-actions .quest-complete{background:#323c35;color:#eaf1e5;border-color:#719277}
+#view-quest .quest-next .quest-manual-caveat{font-size:10px;line-height:1.4;color:#cbbd9e;margin:7px 0 0}
+#view-quest .quest-complete{border-color:#76ae8f;background:#26392d}
+.quest-list-heading{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:0 1px 8px;color:#e8dbc7}
+.quest-list-heading strong{font-size:11px;letter-spacing:.9px;color:#ddbd86}
+.quest-list-heading span{color:#b6c2b8;font-size:10px;text-align:right}
+#view-quest .quest-step{margin:6px 0;border-radius:9px;border-color:#48534a;background:#202724;padding:10px 11px}
+#view-quest .quest-step.current{border-color:#d0a765;background:#292b24}
+#view-quest .quest-step.done{opacity:1;border-color:#406f59;background:#1c2922}
+#view-quest .quest-step .step-top{align-items:center;gap:10px}
+#view-quest .quest-step .tick{width:44px;min-width:44px;height:44px;min-height:44px;font-size:16px}
+#view-quest .quest-step .tick.checked{background:#2a6750;color:#eaf9e7;border-color:#74a789}
+.quest-step-head{flex:1;min-width:0}
+.quest-step-head strong{display:block;font-size:13px;line-height:1.35;color:#f0eadb}
+.quest-step-head .step-count{font-size:10px;color:#bac7bb;margin:3px 0 0}
+.quest-step-state{font-size:9px;letter-spacing:.9px;font-weight:850;color:#ccae7c;display:block;margin-bottom:3px}
+.quest-step.done .quest-step-state{color:#96d5ad}
+#view-quest .quest-step-details{margin:8px 0 0;border-top:1px solid #445248;padding-top:0}
+#view-quest .quest-step-details>summary{min-height:44px;font-size:11px;color:#e7cd99;padding:6px 0;letter-spacing:.25px}
+#view-quest .quest-step-details>summary::before{font-size:18px}
+.quest-step-body{padding:0 0 6px}
+#view-quest .quest-step-body>p{font-size:12px;line-height:1.58;color:#d5dbd0;margin:6px 0 12px}
+#view-quest .quest-step-body .step-extra{margin:0;gap:7px}
+#view-quest .quest-step-body .step-extra button{min-height:44px}
+#view-quest .quest-step-body .assign{max-width:none;width:100%;min-height:44px;font-size:13px;color:#f0ebdf;background:#29342e;border-color:#697166}
+.quest-troubleshooting{margin:7px 0 0;border:1px solid #495248;border-radius:7px;padding:0 10px;background:#262d26}
+.quest-troubleshooting summary{min-height:44px;display:flex;align-items:center;color:#e2c18c;font-size:11px;font-weight:750;cursor:pointer}
+#view-quest .quest-troubleshooting p{font-size:11px;line-height:1.55;margin:0 0 9px;color:#cbd1c6}
+@media(min-width:700px){
+ #view-quest{padding-inline:24px}
+ .quest-roster{grid-template-columns:repeat(4,minmax(0,1fr))}
+ #view-quest .quest-next{padding:17px 19px}
+ #view-quest .quest-next-actions{max-width:485px}
+}
+@media(orientation:landscape) and (max-height:470px){
+ #view-quest{padding-top:5px}
+ #view-quest .quest-heading{margin-bottom:5px}
+ #view-quest .quest-heading h2{font-size:20px;margin:2px 0}
+ #view-quest .quest-heading p{display:none}
+ #view-quest .quest-route-choice{margin-bottom:6px}
+ #view-quest .quest-route-choice button{min-height:44px;flex-direction:row;gap:8px}
+ #view-quest .quest-route-choice button small{font-size:10px}
+ #view-quest .quest-next{padding:11px 13px}
+}
