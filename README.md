@@ -21,6 +21,12 @@ The bottom navigation provides a **separate EASTER EGG tab** with the complete M
 
 The map supports touch pan/pinch zoom, a Full map view and local part/door tracking. All content stays available offline after an online cache load. See ROADMAP.md (M10) for implementation and accuracy boundaries.
 
+## Diagnose iPhone map lag
+
+If dragging or pinching the map feels jerky, open the **Map** tab, tap **Scan**, then **Start 15-second scan**. Move the map with one finger and pinch-zoom with two fingers while the scan records. When it finishes, tap **Copy report** and paste the text into the ChatGPT development conversation. If iOS blocks clipboard access, the report remains selectable in the text box.
+
+The scan measures frame pacing, touch events and local SVG map-update cost. It runs entirely on the phone without a backend. No game saves, account data or precise location are collected, and no report is transmitted unless you manually share it.
+
 ## Install on iPhone
 1. Open the app in Safari while online.
 2. Use Share > Add to Home Screen.
