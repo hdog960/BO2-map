@@ -159,6 +159,6 @@ Remaining gate: physical Safari/installed-PWA testing on the user's iPhone. Head
 
 **New map contract:** 91 location-linked item records are reachable through category badges with dashed leader lines to the appropriate *site* anchor. The 39 other entries are stop pins or global/mobile/dynamic references and have no fabricated item pins. The five bus stops remain marked independently. NAV Radio, wooden board, and electrical box have alternate zones. All 130 items remain accessible by Find.
 
-**CI:** \`tests/icon-placement-audit.test.mjs\` hard-fails incomplete placement classification and unsourced coordinate-slot logic. Existing UI, native touch, quest, part tracking and PWA validation remain in place. Offline cache v11.
+**CI:** \`tests/icon-placement-audit.test.mjs\` hard-fails incomplete placement classification and unsourced coordinate-slot logic. Existing UI, native touch, quest, part tracking and PWA validation remain in place. Offline cache v12. Browser screenshot audit also reduced the default density to two visible site-category badges per location, with more revealed by the legend or deep zoom.
 
 **Not complete:** no item/floor XY can be certified 100% until matched against exact, independently checked gameplay views or authoritative geometry. Complete site-level associations must not be mislabeled as a complete pixel-exact map. The visual layout is a schematic reference map, not an extraction of game scene geometry.
