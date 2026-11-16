@@ -169,10 +169,19 @@ function renderQuest(){
  $("#questPanel").innerHTML=html;
 }
 function renderAtlas(){
-const active=state.atlasFilter;
-$("#atlasFilters").innerHTML='<button class="chip '+(active==="all"?"on":"")+'" data-atlas-filter="all">All</button>'+Object.entries(D.types).map(([k,t])=>'<button class="chip '+(active===k?"on":"")+'" data-atlas-filter="'+k+'">'+esc(t.name)+'</button>').join("");
-const term=$("#atlasSearch").value.trim().toLowerCase();const arr=D.items.filter(i=>(active==="all"||i.type===active)&&(!term||[i.name,i.room,i.detail,zone(i.zone).name,i.price,category(i.type).name].join(" ").toLowerCase().includes(term)));
-$("#atlasItems").innerHTML=arr.map(i=>{const t=category(i.type);return '<button type="button" class="atlas-item" data-show-item="'+i.id+'"><span class="symbol" style="background:'+t.color+'">'+esc(t.short)+'</span><span><strong>'+esc(i.name)+'</strong><small>'+esc(zone(i.zone).name)+' · '+esc(i.room)+'</small></span><span class="arr">'+(state.found[i.id]?"✓":"›")+'</span></button>';}).join("")||'<div class="empty">Nothing matches this search. Try a different word or category.</div>';
+ const active=state.atlasFilter;
+ $("#atlasFilters").innerHTML='<button class="chip '+(active==="all"?"on":"")+'" data-atlas-filter="all" type="button">All · '+D.items.length+'</button>'+Object.entries(D.types).map(([k,t])=>'<button type="button" class="chip '+(active===k?"on":"")+'" data-atlas-filter="'+k+'">'+esc(t.name)+' · '+D.items.filter(x=>x.type===k).length+'</button>').join("");
+ const term=$("#atlasSearch").value.trim().toLowerCase();
+ const results=D.items.filter(i=>(active==="all"||i.type===active)&&(!term||[i.name,i.room,i.detail,zone(i.zone).name,i.price,category(i.type).name].join(" ").toLowerCase().includes(term)));
+ if(term)results.sort((a,b)=>{
+  const rank=x=>x.name.toLowerCase()===term?0:x.name.toLowerCase().startsWith(term)?1:x.name.toLowerCase().includes(term)?2:3;
+  return rank(a)-rank(b);
+ });
+ $("#atlasCount").textContent=results.length+(results.length===1?" result":" results")+(term?' for "'+$("#atlasSearch").value.trim()+'"':" · Choose a category or search above");
+ $("#atlasItems").innerHTML=results.map(i=>{
+  const t=category(i.type);
+  return '<button type="button" class="atlas-item" data-show-item="'+esc(i.id)+'" aria-label="'+esc(i.name)+' in '+esc(zone(i.zone).name)+'"><span class="symbol" style="background:'+t.color+'">'+esc(t.short)+'</span><span><strong>'+esc(i.name)+'</strong><small>'+esc(zone(i.zone).name)+' · '+esc(i.room)+'</small></span><span class="arr">'+(state.found[i.id]?"✓":"›")+'</span></button>';
+ }).join("")||'<div class="empty"><strong>No matching locations</strong><p>Try another name, perk, door, or location; or clear your search.</p><button type="button" class="button ghost" data-quick-find="">Clear search</button></div>';
 }
 function renderCrew(){
 const done=Object.values(state.done).filter(Boolean).length,parts=Object.values(state.parts).filter(Boolean).length;
