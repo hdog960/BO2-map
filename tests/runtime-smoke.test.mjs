@@ -21,11 +21,14 @@ function boot(seed=null){
  const click=(dataset,id='')=>document.events.click({target:{closest(){return{dataset,id}}}});
  return {els,click,document,saved:()=>JSON.parse(stored)};
 }
-test('application starts without throwing and fills all five views',()=>{
+test('application starts with interactive map key and all other screens intact',()=>{
  const {els}=boot();
- for(const [name,min] of [['filterBar',200],['zonePlan',200],['questPanel',200],['atlasItems',200],['crewPanel',200]])assert.ok(els[name].innerHTML.length>min,name);
- assert.match(els.questPanel.innerHTML,/MAXIS|Avogadro/i);
+ for(const [name,min] of [['mapLegend',300],['zonePlan',200],['questPanel',200],['atlasItems',200],['crewPanel',200]])assert.ok(els[name].innerHTML.length>min,name);
+ assert.match(els.mapLegend.innerHTML,/Perks/);
+ assert.match(els.mapLegend.innerHTML,/Turbine doors/);
+ assert.match(els.questPanel.innerHTML,/Avogadro|MAXIS/i);
 });
+
 test('selecting Richtofen switches to its eight-step quest path',()=>{
  const {els,click,saved}=boot();click({side:'richtofen'});
  assert.match(els.questPanel.innerHTML,/Four-player simultaneous EMP throw/);
@@ -37,14 +40,15 @@ test('quest checkbox is persistent',()=>{
  assert.equal(saved().done['maxis:0'],true);
  assert.match(els.questPanel.innerHTML,/1\/6/);
 });
-test('switching map marker filter updates state and output',()=>{
+test('map key focuses a category and restores overview',()=>{
  const {els,click,saved}=boot();
- assert.match(els.filterBar.innerHTML,/Perks/);
- click({filter:'perk'});
- assert.ok(saved().mapFilters.includes('perk'));
- assert.equal(saved().mapMode,'custom');
- assert.ok(els.filterBar.innerHTML.length>200);
+ click({mapKey:'perk'});
+ assert.equal(saved().mapKind,'perk');
+ assert.match(els.mapLegend.innerHTML,/aria-pressed="true"/);
+ click({mapKey:'all'});
+ assert.equal(saved().mapKind,'all');
 });
+
 test('tracking buildable parts persists and reset clears progress',()=>{
  const {els,click,saved}=boot();
  click({part:'jet:0'});assert.equal(saved().parts['jet:0'],true);
@@ -60,36 +64,46 @@ test('in-app details dialog opens and closes',()=>{
  assert.equal(els.modal.open,true);assert.equal(els.modalTitle.textContent,"Quick Revive");assert.match(els.modalBody.innerHTML,/Depot hall/);
 });
 
-test('clicking a map category cluster lists real area items',()=>{
+test('tapping map item listings reveals their real names and rooms',()=>{
  const {els,click,saved}=boot();
- click({group:'town|perk'});
+ click({mapMore:'town'});
  assert.match(els.mapContext.innerHTML,/Juggernog/);
  assert.match(els.mapContext.innerHTML,/Stamin-Up/);
- assert.equal(saved().selected,'group:town|perk');
+ assert.equal(saved().selected,'more:town');
+ click({mapItem:'perk-town-juggernog-burning-building-upper-floor'});
+ assert.match(els.mapContext.innerHTML,/2500/);
+ assert.match(els.mapContext.innerHTML,/Burning building upper floor/);
 });
 
-test('new navigation and map shortcut render for the first-time user',()=>{
- const {els}=boot();
- assert.match(els.mapMission.innerHTML,/NEXT UP/);
- assert.match(els.mapMission.innerHTML,/Turbines/);
- assert.equal(els.mapLayerStatus.textContent,'0 active layers');
+test('map key is always populated; the walkthrough is a separate screen',()=>{
+ const {els,click,saved}=boot();
+ assert.match(els.mapLegend.innerHTML,/All/);
  assert.match(els.zoneSelect.innerHTML,/Bus stops/);
  assert.match(els.atlasCount.textContent,/130 results/);
+ click({view:'quest'});
+ assert.equal(saved().view,'quest');
+ assert.match(els.questPanel.innerHTML,/Your next objective/i);
 });
-test('quick map modes select curated layers instead of requiring ten filters',()=>{
+
+test('key offers paid and Turbine door visibility without mode menus',()=>{
  const {click,saved,els}=boot();
- click({mapMode:'doors'});
- assert.equal(saved().mapMode,'doors');
- assert.deepEqual(Array.from(saved().mapFilters),['paid','turbine','special']);
- assert.match(els.mapLayerStatus.textContent,/3 active/);
- click({mapMode:'route'});
- assert.deepEqual(Array.from(saved().mapFilters),[]);
+ click({mapKey:'paid'});
+ assert.equal(saved().mapKind,'paid');
+ assert.match(els.mapLegend.innerHTML,/Paid doors/);
+ click({mapKey:'turbine'});
+ assert.equal(saved().mapKind,'turbine');
+ click({mapKey:'all'});
+ assert.equal(saved().mapKind,'all');
 });
-test('map shortcut follows the next uncompleted Easter egg step',()=>{
- const {click,els}=boot();
- click({questDone:'0'});click({view:'map'});
- assert.match(els.mapMission.innerHTML,/Build and turn on the power/);
+
+test('Easter Egg Locate links directly back to correct map landmark',()=>{
+ const {click,els,saved}=boot();
+ click({view:'quest'});click({questZone:'power'});
+ assert.equal(saved().view,'map');
+ assert.match(els.mapContext.innerHTML,/Power Station/);
+ assert.equal(saved().selected,'zone:power');
 });
+
 test('quick find searches names and returns a visible count',()=>{
  const {click,els,saved}=boot();
  click({quickFind:'Jet Gun'});
@@ -119,14 +133,16 @@ test('compact crew view retains all nine expandable buildable checklists',()=>{
  assert.match(els.crewPanel.innerHTML,/Turbine/);
  assert.match(els.crewPanel.innerHTML,/PLAYER 4/);
 });
-test('prior user layers survive upgrade to the new map presets',()=>{
- const old=JSON.stringify({mapFilters:['perk','bench'],done:{'maxis:1':true},view:'map'});
+test('old saved quest and item checkmarks are preserved on map rebuild',()=>{
+ const old=JSON.stringify({mapFilters:['perk','bench'],done:{'maxis:1':true},view:'map',found:{'door-temp':true}});
  const {click,saved}=boot(old);
- click({view:'map'});
- assert.equal(saved().mapMode,'custom');
- assert.deepEqual(Array.from(saved().mapFilters),['perk','bench']);
+ click({mapKey:'perk'});
+ assert.equal(saved().mapKind,'perk');
  assert.equal(saved().done['maxis:1'],true);
+ assert.equal(saved().found['door-temp'],true);
+ assert.deepEqual(Array.from(saved().mapFilters),['perk','bench']);
 });
+
 test('reset match clears progress but retains the four operator names',()=>{
  const {click,saved}=boot();
  click({part:'jet:0'});click({questDone:'0'});
@@ -134,4 +150,24 @@ test('reset match clears progress but retains the four operator names',()=>{
  assert.deepEqual(Object.keys(saved().parts),[]);
  assert.deepEqual(Object.keys(saved().done),[]);
  assert.equal(saved().crew[0],'Player 1');
+});
+
+test('map information sheet can be dismissed without clearing game progress',()=>{
+ const {els,click,saved}=boot();
+ click({view:'quest'});click({questDone:'0'});
+ click({zone:'diner'});
+ assert.match(els.mapContext.innerHTML,/Diner/);
+ assert.equal(els.mapContext.hidden,false);
+ click({},'closeMapContext');
+ assert.equal(els.mapContext.hidden,true);
+ assert.equal(saved().done['maxis:0'],true);
+});
+test('Find can send a selected item back to the map',()=>{
+ const {els,click,saved}=boot();
+ click({showItem:'perk-depot-quick-revive-depot-hall-hallway-near-main-door'});
+ assert.match(els.modalBody.innerHTML,/Show on map/);
+ click({findOnMap:'perk-depot-quick-revive-depot-hall-hallway-near-main-door'});
+ assert.equal(saved().view,'map');
+ assert.equal(saved().mapKind,'perk');
+ assert.match(els.mapContext.innerHTML,/Quick Revive/);
 });
