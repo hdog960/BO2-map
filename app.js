@@ -205,7 +205,7 @@ function pointerToMap(e){
 function positionMapOverlays(){
  // Reapply inverse zoom on rare zoom/viewport changes; pan updates only two parent groups.
  const fixedSize=1/(zoom*mapPixelScale());
- for(const node of $("#mapLabels [data-world-x],#mapPins [data-world-x]")){
+ for(const node of $$("#mapLabels [data-world-x],#mapPins [data-world-x]")){
   const x=Number(node.dataset.worldX),y=Number(node.dataset.worldY);
   node.setAttribute("transform","translate("+x+" "+y+") scale("+fixedSize.toFixed(5)+")");
  }
