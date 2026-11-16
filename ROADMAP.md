@@ -144,6 +144,6 @@ Remaining gate: physical Safari/installed-PWA testing on the user's iPhone. Head
 - Relaxed the fit-level pan allowance and preserved world-positioned, fixed-screen-size item icons and label typography.
 - Updated the local diagnostic to **v2**, adding input-to-camera counters so future scans distinguish unhandled touches from clamped movement and rendering delays.
 - Added automated browser tests dispatching native TouchEvent-style events to verify drags and pinches move the camera. Kept existing PointerEvent smoke, map markers, quest tracking, and saved progress checks.
-- Bumped offline PWA cache to \`tranzit-atlas-v9\`.
+- Bumped offline PWA cache to \`tranzit-atlas-v10\`.
 
 **Verification gate:** Exact GitHub main, Node/Chromium tests, and Pages deploy are required. User must still confirm dragging with a physical-iPhone playtest and, if necessary, copy the v2 map scan.
