@@ -163,24 +163,23 @@ test('zoom scales the terrain only and not the icon/text overlays',()=>{
  assert.match(css,/#worldMap\{transform:none!important/);
  assert.match(css,/#mapLabels .fixed-world-label/);
 });
-test('pinch and drag both use camera-space deltas and bounded pan',()=>{
+test('pinch and drag use bounded camera-space deltas and retain desktop fallback',()=>{
  const app=read('app.js');
- assert.match(app,/panX\+=at\.x-prev\.x/);
- assert.match(app,/panY\+=at\.y-prev\.y/);
- assert.match(app,/oldMid/);
- assert.match(app,/newSpan\/previousSpan/);
+ assert.match(app,/function moveCamera\(/);
+ assert.match(app,/panX\+=dx/);
+ assert.match(app,/panY\+=dy/);
+ assert.match(app,/function pinchCamera\(/);
  assert.match(app,/function clampMap\(/);
  assert.match(app,/pointercancel/);
  assert.match(app,/wheel",e=>/);
 });
-
 test('Map Diagnostics is available in the map view and offline precache',()=>{
  const html=read('index.html'),sw=read('sw.js'),js=read('diagnostics.js');
  for(const id of ['openMapScan','mapScanPanel','startMapScan','stopMapScan','copyMapScan','mapScanReport'])
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/src="\.\/diagnostics\.js"/);
  assert.match(sw,/'\.\/diagnostics\.js'/);
- assert.match(js,/TRANZIT MAP PERFORMANCE SCAN v1/);
+ assert.match(js,/TRANZIT MAP PERFORMANCE SCAN v2/);
  assert.match(js,/requestAnimationFrame/);
  assert.match(js,/pointermove/);
  assert.match(js,/recordMapWork/);
@@ -193,4 +192,22 @@ test('Map scanner is opt-in and does not silently upload reports',()=>{
  assert.match(code,/copyMapScan/);
  assert.doesNotMatch(code,/\bfetch\(|XMLHttpRequest|sendBeacon\(|WebSocket\(/);
  assert.match(read('app.js'),/window\.TZ_MAP_TELEMETRY/);
+});
+
+test('iPhone uses native touch streams instead of brittle pointer capture',()=>{
+ const app=read('app.js');
+ assert.match(app,/vp\.addEventListener\("touchstart",nativeTouchStart,\{passive:true\}\)/);
+ assert.match(app,/vp\.addEventListener\("touchmove",nativeTouchMove,\{passive:false\}\)/);
+ assert.match(app,/vp\.addEventListener\("touchend",nativeTouchEnd/);
+ assert.match(app,/nativeTouchSeen&&e\.pointerType==="touch"/);
+ assert.match(app,/function moveCamera\(/);
+ assert.match(app,/function pinchCamera\(/);
+ assert.match(app,/e\.preventDefault\(\)/);
+});
+test('initial map allows panning and reports blocked camera input separately',()=>{
+ const app=read('app.js'),diag=read('diagnostics.js');
+ assert.match(app,/let zoom=1\.7,panX=-252,panY=-203/);
+ for(const key of ['nativeTouchHandled','pointerHandled','panChanged','panAtBoundary','cameraFrames','pointerCaptureLost'])
+  assert.ok(app.includes(key)&&diag.includes(key),key);
+ assert.match(diag,/Camera movement blocked by edge/);
 });
