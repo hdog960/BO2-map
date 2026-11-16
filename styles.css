@@ -336,3 +336,83 @@ body.atlas-expanded{overflow:hidden}
 @media(max-width:365px){.craft-selector-grid{grid-template-columns:1fr}.craft-detail{padding:12px 10px}.craft-bench{grid-template-columns:1fr}.craft-bench .button{grid-row:auto;grid-column:1;max-width:none}.bottom-nav button{font-size:8px}.bottom-nav button span{font-size:20px}}
 @media(min-width:740px){.craft-selector-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.craft-part-list{grid-template-columns:repeat(2,minmax(0,1fr))}.craft-detail{padding:20px}}
 @media(orientation:landscape) and (max-height:470px){.bottom-nav{grid-template-columns:repeat(6,minmax(0,1fr))}.bottom-nav button{font-size:9px}}
+
+
+/* M16.1 THREE-TAB FOUNDATION — restrained Black Ops II field-guide tokens.
+   The source map geometry, color-coded buildables and constant-size SVG overlays are untouched. */
+:root{
+ color-scheme:dark;
+ --bg:#101111;--surface:#1a1c1d;--card:#222526;--line:#454544;
+ --text:#f1ece0;--muted:#bcb8ac;--gold:#dea85d;--teal:#91b5ae;
+ --green:#99c5a7;--red:#d78e7b;--purple:#bca8cd;
+ --field-ink:#f1ece0;--field-dim:#c2bbac;--field-accent:#dba357;
+ --field-stroke:#494843;--field-surface:#1b1e1e;
+}
+[hidden]{display:none!important}
+html{scrollbar-gutter:stable;overscroll-behavior-y:contain}
+body{background:var(--bg);color:var(--field-ink)}
+.app{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+.top{height:64px;background:#151717;border-bottom-color:var(--field-stroke)}
+.brand-mark{border-radius:5px;padding:6px 10px 6px 7px;border-width:1px;letter-spacing:-2px}
+.brand h1{font-size:19px;letter-spacing:1.2px}
+.offline{color:#b9c6a9}
+.notice{display:none}
+.iconbtn,.top-actions button{min-height:44px;min-width:44px;width:44px;height:44px;background:#252828;border-color:var(--field-stroke);border-radius:8px}
+.button{min-height:44px;border-radius:8px;background:#6f4d29;border-color:#a47741}
+.button.ghost{background:#272a2a;color:var(--field-ink);border-color:var(--field-stroke)}
+.section-head h2{font-size:24px;letter-spacing:-.3px}
+.section-head p{color:var(--field-dim)}
+.map-wrap,#interactiveMap{box-shadow:none;border-color:#5a5448;border-radius:9px}
+.map-topline{background:#252623;color:#e3be85}
+.atlas-heading{margin-bottom:9px}
+.atlas-heading h2{font-size:24px;margin:1px 0 2px}
+.atlas-heading p{font-size:12px}
+#view-map{padding-top:8px}
+#mapViewport{background:#1b211f}
+.map-tools button{min-width:44px;min-height:44px;width:44px;height:44px;border-radius:8px}
+.map-context{background:#202321f7;border:1px solid #a17a4e;border-radius:12px}
+.map-context .map-card-top button,.map-card-items button,.map-card-actions .button{min-height:44px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px;padding:5px max(8px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:#181a19;border-top:1px solid #615238;z-index:30}
+.bottom-nav button{min-height:55px!important;border:1px solid #3b3d39;border-radius:8px;background:#232625;color:var(--field-ink);font-size:11px;font-weight:850;letter-spacing:.5px}
+.bottom-nav button.selected{background:#463726;color:#ffe1a2;box-shadow:inset 0 0 0 1px #b28b58}
+.bottom-nav button span{font-size:20px;line-height:1.1}
+.crew-access{width:100%;margin:0 0 10px;text-align:center}
+body.sheet-open{overflow:hidden;touch-action:pan-y}
+.aux-sheet{position:fixed;inset:env(safe-area-inset-top) 0 0;z-index:850;background:#0b0d0dd9;padding:7px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));display:flex;align-items:flex-end;justify-content:center;overscroll-behavior:contain}
+.aux-sheet-inner{background:#1a1d1c;border:1px solid #686053;border-bottom:0;border-radius:15px 15px 0 0;width:min(100%,780px);height:min(92dvh,900px);display:flex;flex-direction:column;min-height:0;box-shadow:0 0 28px #0009}
+.sheet-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--field-stroke);flex:0 0 auto;background:#212422;border-radius:14px 14px 0 0}
+.sheet-bar h2{font-size:19px;line-height:1.1;margin:3px 0;color:var(--field-ink)}
+.sheet-close{min-height:44px;min-width:80px;padding:8px 10px;background:#383832;color:#f5ddae;border:1px solid #75684e;border-radius:8px;font-size:13px;font-weight:800}
+.sheet-bar .eyebrow{font-size:9px;letter-spacing:1.2px}
+.aux-sheet-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable}
+.aux-sheet .view{display:none;padding:14px}
+.aux-sheet .view.active{display:block;animation:none}
+.aux-sheet .section-head{margin-bottom:10px}
+.aux-sheet .section-head h2{font-size:20px}
+.aux-sheet .section-head p{font-size:12px}
+.aux-sheet .atlas-list{padding-bottom:20px}
+.aux-sheet .search-shell{position:relative}
+.aux-sheet input,.aux-sheet select{min-height:44px}
+.aux-sheet button,.aux-sheet summary{touch-action:manipulation}
+.aux-sheet .quick-find button{min-height:44px}
+#modal{background:#202321;border:1px solid #776344;color:var(--field-ink)}
+#modal .modal-header{border-color:var(--field-stroke)}
+#modal::backdrop{background:#060706bd}
+@media(max-width:390px){.top{height:60px}.brand h1{font-size:17px}.brand-mark{padding:5px 8px 5px 6px}.top-actions{gap:5px}}
+@media(orientation:landscape) and (max-height:470px){
+ .top{height:50px;min-height:50px;padding-top:3px;padding-bottom:3px}
+ .brand .eyebrow,.brand h1 small{display:none}
+ .brand h1{font-size:17px}
+ .brand-mark{font-size:16px}
+ #view-map{padding-top:4px}
+ .atlas-heading{margin-bottom:5px}
+ .atlas-heading .eyebrow,.atlas-heading p{display:none}
+ .atlas-heading h2{font-size:20px}
+ .atlas-heading #mapFullScreen{min-height:44px}
+ .bottom-nav{padding-top:2px;padding-bottom:max(3px,env(safe-area-inset-bottom))}
+ .bottom-nav button{min-height:44px!important;display:flex;justify-content:center;align-items:center;gap:7px}
+ .bottom-nav button span{font-size:17px}
+ .aux-sheet-inner{height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 6px);max-height:none;width:min(100%,900px)}
+ .sheet-bar{padding:3px 12px}
+ .aux-sheet .view{padding:10px 14px}
+}
