@@ -71,3 +71,35 @@ test('data references include original-era quest / door evidence',()=>{
  assert.ok(D.references.some(r=>r.url.includes('tranzit-easter-egg')));
  assert.ok(D.references.some(r=>r.url.includes('neoseeker')));
 });
+
+test('world map uses the supplied-reference geometry and separate art layer',()=>{
+ const html=read('index.html');
+ assert.match(html,/id="worldMap" viewBox="0 0 720 580"/);
+ assert.match(html,/href="\.\/world-art\.svg"/);
+ const art=read('world-art.svg');
+ assert.match(art,/<svg[^>]*viewBox="0 0 720 580"/);
+ for(const text of ['FARM','DINER / GARAGE','TOWN CENTER','BUS DEPOT','POWER STATION','THE TUNNEL','OBELISK / PYLON','PROTOTYPE / NACHT','CABIN','BRIDGE']){
+  assert.ok(art.includes(text),text);
+ }
+ assert.match(art,/class="route-surface"/);
+ assert.match(art,/class="lamp"/);
+});
+test('reference zones match the uploaded image geography',()=>{
+ const p=Object.fromEntries(D.zones.map(z=>[z.id,z]));
+ assert.ok(p.farm.x < p.diner.x,'Farm should be west of Diner');
+ assert.ok(p.farm.y < p.town.y,'Farm should be north of Town');
+ assert.ok(p.diner.y < p.depot.y,'Diner should be north of Depot');
+ assert.ok(p.power.x < p.town.x,'Power should be west of Town');
+ assert.ok(p.power.y > p.farm.y,'Power should be south of Farm');
+ assert.ok(p.town.x < p.depot.x,'Town should be west of Bus Depot');
+ assert.ok(p.nacht.x < p.pylon.x,'Prototype lies across road, west of Obelisk');
+ assert.match(p.nacht.name,/Prototype/);
+ for(const z of D.zones){assert.ok(z.x>=0&&z.x<=720,z.id);assert.ok(z.y>=0&&z.y<=580,z.id);}
+});
+test('map markers are zone based and no longer invent individual item positions',()=>{
+ const app=read('app.js');
+ assert.match(app,/grouped\[key\]/);
+ assert.match(app,/group\.dataset\.group=key/);
+ assert.doesNotMatch(app,/137\.507/);
+ assert.match(app,/pins indicate areas|Pins indicate areas/i);
+});
