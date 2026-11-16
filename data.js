@@ -144,6 +144,46 @@ add("secret","diner","Achievement: Fuel Efficient","Denizen portal at streetligh
 add("secret","depot","Achievement: Happy Hour","Two perks before main power","10G","Use Turbines to buy two different perks before activating the power switch.");
 add("secret","diner","Achievement: The Lights of Their Eyes","Group of zombies / EMP","5G","Pacify ten or more zombies with one EMP Grenade.");
 add("secret","power","Achievement: Dance On My Grave","Tombstone Soda / co-op","5G","Acquire your Tombstone after giving up when downed and returning for it next round.");
+// Icon placement audit: distinguish grounded site associations from exact floor coordinates.
+// This data deliberately does not fabricate exact pickup positions within buildings.
+// Original TranZit reference layout: Afrochubman map key / credited BradyGames map layout.
+// Location cross-checks: ZFRR TranZit locations, perks, weapons and buildables,
+// community 2016 Black Ops II buildables and original-era Neoseeker door walkthrough.
+const offMapReason=(item)=>{
+ if(item.type==="stop")return "Site location is drawn as a numbered stop, not an item icon";
+ if(item.name==="B23R")return "Moving wall-buy inside the bus; no stationary location";
+ if(item.name.startsWith("Achievement:"))return "Achievement is a map-wide activity, not a fixed-world object";
+ if(item.name.startsWith("Persistent ")||item.name==="Persistent upgrades (perma-perks)")return "Persistent/profile feature; not a permanently placed world object";
+ if(item.name==="Sniper-scope pre-apocalypse reflection")return "Visual reference interaction, not a fixed world pickup";
+ if(item.name==="Bus Depot power announcements")return "Audio event, not a physical collectible";
+ if(item.name==="Ghostly laughter")return "Audio event, not a physical collectible";
+ if(item.name==="First Mystery Box and EMP Grenades")return "Reference note; actual first Mystery Box already has its own marker";
+ if(item.name==="Diner → Town walking shortcut")return "Walking route, not a static map object";
+ if(item.name==="Denizen portal")return "Dynamic portal; depends on Denizen and streetlight interaction";
+ if(item.name==="Streetlight / possible EMP target")return "Only an area-level possible portal; exact activated lamp varies by game";
+ if(item.name==="Bus upgrade candidate")return null; // fixed shed, random item inside
+ return null;
+};
+const multiZone={
+ "NAV radio":["diner"],
+ "NAV wooden board":["power"],
+ "NAV electrical box":["town","depot"]
+};
+for(const item of items){
+ const reason=offMapReason(item);
+ item.mapMode=reason?"index-only":"site-callout";
+ item.mapReason=reason||"Associated with this site, not a measured in-building coordinate";
+ item.alternateZones=multiZone[item.name]||[];
+ item.placementEvidence=item.type==="perk"||item.type==="weapon"||item.type==="bench"||item.type==="box"
+   ?"ZFRR locations, weapons, perks and buildables"
+   :item.type==="paid"||item.type==="turbine"||item.type==="special"
+   ?"Neoseeker original-era door guide and ZFRR location notes"
+   :item.type==="part"?"ZFRR buildables and 2016 CoDZ buildable guide"
+   :"User-supplied Afrochubman/BradyGames world-map reference and community location guide";
+ item.placementPrecision=item.mapMode==="index-only"?"non-spatial":
+   item.alternateZones.length?"multiple possible sites":
+   /random|alternate|possible|candidate/i.test(item.detail)?"variable within site":"verified general site / unmeasured room";
+}
 const builds=[
 {id:"turbine",name:"Turbine",zone:"depot",location:"Depot hall",parts:[["Mannequin","By route map"],["Fan","Waiting seats"],["Tail","Hall floor / pay phones"]]},
 {id:"shield",name:"Zombie Shield",zone:"diner",location:"Garage",parts:[["Car door","Garage: bathroom / car lift / table"],["Hand trolley","Diner: behind counter / far booth"]]},
