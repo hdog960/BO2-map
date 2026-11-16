@@ -14,7 +14,14 @@
 <div class="notice"><span class="notice-dot"></span> ORIGINAL BO2 TRANZIT <span class="notice-separator">·</span> INTERACTIVE MAP & EASTER EGG GUIDE</div>
 <main id="main">
 <section id="view-map" class="view active" aria-label="Interactive TranZit map">
-<div class="atlas-heading"><div><span class="eyebrow">INTERACTIVE WORLD ATLAS</span><h2>TranZit Map</h2><p>Find what you need right on the map. Tap any marker for details.</p></div><button type="button" class="button ghost" id="mapFullScreen" aria-label="Expand map to full screen">Full map</button></div>
+<div class="atlas-heading"><div><span class="eyebrow">INTERACTIVE WORLD ATLAS</span><h2>TranZit Map</h2><p>Find what you need right on the map. Tap any marker for details.</p></div><div class="atlas-actions"><button type="button" class="button ghost" id="openMapScan" aria-controls="mapScanPanel" aria-expanded="false"><span aria-hidden="true">◉</span> Scan</button><button type="button" class="button ghost" id="mapFullScreen" aria-label="Expand map to full screen">Full map</button></div></div>
+<section id="mapScanPanel" class="map-scan-panel" aria-label="Map performance scanner" hidden>
+<div class="scan-panel-head"><div><strong>Map Performance Scan</strong><span id="mapScanState" role="status" aria-live="polite">Ready to test on this phone</span></div><button type="button" class="iconbtn scan-close" id="closeMapScan" aria-label="Close scanner">✕</button></div>
+<p id="mapScanInstructions">Start the scan, then drag the map and pinch-zoom several times. It records about 15 seconds of frame timing and touch/map activity. It does not access your location or game progress.</p>
+<div class="scan-actions"><button class="button" type="button" id="startMapScan">Start 15-second scan</button><button class="button danger" type="button" id="stopMapScan" hidden>Stop & view results</button><button class="button ghost" type="button" id="copyMapScan" hidden>Copy report</button></div>
+<textarea id="mapScanReport" rows="11" readonly spellcheck="false" aria-label="Copyable map diagnostic report" hidden></textarea>
+<p class="scan-note" id="mapScanHint">The diagnostic report stays on this device until you choose to copy and share it.</p>
+</section>
 <div class="map-wrap" id="interactiveMap">
   <div class="map-topline"><span>GREEN RUN · TRANZIT</span><span>DRAG TO PAN · PINCH TO ZOOM</span></div>
   <div class="map-tools"><button type="button" id="zoomIn" aria-label="Zoom in">+</button><button type="button" id="zoomOut" aria-label="Zoom out">−</button><button type="button" id="resetMap" aria-label="Reset map zoom">↺</button><button type="button" id="mapExit" aria-label="Exit expanded map" hidden>✕</button></div>
@@ -33,5 +40,5 @@
 </main>
 <nav class="bottom-nav" aria-label="Main navigation"><button type="button" data-view="map" class="selected" aria-label="World map"><span aria-hidden="true">⌖</span>MAP</button><button type="button" data-view="quest" aria-label="Easter egg walkthrough"><span aria-hidden="true">⚡</span>EASTER EGG</button><button type="button" data-view="atlas" aria-label="Search game items"><span aria-hidden="true">⌕</span>FIND</button><button type="button" data-view="zones" aria-label="Explore building interiors"><span aria-hidden="true">▤</span>SITES</button><button type="button" data-view="crew" aria-label="Crew and buildable tracker"><span aria-hidden="true">♧</span>CREW</button></nav></div>
 <dialog id="modal"><div class="modal-header"><h2 id="modalTitle">Info</h2><button class="iconbtn" id="closeModal" aria-label="Close" type="button">✕</button></div><div id="modalBody"></div></dialog>
-<script src="./data.js" defer></script><script src="./app.js" defer></script>
+<script src="./data.js" defer></script><script src="./app.js" defer></script><script src="./diagnostics.js" defer></script>
 </body></html>
