@@ -19,6 +19,32 @@
    check(doc.querySelector("#worldMap image").getAttribute("href")==="./world-art.svg","reference vector artwork is present");
    check((await fetch("../world-art.svg")).ok,"local map artwork is served");
 
+   // The scan runs on-device while the map remains interactive.
+   check(doc.querySelector("#mapScanPanel").hidden,"scan should be closed by default");
+   click("#openMapScan");
+   check(!doc.querySelector("#mapScanPanel").hidden,"player can open map scanner");
+   click("#startMapScan");
+   check(win.TZ_SCAN?.active,"scan should start recording without blocking map");
+   const sc=doc.querySelector("#mapViewport"),sr=sc.getBoundingClientRect();
+   const sx=sr.left+sr.width*.48,sy=sr.top+sr.height*.45;
+   const sp=(type,id,x,y)=>sc.dispatchEvent(new win.PointerEvent(type,{bubbles:true,pointerId:id,pointerType:"touch",isPrimary:id===871,clientX:x,clientY:y}));
+   sp("pointerdown",871,sx,sy);sp("pointermove",871,sx+70,sy+35);sp("pointerup",871,sx+70,sy+35);
+   sp("pointerdown",872,sx-40,sy);sp("pointerdown",873,sx+40,sy);
+   sp("pointermove",873,sx+85,sy);sp("pointerup",873,sx+85,sy);sp("pointerup",872,sx-40,sy);
+   check(win.TZ_SCAN.getStatus().moves>=2,"scan counts actual touch movements");
+   click("#stopMapScan");
+   const report=doc.querySelector("#mapScanReport").value;
+   check(!win.TZ_SCAN.active,"scan stops after requested capture");
+   check(report.includes("TRANZIT MAP PERFORMANCE SCAN v1"),"scan generates copyable text");
+   check(report.includes("Pointer moves:"),"scan includes touch counts");
+   check(report.includes("Median transform:"),"scan includes map update duration");
+   check(report.includes("P95 frame interval:"),"scan includes frame pacing");
+   check(!report.includes("Player 1"),"scan excludes game progress and player names");
+   click("#closeMapScan");
+   check(doc.querySelector("#mapScanPanel").hidden,"scan can be dismissed");
+   click("#resetMap");
+
+
    // Interactive camera regression: world geometry zooms, on-map graphics do not.
    let fixedPin=doc.querySelector('#mapPins [data-zone="farm"] .site-pin');
    const fixedLabel=doc.querySelector('#mapLabels .fixed-world-label');
