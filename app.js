@@ -431,11 +431,11 @@ vp.addEventListener("wheel",e=>{
 window.addEventListener("resize",()=>{clampMap();applyTransform();});
 $("#modal").addEventListener("click",e=>{if(e.target===$("#modal"))$("#modal").close();});
 // Read-only diagnostic view; excludes player names, saved match progress and all private data.
-window.TZ_MAP_TELEMETRY=()=>({
+window.TZ_MAP_TELEMETRY=(light=false)=>({
  zoom:Number(zoom.toFixed(3)),panX:Number(panX.toFixed(1)),panY:Number(panY.toFixed(1)),
- markers:document.querySelectorAll("#mapPins [data-world-x]").length,
- labels:document.querySelectorAll("#mapLabels [data-world-x]").length,
- expanded:document.getElementById("interactiveMap").classList.contains("map-expanded")
+ markers:light?undefined:document.querySelectorAll("#mapPins [data-world-x]").length,
+ labels:light?undefined:document.querySelectorAll("#mapLabels [data-world-x]").length,
+ expanded:light?undefined:document.getElementById("interactiveMap").classList.contains("map-expanded")
 });
 function network(){const b=$("#networkStatus");b.textContent=navigator.onLine?"CACHE PENDING":"OFFLINE MODE";b.classList.toggle("warn",!navigator.onLine);}
 window.addEventListener("online",network);window.addEventListener("offline",network);network();
