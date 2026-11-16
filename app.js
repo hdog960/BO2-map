@@ -264,9 +264,12 @@ function renderCrew(){
 }
 function help(){modal("How to use TranZit Atlas",'<div class="stack"><p><b>Map:</b> Start with Route, Easter egg, Gear or Doors. Pinch to zoom, drag to pan, and tap a stop. Open <b>More map layers</b> for individual categories.</p><p><b>Quest:</b> Your next step appears on the Map and Quest screens. Pick Maxis or Richtofen, open a step for instructions, and tap its number to check it off.</p><p><b>Find:</b> Tap the magnifier or FIND at the bottom, search an item name, or choose a quick suggestion.</p><p><b>Sites:</b> Select any location from the picker, then switch floors. Interiors are schematic and do not claim exact game-file geometry.</p><p><b>Crew:</b> Enter four names; expand a buildable to check off parts. Data stays on this phone, with no live multiplayer syncing.</p><p><b>Install:</b> Open in Safari, tap Share → Add to Home Screen, then launch once online to cache resources. Test airplane mode before your match.</p><p><b>Note:</b> Neither the atlas nor checklists read your BO2 session. All map and quest tracking is manual.</p></div>');}
 document.addEventListener("click",e=>{
-const b=e.target.closest("button,[data-zone],[data-room],[data-item],[data-group]");
+const b=e.target.closest("button,[data-zone],[data-room],[data-item],[data-group],[data-map-more],[data-map-item],[data-map-key]");
 if(!b)return;
 if(b.dataset.view){go(b.dataset.view);return;}
+if(b.dataset.mapKey){state.mapKind=b.dataset.mapKey;state.selected=null;save();renderMap();return;}
+if(b.dataset.mapMore&&Date.now()-lastDrag>250){context("more:"+b.dataset.mapMore);return;}
+if(b.dataset.mapItem){context(b.dataset.mapItem);return;}
 if(b.dataset.mapMode){state.mapMode=b.dataset.mapMode;state.mapFilters=MAP_MODES[state.mapMode].slice();save();renderMap();return;}
 if(b.dataset.filter){const id=b.dataset.filter;state.mapFilters=state.mapFilters.includes(id)?state.mapFilters.filter(x=>x!==id):state.mapFilters.concat(id);state.mapMode="custom";save();renderMap();return;}
 if(b.dataset.atlasFilter){state.atlasFilter=b.dataset.atlasFilter;save();renderAtlas();return;}
@@ -274,17 +277,18 @@ if(b.dataset.quickFind!==undefined){state.atlasFilter="all";$("#atlasSearch").va
 if(b.dataset.zoneTab){state.zone=b.dataset.zoneTab;state.floor=0;save();renderZones();return;}
 if(b.dataset.floor){state.floor=Number(b.dataset.floor);save();renderZones();return;}
 if(b.dataset.showItem){showItem(b.dataset.showItem);return;}
+if(b.dataset.findOnMap){const item=D.items.find(i=>i.id===b.dataset.findOnMap);if(item){$("#modal").close();state.mapKind=item.type;state.selected=item.id;go("map");}return;}
 if(b.dataset.toggleItem){state.found[b.dataset.toggleItem]=!state.found[b.dataset.toggleItem];save();if($("#modal").open)$("#modal").close();renderMap();renderZones();renderAtlas();return;}
 if(b.dataset.openZone){if($("#modal").open)$("#modal").close();selectZone(b.dataset.openZone);return;}
 if(b.dataset.searchZone){state.atlasFilter="all";$("#atlasSearch").value=zone(b.dataset.searchZone).name;go("atlas");return;}
 if(b.dataset.side){state.side=b.dataset.side;save();renderQuest();return;}
 if(b.dataset.questDone!==undefined){const k=state.side+":"+b.dataset.questDone;state.done[k]=!state.done[k];save();renderQuest();return;}
-if(b.dataset.questZone){selectZone(b.dataset.questZone);return;}
+if(b.dataset.questZone){state.mapKind="all";state.selected="zone:"+b.dataset.questZone;go("map");return;}
 if(b.dataset.part){state.parts[b.dataset.part]=!state.parts[b.dataset.part];save();renderCrew();return;}
 if(b.dataset.room){const label=$("#roomNotice");if(label)label.textContent=b.dataset.room+" · This conceptual room is not an exact floor plan.";return;}
-if(b.dataset.group&&Date.now()-lastDrag>350){context("group:"+b.dataset.group);$("#mapContext").scrollIntoView?.({behavior:"smooth",block:"nearest"});return;}
+if(b.dataset.group&&Date.now()-lastDrag>350){context("group:"+b.dataset.group);return;}
 if(b.dataset.item&&Date.now()-lastDrag>350){context(b.dataset.item);return;}
-if(b.dataset.zone&&Date.now()-lastDrag>350){context("zone:"+b.dataset.zone);$("#mapContext").scrollIntoView?.({behavior:"smooth",block:"nearest"});return;}
+if(b.dataset.zone&&Date.now()-lastDrag>350){context("zone:"+b.dataset.zone);return;}
 if(b.id==="resetSession"){modal("Reset this match?",'<p>This will clear quest checks, collected parts, marked doors/items and assignments on this phone. Your player names will remain.</p><div class="actions"><button class="button danger" id="confirmReset">Yes, reset progress</button><button class="button ghost" id="cancelReset">Cancel</button></div>');return;}
 if(b.id==="confirmReset"){state.done={};state.parts={};state.found={};state.assign={};state.selected=null;save();$("#modal").close();renderCrew();return;}
 if(b.id==="cancelReset"||b.id==="closeModal"){$("#modal").close();return;}
@@ -292,13 +296,16 @@ if(b.id==="helpBtn"){help();return;}
 if(b.id==="globalFind"){state.atlasFilter="all";$("#atlasSearch").value="";go("atlas");$("#atlasSearch").focus?.();return;}
 if(b.id==="zoneOnMap"){state.selected="zone:"+state.zone;go("map");return;}
 if(b.id==="resetMap"){resetMap();return;}
+if(b.id==="closeMapContext"){closeMapContext();return;}
+if(b.id==="mapFullScreen"){setMapExpanded(!$("#interactiveMap").classList.contains("map-expanded"));return;}
+if(b.id==="mapExit"){setMapExpanded(false);return;}
 if(b.id==="zoomIn"){setZoom(zoom*1.3);return;}
 if(b.id==="zoomOut"){setZoom(zoom/1.3);return;}
 });
 document.addEventListener("change",e=>{if(e.target.dataset.assignment!==undefined){state.assign[state.side+":"+e.target.dataset.assignment]=e.target.value;save();}
 if(e.target.id==="zoneSelect"){state.zone=e.target.value;state.floor=0;save();renderZones();}});
 document.addEventListener("input",e=>{if(e.target.id==="atlasSearch")renderAtlas();if(e.target.dataset.crew!==undefined){state.crew[Number(e.target.dataset.crew)]=e.target.value||"Player "+(Number(e.target.dataset.crew)+1);save();}});
-$("#worldMap").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-zone],[data-item],[data-group]")){e.preventDefault();e.target.dispatchEvent(new MouseEvent("click",{bubbles:true}));}});
+$("#worldMap").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-zone],[data-item],[data-group],[data-map-more]")){e.preventDefault();e.target.dispatchEvent(new MouseEvent("click",{bubbles:true}));}});
 const vp=$("#mapViewport");
 vp.addEventListener("pointerdown",e=>{pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});dragged=false;});
 vp.addEventListener("pointermove",e=>{
