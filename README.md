@@ -13,6 +13,16 @@ An independent, unofficial **Black Ops II TranZit** interactive atlas for **four
 - Manually saved local progress, part tracker, no account or backend.
 - Offline service worker and Home Screen manifest.
 
+## Icon placement accuracy audit
+
+**Status: all 130 catalog records reviewed; NOT exact-coordinate-certified.** The main ten landmark pins are aligned to the supplied Afrochubman/BradyGames-style fan map at the general-site level. Indoor pickup and door XY positions are not available from that source, and part spawns sometimes vary between games.
+
+[Read the complete 130-entry icon placement ledger](./AUDIT_ICON_PLACEMENT.md). It records every item's zone, source description, alternative sites, level of certainty, and whether it is a physical placeable or a map-wide/non-static reference.
+
+Following the audit, **arbitrary on-map item point slots were removed**. Color badges now have dashed leaders connecting them to the appropriate named site; they are *category indexes* rather than made-up pickup coordinates. Tap a category to find the item and precise **written room** notes. Bus-based guns, achievements, persistent upgrades and dynamic portals stay searchable under Find without a false stationary icon.
+
+**100% physical XY certainty requires actual game imagery and measured floorplan registration.** Neither the submitted image nor current guides alone prove each object's precise map point.
+
 ## Interactive map-first interface
 
 The home screen is the geographically referenced **TranZit map**. Every major area has tappable icons with an **always-visible key** for perks, wall buys, doors (paid/Turbine/special), parts, benches, boxes, secrets and Easter egg locations. Tapping a marker opens information on the map; the **+N** site markers reveal the other items associated with each location. Icons describe site/room areas, not unverified exact pickup coordinates.
