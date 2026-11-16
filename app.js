@@ -149,12 +149,24 @@ function renderZones(){
  $("#zonePlan").innerHTML=html;
 }
 function renderQuest(){
-$$("[data-side]").forEach(b=>b.classList.toggle("on",b.dataset.side===state.side));
-const steps=D.quests[state.side],completed=steps.filter((_,i)=>state.done[state.side+":"+i]).length;const next=steps.findIndex((_,i)=>!state.done[state.side+":"+i]);
-let html='<div class="warning"><b>Before you start:</b> Select Original difficulty (NOT Easy), confirm quest-side persistence from prior games, and coordinate which player is Samuel for Richtofen. Checkmarks are manual—this app cannot detect game events.</div><div class="stats"><div class="stat"><strong>'+completed+'/'+steps.length+'</strong><span>STEPS</span></div><div class="stat"><strong>4</strong><span>PLAYERS</span></div><div class="stat"><strong>'+D.builds.length+'</strong><span>BUILDABLES</span></div></div><div class="progress-track"><div class="progress-bar" style="width:'+(completed/steps.length*100)+'%"></div></div>';
-if(next>=0){const s=steps[next];html+='<div class="next"><div class="num">WHAT DO WE DO NEXT? · STEP '+(next+1)+'</div><h3>'+esc(s.title)+'</h3><p>'+esc(s.note)+'</p><div class="actions"><button class="button" data-quest-zone="'+s.zone+'">Explore '+esc(zone(s.zone).name)+'</button><button class="button ghost" data-quest-done="'+next+'">✓ Mark step done</button></div></div>';}else html+='<div class="next"><h3>All steps checked</h3><p>Confirm the in-game audio cue and achievement. Completion here reflects your own checklist only.</p></div>';
-steps.forEach((s,i)=>{const key=state.side+":"+i,who=state.assign[key]||"";html+='<div class="step '+(state.done[key]?"done":"")+'"><div class="step-top"><button class="tick '+(state.done[key]?"checked":"")+'" data-quest-done="'+i+'" aria-label="Mark '+esc(s.title)+' complete">'+(state.done[key]?"✓":i+1)+'</button><div><strong>'+esc(s.title)+'</strong><p>'+esc(s.note)+'</p></div></div><div class="step-extra"><div class="flex between"><span class="pill">'+esc(zone(s.zone).name)+'</span><button class="button ghost" data-quest-zone="'+s.zone+'">Locate</button></div><label class="small muted">Assigned player<br><select class="assign" data-assignment="'+i+'"><option value="">Unassigned</option>'+state.crew.map((name,j)=>'<option value="'+j+'" '+(who===String(j)?"selected":"")+'>'+esc(name)+'</option>').join("")+'</select></label></div></div>';});
-$("#questPanel").innerHTML=html;
+ $$("[data-side]").forEach(b=>{const active=b.dataset.side===state.side;b.classList.toggle("on",active);b.setAttribute("aria-pressed",String(active));});
+ const steps=D.quests[state.side],completed=steps.filter((_,i)=>state.done[state.side+":"+i]).length;
+ const next=steps.findIndex((_,i)=>!state.done[state.side+":"+i]);
+ let html='<details class="quest-prep"><summary>Before you start · Original difficulty required</summary><p>Choose Original, not Easy. Coordinate the four players and previous Easter egg completion state. The Richtofen route requires the Samuel player to hear the voice lines. All checkmarks are manual; nothing here can detect your live BO2 match.</p></details>';
+ html+='<div class="stats quest-stats"><div class="stat"><strong>'+completed+'/'+steps.length+'</strong><span>STEPS DONE</span></div><div class="stat"><strong>'+Math.round(completed/steps.length*100)+'%</strong><span>PROGRESS</span></div><div class="stat"><strong>4</strong><span>PLAYERS</span></div></div>';
+ html+='<div class="progress-track" aria-label="'+completed+' of '+steps.length+' objectives completed"><div class="progress-bar" style="width:'+(completed/steps.length*100)+'%"></div></div>';
+ if(next>=0){
+  const step=steps[next];
+  html+='<div class="next"><div class="num">YOUR NEXT OBJECTIVE · STEP '+(next+1)+'</div><h3>'+esc(step.title)+'</h3><p>'+esc(step.note)+'</p><div class="actions"><button type="button" class="button" data-quest-zone="'+step.zone+'">⌖ '+esc(zone(step.zone).name)+'</button><button type="button" class="button ghost" data-quest-done="'+next+'">✓ Mark done</button></div></div>';
+ }else html+='<div class="next"><div class="num">ALL CHECKLIST STEPS COMPLETE</div><h3>Confirm it in-game</h3><p>Listen for the matching character dialogue and confirm the in-game completion. These checkmarks are your own record.</p></div>';
+ html+='<div class="site-diagram-heading"><strong>All steps</strong><span>Tap to expand instructions</span></div>';
+ steps.forEach((step,i)=>{
+  const key=state.side+":"+i,done=!!state.done[key],assigned=state.assign[key]||"";
+  const who=assigned!==""?state.crew[Number(assigned)]:"";
+  html+='<section class="step '+(done?"done":"")+'"><div class="step-top"><button class="tick '+(done?"checked":"")+'" type="button" data-quest-done="'+i+'" aria-label="'+(done?"Mark incomplete: ":"Mark complete: ")+esc(step.title)+'" aria-pressed="'+done+'">'+(done?"✓":i+1)+'</button><div><strong>'+esc(step.title)+'</strong><div class="step-count">'+esc(zone(step.zone).name)+(who?" · Assigned: "+esc(who):"")+(done?" · Done":"")+'</div></div></div>';
+  html+='<details class="step-reveal" '+(i===next?"open":"")+'><summary>Instructions & player</summary><p>'+esc(step.note)+'</p><div class="step-extra"><div class="flex between"><span class="pill">'+esc(zone(step.zone).name)+'</span><button type="button" class="button ghost" data-quest-zone="'+step.zone+'">Show location</button></div><label class="small muted">Assign to player<br><select class="assign" data-assignment="'+i+'"><option value="">Unassigned</option>'+state.crew.map((name,j)=>'<option value="'+j+'" '+(assigned===String(j)?"selected":"")+'>'+esc(name)+'</option>').join("")+'</select></label></div></details></section>';
+ });
+ $("#questPanel").innerHTML=html;
 }
 function renderAtlas(){
 const active=state.atlasFilter;
