@@ -13,7 +13,7 @@ function boot(seed=null){
  const els=Object.fromEntries(names.map(n=>[n,new Element(n)]));
  let stored=seed;
  const localStorage={getItem(){return stored},setItem(k,s){assert.equal(k,'tranzit-atlas-save-v1');stored=s;}};
- const document={events:{},querySelector(k){if(!k.startsWith('#'))throw Error(k);return els[k.slice(1)]||(els[k.slice(1)]=new Element(k));},querySelectorAll(k){if(k==='.bottom-nav button')return ['map','zones','quest','atlas','craft','crew'].map(view=>Object.assign(new Element('nav'),{dataset:{view}}));if(k==='.view')return ['map','zones','quest','atlas','crew'].map(view=>new Element('view-'+view));if(k==='[data-side]')return ['maxis','richtofen'].map(side=>Object.assign(new Element('button'),{dataset:{side}}));return[];},createElementNS(ns,tag){return new Element(tag)},addEventListener(k,fn){this.events[k]=fn;}};
+ const document={events:{},querySelector(k){if(!k.startsWith('#'))throw Error(k);return els[k.slice(1)]||(els[k.slice(1)]=new Element(k));},querySelectorAll(k){if(k==='.bottom-nav button')return ['map','quest','craft'].map(view=>Object.assign(new Element('nav'),{dataset:{view}}));if(k==='.view')return ['map','zones','quest','atlas','crew','craft'].map(view=>new Element('view-'+view));if(k==='[data-side]')return ['maxis','richtofen'].map(side=>Object.assign(new Element('button'),{dataset:{side}}));return[];},createElementNS(ns,tag){return new Element(tag)},addEventListener(k,fn){this.events[k]=fn;}};
  const window={addEventListener(){},scrollTo(){}};const navigator={onLine:true};const location={protocol:'http:'};
  const sandbox={window,document,navigator,location,localStorage,console:{warn(){}}};
  vm.runInNewContext(read('data.js'),sandbox,{filename:'data.js'});
@@ -112,10 +112,11 @@ test('quick find searches names and returns a visible count',()=>{
  assert.match(els.atlasItems.innerHTML,/Jet Gun/);
  assert.equal(saved().atlasFilter,'all');
 });
-test('global search navigates to FIND without losing progress',()=>{
+test('global search opens a secondary Find sheet without losing progress',()=>{
  const {click,saved,els}=boot();
  click({questDone:'0'});click({},'globalFind');
- assert.equal(saved().view,'atlas');
+ assert.equal(saved().view,'map');
+ assert.equal(els.auxSheet.hidden,false);
  assert.equal(saved().done['maxis:0'],true);
  assert.match(els.atlasItems.innerHTML,/Quick Revive/);
 });
@@ -200,4 +201,23 @@ test('part checklist is shared between Craftables and Crew',()=>{
  assert.match(els.craftPanel.innerHTML,/1 of 4 parts checked/);
  click({view:'crew'});
  assert.match(els.crewPanel.innerHTML,/Jet Gun/);
+});
+
+test('M16.1 legacy saved view migrates without losing quest, parts, names, or assignments',()=>{
+ const old=JSON.stringify({view:'crew',crew:['Alpha','Bravo','Charlie','Delta'],done:{'maxis:0':true},parts:{'jet:0':true},assign:{'maxis:0':'2'}});
+ const {saved,click,els}=boot(old);
+ assert.equal(saved().view,'quest');assert.equal(saved().crew[2],'Charlie');
+ assert.equal(saved().parts['jet:0'],true);assert.equal(saved().done['maxis:0'],true);
+ assert.equal(saved().assign['maxis:0'],'2');
+ click({},'crewAccess');assert.equal(els.auxSheet.hidden,false);
+ click({},'closeSheet');assert.equal(els.auxSheet.hidden,true);
+});
+test('M16.1 room and search overlays return to map without rewriting part progress',()=>{
+ const {saved,click,els}=boot();click({part:'jet:0'});
+ click({openZone:'town'});assert.equal(els.auxSheet.hidden,false);
+ assert.equal(saved().zone,'town');assert.equal(saved().view,'map');
+ click({},'closeSheet');assert.equal(els.auxSheet.hidden,true);
+ click({},'globalFind');assert.equal(els.auxSheet.hidden,false);
+ click({view:'craft'});assert.equal(els.auxSheet.hidden,true);
+ assert.equal(saved().view,'craft');assert.equal(saved().parts['jet:0'],true);
 });
