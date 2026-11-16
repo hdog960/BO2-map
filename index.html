@@ -42,7 +42,20 @@
 <div id="mapContext" class="map-context" role="region" aria-label="Map location details" aria-live="polite" hidden></div>
 </div>
 </section>
-<section id="view-quest" class="view" aria-label="Easter egg tracker"><div class="section-head"><div><span class="eyebrow">TOWER OF BABBLE</span><h2>Easter Egg Walkthrough</h2><p>Choose Maxis or Richtofen. Follow each step with your four-player crew.</p></div></div><div class="choice" id="questSides"><button type="button" data-side="maxis">MAXIS</button><button type="button" data-side="richtofen">RICHTOFEN</button></div><button type="button" id="crewAccess" class="button ghost crew-access" aria-controls="auxSheet" aria-haspopup="dialog">♧ Crew & assignments</button><div id="questPanel"></div></section>
+<section id="view-quest" class="view" aria-label="Easter egg tracker">
+  <header class="section-head quest-heading"><div><span class="eyebrow">TOWER OF BABBLE · FIELD GUIDE</span><h2>Easter Egg Walkthrough</h2><p>Two routes. One objective at a time. All completion checks are manual.</p></div></header>
+  <div class="quest-route-label">CHOOSE YOUR ROUTE</div>
+  <div class="choice quest-route-choice" id="questSides" role="group" aria-label="Easter egg route">
+    <button type="button" data-side="maxis" aria-pressed="false">MAXIS <small>6 steps</small></button>
+    <button type="button" data-side="richtofen" aria-pressed="false">RICHTOFEN <small>8 steps</small></button>
+  </div>
+  <details id="questCrewDisclosure" class="quest-crew-disclosure">
+    <summary>♧ FOUR-PLAYER CREW <span>Names & assignments</span></summary>
+    <div id="questCrewSummary" class="quest-crew-summary" aria-label="Current four-player roster"></div>
+    <button type="button" id="crewAccess" class="button ghost crew-access" aria-controls="auxSheet" aria-haspopup="dialog">Edit crew names & buildables</button>
+  </details>
+  <div id="questPanel" aria-live="polite" aria-relevant="additions text"></div>
+</section>
 <section id="view-craft" class="view" aria-label="Craftables and part tracking">
 <div class="section-head"><div><span class="eyebrow">BUILDABLES · ORIGINAL TRANZIT</span><h2>Craftables</h2><p>Pick a buildable to see its parts, possible spawn areas, workbench and checklist.</p></div></div>
 <div class="craft-guide">Select <b>Jet Gun</b>, <b>Shield</b> or another buildable, then tap <b>Show only this on map</b>. Every part uses the same color and short code, and progress is shared with Crew.</div>
