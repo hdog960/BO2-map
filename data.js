@@ -16,7 +16,7 @@ const types={
 stop:{name:"Stops",color:"#e7b969",short:"S"},perk:{name:"Perks",color:"#79d2a0",short:"P"},weapon:{name:"Wall buys",color:"#8ba9e3",short:"W"},part:{name:"Parts",color:"#dbb274",short:"+"},bench:{name:"Benches",color:"#9fd7d2",short:"B"},paid:{name:"Paid doors",color:"#e79a68",short:"$"},turbine:{name:"Turbine doors",color:"#e6da73",short:"T"},special:{name:"Special doors",color:"#d19cda",short:"!"},box:{name:"Mystery Box",color:"#bba2f1",short:"?"},secret:{name:"Secrets",color:"#b5c58b",short:"★"},goal:{name:"Quest points",color:"#e48d84",short:"⚡"}
 };
 const items=[];
-function add(type,zone,name,room,price,detail){const id=type+"-"+String(items.length+1);items.push({id:id,type:type,zone:zone,name:name,room:room||"",price:price||"",detail:detail||""});return id}
+function add(type,zone,name,room,price,detail){const id=[type,zone,name,room||""].join("-").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");const legacyId=type+"-"+String(items.length+1);items.push({id:id,legacyId:legacyId,type:type,zone:zone,name:name,room:room||"",price:price||"",detail:detail||""});return id}
 zones.forEach(z=>{if(z.stop)add("stop",z.id,z.name,"Bus stop "+z.stop,"",z.description)});
 add("perk","depot","Quick Revive","Depot hall, hallway near main door","1500","Co-op price. Needs main power or a nearby Turbine; 500 points solo.");
 add("perk","diner","Speed Cola","Diner interior by MP5","3000","Requires power or Turbine.");
