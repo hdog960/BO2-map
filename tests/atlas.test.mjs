@@ -33,7 +33,7 @@ test('paid, Turbine, and special door groups remain separate',()=>{
 test('all buildables have unique part slots and valid benches',()=>{
  const ids=D.builds.map(x=>x.id);assert.equal(new Set(ids).size,ids.length);
  assert.equal(D.builds.length,9);
- for(const b of D.builds){assert.ok(zones.has(b.zone));assert.ok(b.parts.length>=2,b.id);assert.ok(b.parts.every(x=>x.length===2&&x[0]&&x[1]));}
+ for(const b of D.builds){assert.ok(zones.has(b.zone));assert.ok(b.parts.length>=2,b.id);assert.ok(b.parts.every(x=>x.length===3&&x[0]&&x[1]&&Array.isArray(x[2])&&x[2].length>=1));}
  const jet=D.builds.find(x=>x.id==='jet');assert.equal(jet.parts.length,4);
 });
 test('main Easter egg branches cover different requirements',()=>{
