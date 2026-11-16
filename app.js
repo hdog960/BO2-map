@@ -115,7 +115,7 @@ const MAP_PRIORITY={perk:0,goal:1,box:2,bench:3,turbine:4,paid:5,special:6,weapo
 // Category badges are callouts connected to the verified *site*, not in-room pins.
 // See data.js item.mapMode and the complete placement audit in AUDIT_ICON_PLACEMENT.md.
 // Start zoomed enough to actually explore the map with a finger; Reset still fits all.
-let zoom=1.7,panX=-252,panY=-203,pointers=new Map(),dragged=false,lastDrag=0,lastDragPoint=null;
+let zoom=1,panX=0,panY=0,pointers=new Map(),dragged=false,lastDrag=0,lastDragPoint=null;
 let nativeTouchSeen=false,nativeTouches=new Map(),nativeDrag=false;
 let nativeTouchHandled=0,pointerHandled=0,panChanged=0,panAtBoundary=0,gestureStarts=0,pointerCaptureLost=0;
 
