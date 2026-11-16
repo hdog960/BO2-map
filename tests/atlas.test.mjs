@@ -96,21 +96,26 @@ test('reference zones match the uploaded image geography',()=>{
  assert.match(p.nacht.name,/Prototype/);
  for(const z of D.zones){assert.ok(z.x>=0&&z.x<=720,z.id);assert.ok(z.y>=0&&z.y<=580,z.id);}
 });
-test('map markers are zone based and no longer invent individual item positions',()=>{
- const app=read('app.js');
- assert.match(app,/grouped\[key\]/);
- assert.match(app,/group\.dataset\.group=key/);
+test('interactive map anchors markers to mapped sites without claiming exact pickup coordinates',()=>{
+ const app=read('app.js'),html=read('index.html');
+ assert.match(app,/const MAP_SLOTS=/);
+ assert.match(app,/item\.zone===zoneId/);
+ assert.match(app,/data-map-more/);
+ assert.match(app,/data-item/);
  assert.doesNotMatch(app,/137\.507/);
- assert.match(app,/pins indicate areas|Pins indicate areas/i);
+ assert.match(html,/not exact game-file coordinates/i);
 });
 
-test('refined UI exposes five destinations and one-tap route, quest, gear and doors modes',()=>{
+test('world atlas exposes a visible icon key and separate Easter Egg tab',()=>{
  const html=read('index.html');
  for(const view of ['map','quest','atlas','zones','crew'])assert.ok(html.includes('data-view="'+view+'"'),view);
- for(const mode of ['route','quest','gear','doors'])assert.ok(html.includes('data-map-mode="'+mode+'"'),mode);
- for(const node of ['mapMission','mapModeBar','atlasCount','zoneSelect','globalFind'])assert.ok(html.includes('id="'+node+'"'),node);
- assert.match(html,/aria-label="Main navigation"/);
+ for(const node of ['interactiveMap','mapLegend','mapContext','mapViewport','mapFullScreen','mapExit','questPanel'])assert.ok(html.includes('id="'+node+'"'),node);
+ assert.match(html,/MAP KEY/);
+ assert.match(html,/EASTER EGG/);
+ assert.match(html,/Easter Egg Walkthrough/);
+ assert.doesNotMatch(html,/id="mapModeBar"|id="mapMission"/);
 });
+
 test('mobile styles include minimum touch sizes, adaptive layout and reduced motion',()=>{
  const css=read('styles.css');
  assert.match(css,/\.bottom-nav button\{[^}]*min-height:57px/);
@@ -122,4 +127,16 @@ test('map touch gesture capture begins only on movement, not tap',()=>{
  const code=read('app.js');
  assert.match(code,/pointerdown",e=>\{pointers\.set\(e\.pointerId/);
  assert.doesNotMatch(code,/pointerdown",e=>\{[^}]*setPointerCapture/);
+});
+
+test('tap information and category key are directly wired to map markers',()=>{
+ const app=read('app.js');
+ assert.match(app,/function drawMapKey\(/);
+ assert.match(app,/function renderMapMarkers\(/);
+ assert.match(app,/function context\(/);
+ assert.match(app,/function closeMapContext\(/);
+ assert.match(app,/data-map-key/);
+ assert.match(app,/data-map-item/);
+ assert.match(app,/data-find-on-map/);
+ assert.match(app,/data-quest-zone/);
 });
