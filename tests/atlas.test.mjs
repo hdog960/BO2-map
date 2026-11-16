@@ -103,3 +103,23 @@ test('map markers are zone based and no longer invent individual item positions'
  assert.doesNotMatch(app,/137\.507/);
  assert.match(app,/pins indicate areas|Pins indicate areas/i);
 });
+
+test('refined UI exposes five destinations and one-tap route, quest, gear and doors modes',()=>{
+ const html=read('index.html');
+ for(const view of ['map','quest','atlas','zones','crew'])assert.ok(html.includes('data-view="'+view+'"'),view);
+ for(const mode of ['route','quest','gear','doors'])assert.ok(html.includes('data-map-mode="'+mode+'"'),mode);
+ for(const node of ['mapMission','mapModeBar','atlasCount','zoneSelect','globalFind'])assert.ok(html.includes('id="'+node+'"'),node);
+ assert.match(html,/aria-label="Main navigation"/);
+});
+test('mobile styles include minimum touch sizes, adaptive layout and reduced motion',()=>{
+ const css=read('styles.css');
+ assert.match(css,/\.bottom-nav button\{[^}]*min-height:57px/);
+ assert.match(css,/\.tick\{[^}]*min-width:44px/);
+ assert.match(css,/@media\(max-width:390px\)/);
+ assert.match(css, /prefers-reduced-motion:reduce/);
+});
+test('map touch gesture capture begins only on movement, not tap',()=>{
+ const code=read('app.js');
+ assert.match(code,/pointerdown",e=>\{pointers\.set\(e\.pointerId/);
+ assert.doesNotMatch(code,/pointerdown",e=>\{[^}]*setPointerCapture/);
+});
