@@ -21,4 +21,6 @@ jobs:
           node --check app.js
           node --check sw.js
       - name: Run source and PWA regression tests
-        run: node --test tests/atlas.test.mjs
+        run: node --test tests/*.test.mjs
+      - name: Parse SVG world geometry as XML
+        run: python -c 'import xml.etree.ElementTree as ET; ET.parse("world-art.svg")'
