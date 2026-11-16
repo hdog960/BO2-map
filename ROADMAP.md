@@ -147,3 +147,18 @@ Remaining gate: physical Safari/installed-PWA testing on the user's iPhone. Head
 - Bumped offline PWA cache to \`tranzit-atlas-v10\`.
 
 **Verification gate:** Exact GitHub main, Node/Chromium tests, and Pages deploy are required. User must still confirm dragging with a physical-iPhone playtest and, if necessary, copy the v2 map scan.
+
+
+## M14 — Icon placement and source-of-truth integrity audit
+
+**Audit basis:** user's supplied *TranZit Map Key* image by Afrochubman (layout credited to BradyGames), TranZit-specific ZFRR location/weapon/perk/buildable guides, 2016 CoDZ buildables, original-era Neoseeker doors, and Steam community mapping.
+
+**Coverage:** all 130 catalog entries and the 10 regional world anchors, with 130 audited entries in \`AUDIT_ICON_PLACEMENT.md\`. The original map contains manually authored, non-surveyed landmark coordinates. It cannot establish measured XY for every individual pickup. A 100% exact guarantee would be false.
+
+**Critical finding resolved:** the old \`MAP_SLOTS\` implementation placed individual item icons in arbitrary screen/world slots determined by category sort order. These had no source basis and were sometimes far from the correct building. Removed.
+
+**New map contract:** 91 location-linked item records are reachable through category badges with dashed leader lines to the appropriate *site* anchor. The 39 other entries are stop pins or global/mobile/dynamic references and have no fabricated item pins. The five bus stops remain marked independently. NAV Radio, wooden board, and electrical box have alternate zones. All 130 items remain accessible by Find.
+
+**CI:** \`tests/icon-placement-audit.test.mjs\` hard-fails incomplete placement classification and unsourced coordinate-slot logic. Existing UI, native touch, quest, part tracking and PWA validation remain in place. Offline cache v11.
+
+**Not complete:** no item/floor XY can be certified 100% until matched against exact, independently checked gameplay views or authoritative geometry. Complete site-level associations must not be mislabeled as a complete pixel-exact map. The visual layout is a schematic reference map, not an extraction of game scene geometry.
