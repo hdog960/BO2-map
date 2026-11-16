@@ -9,3 +9,8 @@
 #worldMap .pin-core{stroke:#061318;stroke-width:2.3;paint-order:stroke}
 #worldMap .pin:focus-visible .pin-core{stroke:#fff4c6;stroke-width:4}
 @media(max-height:480px) and (orientation:landscape){.map-viewport{height:310px;min-height:290px}.section-head{margin-bottom:8px}}
+
+.map-route-order{display:flex;align-items:center;gap:7px;overflow-x:auto;white-space:nowrap;padding:11px 4px 5px;scrollbar-width:thin;font-size:11px;color:#d8e2d8}
+.map-route-order strong{font-size:9px;letter-spacing:1.3px;background:#493523;border:1px solid #a07e50;border-radius:5px;padding:5px 7px;color:#f6d493;flex-shrink:0}
+.map-route-order span{font-weight:750;flex-shrink:0}
+.map-route-order b{color:#ecbd73;flex-shrink:0}
