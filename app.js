@@ -187,28 +187,59 @@ function context(key){
  }
  save();
 }
+function mapPixelScale(){
+ // Root SVG is fixed-size; account for meet-letterboxing in expanded portrait/landscape.
+ const svg=$("#worldMap"),r=svg.getBoundingClientRect();
+ const width=r.width||svg.clientWidth||$("#mapViewport").clientWidth||MAP_W;
+ const height=r.height||svg.clientHeight||$("#mapViewport").clientHeight||MAP_H;
+ return Math.max(0.15,Math.min(width/MAP_W,height/MAP_H));
+}
+function pointerToMap(e){
+ const rect=$("#worldMap").getBoundingClientRect(),k=mapPixelScale();
+ const width=rect.width||$("#mapViewport").clientWidth||MAP_W;
+ const height=rect.height||$("#mapViewport").clientHeight||MAP_H;
+ const offX=(width-MAP_W*k)/2,offY=(height-MAP_H*k)/2;
+ return {x:((e.clientX??0)-(rect.left||0)-offX)/k,y:((e.clientY??0)-(rect.top||0)-offY)/k};
+}
+function positionMapOverlays(){
+ // Convert geography coordinates through the camera; inverse viewport density only.
+ // Pin rectangles, glyphs, hit areas, and site titles never inherit camera zoom.
+ const fixedSize=1/mapPixelScale();
+ for(const node of $$("#mapLabels [data-world-x],#mapPins [data-world-x]")){
+  const x=Number(node.dataset.worldX),y=Number(node.dataset.worldY);
+  node.setAttribute("transform","translate("+(panX+zoom*x).toFixed(2)+" "+(panY+zoom*y).toFixed(2)+") scale("+fixedSize.toFixed(4)+")");
+ }
+}
 function applyTransform(){
- $("#worldMap").style.transform="translate("+panX+"px,"+panY+"px) scale("+zoom+")";
+ $("#mapWorld").setAttribute("transform","translate("+panX.toFixed(3)+" "+panY.toFixed(3)+") scale("+zoom.toFixed(5)+")");
+ positionMapOverlays();
 }
 function clampMap(){
- const vp=$("#mapViewport"),w=vp.clientWidth,h=vp.clientHeight;
- panX=Math.max(-w*(zoom-1)-w*.12,Math.min(w*.12,panX));
- panY=Math.max(-h*(zoom-1)-h*.12,Math.min(h*.12,panY));
+ // Allow a small drag at full overview scale. At higher zoom, bound the camera to
+ // all four edges of the world so the full geography remains reachable.
+ const slack=zoom<=1.001?22:0;
+ panX=Math.max(MAP_W*(1-zoom)-slack,Math.min(slack,panX));
+ panY=Math.max(MAP_H*(1-zoom)-slack,Math.min(slack,panY));
 }
-function setZoom(next){
- const old=zoom;zoom=Math.min(3.8,Math.max(1,next));
- const vp=$("#mapViewport"),x=vp.clientWidth/2,y=vp.clientHeight/2;
- panX=x-(x-panX)*zoom/old;panY=y-(y-panY)*zoom/old;
- clampMap();applyTransform();renderMapMarkers();
+function setZoom(next,center={x:MAP_W/2,y:MAP_H/2}){
+ const old=zoom,newZoom=Math.min(4,Math.max(1,next));
+ if(Math.abs(old-newZoom)<0.00001)return;
+ const worldX=(center.x-panX)/old,worldY=(center.y-panY)/old;
+ zoom=newZoom;
+ panX=center.x-worldX*zoom;
+ panY=center.y-worldY*zoom;
+ clampMap();
+ if((old<=1.6)!==(zoom<=1.6)||(old<=1.24)!==(zoom<=1.24))renderMapMarkers();
+ applyTransform();
 }
-function resetMap(){zoom=1;panX=0;panY=0;applyTransform();renderMapMarkers();}
+function resetMap(){zoom=1;panX=0;panY=0;renderMapMarkers();applyTransform();}
 function setMapExpanded(expanded){
  $("#interactiveMap").classList.toggle("map-expanded",expanded);
  document.body.classList.toggle("atlas-expanded",expanded);
  $("#mapExit").hidden=!expanded;
  $("#mapFullScreen").textContent=expanded?"Close map":"Full map";
- // Recenter transforms to the new viewport dimensions after the canvas changes size.
- zoom=1;panX=0;panY=0;applyTransform();renderMapMarkers();
+ zoom=1;panX=0;panY=0;
+ renderMapMarkers();applyTransform();
 }
 function roomSvg(rooms){
 return '<div class="zone-art"><svg viewBox="0 0 610 355" role="img" aria-label="Conceptual room-adjacency diagram"><g stroke="#9f9575" stroke-width="3" opacity=".6" stroke-dasharray="6 8"><path d="M10 336 H600"/></g>'+rooms.map((r,i)=>'<g data-room="'+esc(r.name)+'" style="cursor:pointer"><rect class="room-shape '+(i%2?"alt":"")+'" x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" rx="5"/><text class="room-text" x="'+(r.x+r.w/2)+'" y="'+(r.y+r.h/2)+'">'+esc(r.name.length>24?r.name.slice(0,21)+"…":r.name)+'</text></g>').join("")+'</svg><div id="roomNotice" class="footer-note">Tap a room to highlight its name. Diagram is not a measured footprint or verified doorway layout.</div></div>';
