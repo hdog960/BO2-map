@@ -165,7 +165,7 @@ test('map information sheet can be dismissed without clearing game progress',()=
 test('Find can send a selected item back to the map',()=>{
  const {els,click,saved}=boot();
  click({showItem:'perk-depot-quick-revive-depot-hall-hallway-near-main-door'});
- assert.match(els.modalBody.innerHTML,/Show on map/);
+ assert.match(els.modalBody.innerHTML,/Show location area/);
  click({findOnMap:'perk-depot-quick-revive-depot-hall-hallway-near-main-door'});
  assert.equal(saved().view,'map');
  assert.equal(saved().mapKind,'perk');
