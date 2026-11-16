@@ -276,3 +276,63 @@ body.atlas-expanded{overflow:hidden}
 .map-key-head{align-items:flex-start}
 .map-key-head strong{white-space:normal;max-width:49%}
 .map-key-head span{max-width:53%}
+
+
+/* Craftable-first navigation and source-tethered, color-coded part map — M15 */
+.bottom-nav{grid-template-columns:repeat(6,minmax(0,1fr))}
+.bottom-nav button{font-size:9px;letter-spacing:.15px;padding-inline:0}
+.bottom-nav button span{font-size:23px}
+.craft-strip-heading{margin:16px 1px 8px;display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.craft-strip-heading strong{color:#efcf9d;font-size:12px;letter-spacing:.8px}
+.craft-strip-heading span{color:#a7c6bd;font-size:11px;line-height:1.4;text-align:right;max-width:53%}
+.craft-map-strip{display:flex;gap:7px;padding:2px 2px 10px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scroll-snap-type:x proximity}
+.craft-map-choice{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:0 0 80px;min-height:61px;padding:8px 6px;scroll-snap-align:start;border:1px solid #495b63;border-radius:11px;background:#182b34;color:#ebeee4}
+.craft-map-choice span{min-width:33px;min-height:27px;padding:4px 6px;display:flex;align-items:center;justify-content:center;border-radius:7px;font-weight:950;font-size:12px;background:var(--craft-color,#c8b48d);color:#0c1b24}
+.craft-map-choice small{font-weight:800;font-size:10px;line-height:1.1;text-align:center}
+.craft-map-choice.active{border:2px solid var(--craft-color,#e5c27f);background:#2b393d;box-shadow:inset 0 0 0 1px #ffffff1a}
+.craft-map-choice.all{flex-basis:57px;color:#ecd29b;font-weight:850}
+.craft-map-choice.all.active{background:#524028}
+.craft-guide{color:#c7d8d0;background:#1a3137;border:1px solid #526963;border-radius:12px;padding:12px 13px;font-size:12px;line-height:1.65;margin-bottom:16px}
+.craft-guide b{color:#f6cc7e}
+.craft-selector-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:16px}
+.craft-selector{--craft-color:#e3bb77;display:flex;align-items:center;gap:9px;text-align:left;min-width:0;min-height:66px;padding:10px;border:1px solid #40565e;border-left:4px solid var(--craft-color);border-radius:12px;background:#152b33;color:#ecefe8}
+.craft-selector.selected{border-color:var(--craft-color);background:#26383c;box-shadow:0 0 0 1px var(--craft-color)}
+.craft-emblem,.craft-large-symbol,.mini-craft-code{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:8px;background:var(--craft-color);color:#102126;font-weight:950;line-height:1}
+.craft-emblem{width:40px;height:39px;font-size:12px}
+.craft-label{display:grid;gap:3px;min-width:0}
+.craft-label strong{font-size:12px;line-height:1.25}
+.craft-label small{font-size:10px;color:#b7c7c2}
+.craft-detail{--craft-color:#79d2da;overflow:hidden;background:#152831;border:1px solid #536a6b;border-top:5px solid var(--craft-color);border-radius:16px;padding:15px 14px 16px}
+.craft-detail-head{display:flex;align-items:flex-start;gap:12px}
+.craft-large-symbol{width:53px;height:53px;border-radius:12px;font-size:18px}
+.craft-detail-head h3{font-size:24px;line-height:1.12;margin:4px 0 7px;color:#f3f2e9}
+.craft-detail-head p{font-size:12px;line-height:1.58;color:#c9d8d0;margin:0}
+.craft-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:15px 0 8px}
+.craft-status{font-size:12px;color:#e9d3a0;font-weight:780}
+.craft-show{background:var(--craft-color)!important;border-color:var(--craft-color)!important;color:#142328!important;font-weight:850}
+.craft-part-progress{height:7px;background:#293d43;border-radius:6px;overflow:hidden;margin:5px 0 12px}
+.craft-part-progress>div{height:100%;background:var(--craft-color);border-radius:6px;transition:width .2s}
+.craft-part-list{display:grid;gap:8px;margin:10px 0 16px}
+.craft-part-row{display:flex;align-items:center;gap:9px;background:#20353c;border:1px solid #3d555a;padding:11px 9px;border-radius:12px}
+.craft-part-row.is-done{background:#183630;border-color:#53756d}
+.craft-part-row .tick{width:44px;height:44px;flex:0 0 44px}
+.craft-part-info{flex:1;min-width:0;display:grid;gap:5px}
+.craft-part-info strong{font-size:13px;line-height:1.3;color:#f3f4ed}
+.mini-craft-code{padding:4px 5px;min-width:27px;font-size:10px;background:var(--craft-color)}
+.craft-part-info small{color:#bfd1cb;line-height:1.4;font-size:11px}
+.craft-alternates{color:#f3ca91!important}
+.craft-locate{flex:0 0 auto;border-radius:9px;border:1px solid #b6a27e;background:#2c3b40;color:#f7d5a0;min-height:44px;padding:8px 10px;font-size:11px;font-weight:850}
+.craft-bench{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;border:1px dashed var(--craft-color);padding:12px;border-radius:12px;background:#203239}
+.craft-bench strong{color:#f4d096;font-size:13px}
+.craft-bench span{grid-column:1;grid-row:2;color:#c7d9d0;font-size:12px;line-height:1.45}
+.craft-bench .button{grid-column:2;grid-row:1/3;max-width:145px}
+.craft-accuracy{margin:13px 0 0;font-size:11px;color:#aabdb7;line-height:1.65}
+.craft-modal-tag{display:flex;align-items:center;gap:10px;padding:8px 11px;margin:4px 0 11px;border-left:3px solid var(--craft-color);background:#233740;border-radius:9px;color:#e7ebe4;font-size:12px;font-weight:800}
+.craft-modal-tag b{background:var(--craft-color);color:#142227;padding:7px 8px;border-radius:6px;min-width:34px;text-align:center}
+.build-card[data-build] summary{border-left:4px solid var(--craft-color)}
+.build-card[data-build] .mini-craft-code{background:var(--craft-color);margin-right:3px}
+#mapPins .craft-map-label{font-size:11px;fill:#fff5df;stroke:#0a1a1d;stroke-width:3.8px}
+.craft-source-pin rect{filter:drop-shadow(0 1px 2px #091619)}
+@media(max-width:365px){.craft-selector-grid{grid-template-columns:1fr}.craft-detail{padding:12px 10px}.craft-bench{grid-template-columns:1fr}.craft-bench .button{grid-row:auto;grid-column:1;max-width:none}.bottom-nav button{font-size:8px}.bottom-nav button span{font-size:20px}}
+@media(min-width:740px){.craft-selector-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.craft-part-list{grid-template-columns:repeat(2,minmax(0,1fr))}.craft-detail{padding:20px}}
+@media(orientation:landscape) and (max-height:470px){.bottom-nav{grid-template-columns:repeat(6,minmax(0,1fr))}.bottom-nav button{font-size:9px}}
