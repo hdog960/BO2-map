@@ -22,9 +22,9 @@ An independent, unofficial **Black Ops II TranZit** interactive atlas for **four
 The app cannot read your actual game session or synchronize across friends' phones.
 
 ## Accuracy
-The hand-drawn SVG follows the geography of the 2012 Treyarch-authorized route map, but is not to scale. **Interior rectangles are schematic conceptual diagrams, not verified floor geometry.** Map pins indicate relevant areas, not exact pickup coordinates. Some parts spawn in multiple possible places.
+The hand-drawn SVG was **redrawn to follow the user-supplied “TranZit Map Key” by Afrochubman**, which credits the original map layout to BradyGames. It now includes the source-shaped roads, central Town junction, east-side Tunnel highway, north Farm–Diner connection, bridge, Power Station loop, and opposing Prototype/Nacht and Obelisk/Pylon landmarks. It is not to scale. **Interior rectangles are schematic conceptual diagrams, not verified floor geometry.** Map pins indicate relevant areas, not exact pickup coordinates. Some parts spawn in multiple possible places.
 
-Status: functional first version deployed on GitHub Pages; physical iPhone playtest is not yet verified. See ROADMAP.md for gates and remaining work.
+Status: first version with a geographically corrected world map committed and checked by automated tests. Exact-head GitHub Pages status should be checked after edits. Physical iPhone playtesting is not yet verified. See ROADMAP.md for gates and remaining work.
 
 ## Tests
 Requires Node 22, no dependencies. Run the JavaScript syntax check and the Node test suite from tests/. GitHub Actions checks automatically after every push.
