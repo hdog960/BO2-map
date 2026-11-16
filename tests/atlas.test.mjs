@@ -100,16 +100,14 @@ test('reference zones match the uploaded image geography',()=>{
  assert.match(p.nacht.name,/Prototype/);
  for(const z of D.zones){assert.ok(z.x>=0&&z.x<=720,z.id);assert.ok(z.y>=0&&z.y<=580,z.id);}
 });
-test('interactive map anchors markers to mapped sites without claiming exact pickup coordinates',()=>{
+test('map category badges are tethered to known sites, never arbitrary item coordinates',()=>{
  const app=read('app.js'),html=read('index.html');
- assert.match(app,/const MAP_SLOTS=/);
- assert.match(app,/item\.zone===zoneId/);
- assert.match(app,/data-map-more/);
- assert.match(app,/data-item/);
- assert.doesNotMatch(app,/137\.507/);
- assert.match(html,/not exact game-file coordinates/i);
+ assert.match(app,/function calloutSpot\(/);
+ assert.match(app,/const leader=svgEl\("line"/);
+ assert.match(app,/data-group/);
+ assert.doesNotMatch(app,/MAP_SLOTS|function markerSpot\(/);
+ assert.match(html,/not exact indoor positions/);
 });
-
 test('world atlas exposes a visible icon key and separate Easter Egg tab',()=>{
  const html=read('index.html');
  for(const view of ['map','quest','atlas','zones','crew'])assert.ok(html.includes('data-view="'+view+'"'),view);
