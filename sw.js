@@ -1,5 +1,5 @@
-const CACHE='tranzit-atlas-v7';
-const ASSETS=['./','./index.html','./styles.css','./app.js','./data.js','./manifest.webmanifest','./icon.svg','./world-art.svg'];
+const CACHE='tranzit-atlas-v8';
+const ASSETS=['./','./index.html','./styles.css','./app.js','./diagnostics.js','./data.js','./manifest.webmanifest','./icon.svg','./world-art.svg'];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
