@@ -41,7 +41,8 @@ test('switching map marker filter updates state and output',()=>{
  const {els,click,saved}=boot();
  assert.match(els.filterBar.innerHTML,/Perks/);
  click({filter:'perk'});
- assert.ok(!saved().mapFilters.includes('perk'));
+ assert.ok(saved().mapFilters.includes('perk'));
+ assert.equal(saved().mapMode,'custom');
  assert.ok(els.filterBar.innerHTML.length>200);
 });
 test('tracking buildable parts persists and reset clears progress',()=>{
