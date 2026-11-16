@@ -1,0 +1,73 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const context={window:{}};vm.runInNewContext(read('data.js'),context,{filename:'data.js'});
+const D=context.window.TZ_DATA;
+const zones=new Set(D.zones.map(z=>z.id));
+test('exactly five distinct bus stops in correct order',()=>{
+ const stops=D.zones.filter(z=>z.stop).sort((a,b)=>a.stop-b.stop);
+ assert.deepEqual(Array.from(stops,z=>z.id),['depot','diner','farm','power','town']);
+ assert.deepEqual(Array.from(stops,z=>z.stop),[1,2,3,4,5]);
+});
+test('map has ten real sites and valid x/y coordinates',()=>{
+ assert.equal(D.zones.length,10);
+ for(const z of D.zones){assert.ok(z.x>=0&&z.x<=1000);assert.ok(z.y>=0&&z.y<=760);}
+});
+test('every catalog item has unique key and valid site and category',()=>{
+ const ids=D.items.map(i=>i.id);assert.equal(new Set(ids).size,ids.length);
+ for(const i of D.items){assert.ok(zones.has(i.zone),i.id);assert.ok(D.types[i.type],i.type);assert.ok(i.name&&i.detail!==undefined);}
+});
+test('all six perks with expected area',()=>{
+ const perks=D.items.filter(i=>i.type==='perk');
+ assert.equal(perks.length,6);
+ const mapping=Object.fromEntries(perks.map(i=>[i.name,i.zone]));
+ for(const [perk,z] of [['Quick Revive','depot'],['Speed Cola','diner'],['Double Tap Root Beer','farm'],['Tombstone Soda','power'],['Juggernog','town'],['Stamin-Up','town']])assert.equal(mapping[perk],z);
+});
+test('paid, Turbine, and special door groups remain separate',()=>{
+ assert.ok(D.items.filter(i=>i.type==='paid').length>=9);
+ assert.ok(D.items.filter(i=>i.type==='turbine').length>=6);
+ assert.ok(D.items.filter(i=>i.type==='special').length>=4);
+});
+test('all buildables have unique part slots and valid benches',()=>{
+ const ids=D.builds.map(x=>x.id);assert.equal(new Set(ids).size,ids.length);
+ assert.equal(D.builds.length,9);
+ for(const b of D.builds){assert.ok(zones.has(b.zone));assert.ok(b.parts.length>=2,b.id);assert.ok(b.parts.every(x=>x.length===2&&x[0]&&x[1]));}
+ const jet=D.builds.find(x=>x.id==='jet');assert.equal(jet.parts.length,4);
+});
+test('main Easter egg branches cover different requirements',()=>{
+ assert.equal(D.quests.maxis.length,6);assert.equal(D.quests.richtofen.length,8);
+ for(const side of Object.keys(D.quests))for(const step of D.quests[side]){assert.ok(zones.has(step.zone));assert.ok(step.title&&step.note);}
+ assert.match(D.quests.maxis.map(s=>s.note).join(' '),/Avogadro/);
+ assert.match(D.quests.richtofen.map(s=>s.note).join(' '),/EMP/);
+});
+test('all ten achievements are indexed',()=>{
+ assert.equal(D.items.filter(i=>i.name.startsWith('Achievement:')).length,10);
+});
+test('all five detailed floor plan groups remain available',()=>{
+ for(const z of ['depot','diner','farm','power','town']){assert.ok(D.plans[z]);assert.ok(D.plans[z].floors.length>0);}
+});
+test('JavaScript files are syntactically valid',()=>{
+ for(const p of ['app.js','data.js','sw.js'])assert.doesNotThrow(()=>new vm.Script(read(p),{filename:p}),p);
+});
+test('PWA resources referenced by service worker exist',()=>{
+ const sw=read('sw.js');const m=sw.match(/const ASSETS=\[([^\]]+)\]/);assert.ok(m,'ASSETS precache array');
+ for(const p of Array.from(m[1].matchAll(/'\.\/([^']+)'/g),m=>m[1]))assert.ok(fs.existsSync(new URL('../'+p,import.meta.url)),p);
+});
+test('PWA manifest launches from project relative URL',()=>{
+ const m=JSON.parse(read('manifest.webmanifest'));assert.equal(m.start_url,'./');assert.equal(m.scope,'./');assert.equal(m.display,'standalone');
+});
+test('top navigation matches actual view elements',()=>{
+ const html=read('index.html');
+ for(const view of ['map','zones','quest','atlas','crew']){assert.ok(html.includes('id="view-'+view+'"'));assert.ok(html.includes('data-view="'+view+'"'));}
+});
+test('all script resources are local to the repository',()=>{
+ const html=read('index.html');
+ assert.ok(html.includes('src="./data.js"'));assert.ok(html.includes('src="./app.js"'));
+ assert.doesNotMatch(html,/<script[^>]*src="https?:/);
+});
+test('data references include original-era quest / door evidence',()=>{
+ assert.ok(D.references.some(r=>r.url.includes('tranzit-easter-egg')));
+ assert.ok(D.references.some(r=>r.url.includes('neoseeker')));
+});
