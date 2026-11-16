@@ -18,6 +18,23 @@
    check(doc.querySelectorAll("#mapPins [data-zone]").length===10,"all ten mapped site pins");
    check(doc.querySelector("#worldMap image").getAttribute("href")==="./world-art.svg","reference vector artwork is present");
    check((await fetch("../world-art.svg")).ok,"local map artwork is served");
+   // M16.2 source geometry and compact key controls.
+   const drawer=doc.querySelector("#mapKeyDisclosure");
+   check(!!drawer&&!drawer.open,"map filter drawer is closed on first load");
+   check(win.getComputedStyle(drawer).position==="absolute","key overlays the map instead of pushing it");
+   click("#mapKeyDisclosure summary");
+   check(drawer.open,"tap expands compact key");
+   check(doc.querySelectorAll("#mapLegend [data-map-key]").length===11,"all original categories stay available");
+   check(win.getComputedStyle(doc.querySelector(".map-filter-scroll")).overscrollBehaviorY==="contain","key scroll is contained");
+   click('[data-map-key="perk"]');
+   check(!drawer.open,"choosing category collapses drawer to restore map space");
+   check(doc.querySelector('[data-map-key="perk"]').getAttribute("aria-pressed")==="true","filter state persists");
+   click("#mapKeyDisclosure summary");
+   check(drawer.open,"filter drawer can reopen");
+   doc.dispatchEvent(new win.KeyboardEvent("keydown",{bubbles:true,key:"Escape"}));
+   check(!drawer.open,"Escape closes the key");
+   click('[data-map-key="all"]');
+
 
    // The scan runs on-device while the map remains interactive.
    check(doc.querySelector("#mapScanPanel").hidden,"scan should be closed by default");
@@ -108,6 +125,8 @@
    nt("touchmove",[touch(8,px-32,py),touch(9,px+82,py)]);
    nt("touchend",[],[touch(8,px-32,py),touch(9,px+82,py)]);
    check(win.TZ_MAP_TELEMETRY().zoom>initialNativeZoom,"native two-finger pinch zooms map");
+   check(doc.querySelector("#worldMap").getAttribute("preserveAspectRatio")==="xMidYMid slice","map uses cropped source geometry");
+   check(win.getComputedStyle(doc.querySelector("#mapViewport")).touchAction==="none","map native gestures avoid page scrolling");
    fixedPin=doc.querySelector('#mapPins [data-zone="farm"] .site-pin');
    check(Math.abs(fixedPin.getBoundingClientRect().width-iconWidth)<1.2,"native touch pinch keeps icon size constant");
    click("#resetMap");
@@ -116,7 +135,9 @@
    check(!doc.querySelector("#mapContext").hidden,"tapping a perk category opens location-index sheet");
    check(doc.querySelector("#mapContext").textContent.includes("Quick Revive"),"depot's real perk is in site list");
    click('#mapContext [data-map-item^="perk-depot-quick-revive"]');
-   check(doc.querySelector("#mapContext").textContent.includes("Where:"),"individual item sheet contains real room description");
+   check(doc.querySelector("#mapContext").querySelector(".map-sheet-facts")?.textContent.includes("AREA / ROOM"),"item bottom sheet displays grounded room");
+   check(doc.querySelector("#mapContext").querySelector(".map-sheet-facts")?.textContent.includes("COST / ACCESS"),"item bottom sheet displays price or requirement");
+   check(doc.querySelector("#mapContext").querySelector(".map-accuracy-note"),"accuracy caveat remains accessible");
    click("#closeMapContext");
    check(doc.querySelector("#mapContext").hidden,"map sheet dismisses cleanly");
    click('[data-map-key="turbine"]');
