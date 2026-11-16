@@ -104,6 +104,12 @@ try {
       info=await evaluate(rpc,metricsExpression);
     }
     if(info.buildCount!==9||info.questMaxis!==6||info.questRichtofen!==8)fail("Feature parity count mismatch");
+    // Previous viewport can retain a selected site; capture the uncluttered overview.
+    await evaluate(rpc,'document.querySelector("#closeMapContext")?.click()');
+    info=await evaluate(rpc,metricsExpression);
+    const nav=info.layout.navigation;
+    if(!nav||nav.x < -1||nav.x+nav.width>width+1||nav.width < width-2)
+      fail("Offscreen primary navigation at "+width+"x"+height+": "+JSON.stringify(nav));
     const mapScreenshot=await capture(rpc,width,height,"map");
     evidence.push({requested:{width,height},measured:info,screenshot:mapScreenshot});
     if(width===390&&height===844){
