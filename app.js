@@ -4,7 +4,7 @@
 const D=window.TZ_DATA;if(!D){document.body.textContent="TranZit atlas data failed to load.";return;}
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
 const KEY="tranzit-atlas-save-v1";
-const defaults={view:"map",side:"maxis",done:{},parts:{},found:{},crew:["Player 1","Player 2","Player 3","Player 4"],assign:{},mapFilters:[],mapMode:"route",atlasFilter:"all",zone:"depot",floor:0,selected:null};
+const defaults={view:"map",side:"maxis",done:{},parts:{},found:{},crew:["Player 1","Player 2","Player 3","Player 4"],assign:{},mapFilters:[],mapMode:"route",atlasFilter:"all",zone:"depot",floor:0,selected:null,craftFocus:null,craftSelected:"jet"};
 let state,priorState={};
 try{priorState=JSON.parse(localStorage.getItem(KEY)||"{}")||{};state=Object.assign({},defaults,priorState);}catch(e){state=Object.assign({},defaults);}
 if(!Array.isArray(state.mapFilters))state.mapFilters=defaults.mapFilters.slice();
@@ -18,6 +18,30 @@ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){con
 let migrated=false;for(const i of D.items){if(i.legacyId && state.found[i.legacyId] && !state.found[i.id]){state.found[i.id]=true;migrated=true;}}if(migrated)save();
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const zone=id=>D.zones.find(x=>x.id===id);
+const buildById=id=>D.builds.find(x=>x.id===id);
+const buildColor=id=>buildById(id)?.color||"#dbb274";
+const buildCode=id=>buildById(id)?.code||"?";
+function craftProgress(build){
+ const found=build.parts.filter((_,i)=>!!state.parts[build.id+":"+i]).length;
+ return {found,total:build.parts.length};
+}
+function craftCatalog(build,partIndex){
+ const refs=build.parts[partIndex]?.[2]||[];
+ return refs.map(ref=>D.items.find(i=>i.id===ref)).filter(Boolean);
+}
+function craftLocations(build,partIndex){
+ const items=craftCatalog(build,partIndex),sites=[];
+ for(const item of items){
+  for(const z of [item.zone,...(item.alternateZones||[])])
+   if(!sites.includes(z))sites.push(z);
+ }
+ return sites;
+}
+function craftLocationLabel(build,index){
+ const names=craftLocations(build,index).map(z=>zone(z)?.name||z);
+ return names.join(" / ")||zone(build.zone)?.name||"Area unknown";
+}
+
 const markPrice=v=>v?'<span class="meta">'+esc(v)+(v==="Turbine"||v==="Grenade"||v==="Power or Turbine"||v==="Remote Turbine"?"":" pts")+"</span>":"";
 function category(type){return D.types[type]||D.types.secret}
 function modal(title,body){$("#modalTitle").textContent=title;$("#modalBody").innerHTML=body;const d=$("#modal");if(!d.open)d.showModal();}
@@ -29,7 +53,7 @@ function renderNav(){
  });
  $$(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+state.view));
 }
-function go(view){state.view=view;save();renderNav();if(view==="map")renderMap();if(view==="zones")renderZones();if(view==="quest")renderQuest();if(view==="atlas")renderAtlas();if(view==="crew")renderCrew();window.scrollTo({top:0,behavior:"auto"});}
+function go(view){state.view=view;save();renderNav();if(view==="map")renderMap();if(view==="zones")renderZones();if(view==="quest")renderQuest();if(view==="atlas")renderAtlas();if(view==="crew")renderCrew();if(view==="craft")renderCraftPanel();window.scrollTo({top:0,behavior:"auto"});}
 function selectZone(id){state.zone=id;state.floor=0;save();go("zones");}
 function showItem(id){
  const item=D.items.find(x=>x.id===id);if(!item)return;
