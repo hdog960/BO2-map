@@ -55,6 +55,6 @@ test('interiors switch to upper floor without crashing',()=>{
  assert.match(els.zonePlan.innerHTML,/Diner roof/);
 });
 test('in-app details dialog opens and closes',()=>{
- const {els,click}=boot();click({showItem:'perk-6'});
+ const {els,click}=boot();click({showItem:'perk-depot-quick-revive-depot-hall-hallway-near-main-door'});
  assert.equal(els.modal.open,true);assert.match(els.modalBody.innerHTML,/Quic|Speed|Double|Tombstone|Juggernog|Stamin-Up/);
 });
