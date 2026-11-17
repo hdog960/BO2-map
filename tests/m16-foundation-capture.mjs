@@ -247,7 +247,7 @@ try {
   }
   await fsp.writeFile(path.join(output,"baseline-layout.json"),JSON.stringify({
     baselineCommit:"80cdb6db12efb38edb41a3d43adbfec52ac5a99a",
-    candidateCommit:process.env.GITHUB_SHA||"local PR branch",
+    candidateCommit:process.env.ATLAS_CANDIDATE_SHA||process.env.GITHUB_SHA||"local PR branch",
     browser:"Chromium headless CDP; mobile emulation at deviceScaleFactor=1; not physical iPhone",
     milestone:"M16.4 Craftables redesign and source-parity review",
     screenshotCount:evidence.length,records:evidence
