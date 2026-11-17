@@ -336,3 +336,440 @@ body.atlas-expanded{overflow:hidden}
 @media(max-width:365px){.craft-selector-grid{grid-template-columns:1fr}.craft-detail{padding:12px 10px}.craft-bench{grid-template-columns:1fr}.craft-bench .button{grid-row:auto;grid-column:1;max-width:none}.bottom-nav button{font-size:8px}.bottom-nav button span{font-size:20px}}
 @media(min-width:740px){.craft-selector-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.craft-part-list{grid-template-columns:repeat(2,minmax(0,1fr))}.craft-detail{padding:20px}}
 @media(orientation:landscape) and (max-height:470px){.bottom-nav{grid-template-columns:repeat(6,minmax(0,1fr))}.bottom-nav button{font-size:9px}}
+
+
+/* M16.1 THREE-TAB FOUNDATION — restrained Black Ops II field-guide tokens.
+   The source map geometry, color-coded buildables and constant-size SVG overlays are untouched. */
+:root{
+ color-scheme:dark;
+ --bg:#101111;--surface:#1a1c1d;--card:#222526;--line:#454544;
+ --text:#f1ece0;--muted:#bcb8ac;--gold:#dea85d;--teal:#91b5ae;
+ --green:#99c5a7;--red:#d78e7b;--purple:#bca8cd;
+ --field-ink:#f1ece0;--field-dim:#c2bbac;--field-accent:#dba357;
+ --field-stroke:#494843;--field-surface:#1b1e1e;
+}
+[hidden]{display:none!important}
+html{scrollbar-gutter:stable;overscroll-behavior-y:contain}
+body{background:var(--bg);color:var(--field-ink)}
+.app{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+.top{height:64px;background:#151717;border-bottom-color:var(--field-stroke)}
+.brand-mark{border-radius:5px;padding:6px 10px 6px 7px;border-width:1px;letter-spacing:-2px}
+.brand h1{font-size:19px;letter-spacing:1.2px}
+.offline{color:#b9c6a9}
+.notice{display:none}
+.iconbtn,.top-actions button{min-height:44px;min-width:44px;width:44px;height:44px;background:#252828;border-color:var(--field-stroke);border-radius:8px}
+.button{min-height:44px;border-radius:8px;background:#6f4d29;border-color:#a47741}
+.button.ghost{background:#272a2a;color:var(--field-ink);border-color:var(--field-stroke)}
+.section-head h2{font-size:24px;letter-spacing:-.3px}
+.section-head p{color:var(--field-dim)}
+.map-wrap,#interactiveMap{box-shadow:none;border-color:#5a5448;border-radius:9px}
+.map-topline{background:#252623;color:#e3be85}
+.atlas-heading{margin-bottom:9px}
+.atlas-heading h2{font-size:24px;margin:1px 0 2px}
+.atlas-heading p{font-size:12px}
+#view-map{padding-top:8px}
+#mapViewport{background:#1b211f}
+.map-tools button{min-width:44px;min-height:44px;width:44px;height:44px;border-radius:8px}
+.map-context{background:#202321f7;border:1px solid #a17a4e;border-radius:12px}
+.map-context .map-card-top button,.map-card-items button,.map-card-actions .button{min-height:44px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;transform:none!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px;padding:5px max(8px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:#181a19;border-top:1px solid #615238;z-index:30}
+.bottom-nav button{min-height:55px!important;border:1px solid #3b3d39;border-radius:8px;background:#232625;color:var(--field-ink);font-size:11px;font-weight:850;letter-spacing:.5px}
+.bottom-nav button.selected{background:#463726;color:#ffe1a2;box-shadow:inset 0 0 0 1px #b28b58}
+.bottom-nav button span{font-size:20px;line-height:1.1}
+.crew-access{width:100%;margin:0 0 10px;text-align:center}
+body.sheet-open{overflow:hidden;touch-action:pan-y}
+.aux-sheet{position:fixed;inset:env(safe-area-inset-top) 0 0;z-index:850;background:#0b0d0dd9;padding:7px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));display:flex;align-items:flex-end;justify-content:center;overscroll-behavior:contain}
+.aux-sheet-inner{background:#1a1d1c;border:1px solid #686053;border-bottom:0;border-radius:15px 15px 0 0;width:min(100%,780px);height:min(92dvh,900px);display:flex;flex-direction:column;min-height:0;box-shadow:0 0 28px #0009}
+.sheet-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--field-stroke);flex:0 0 auto;background:#212422;border-radius:14px 14px 0 0}
+.sheet-bar h2{font-size:19px;line-height:1.1;margin:3px 0;color:var(--field-ink)}
+.sheet-close{min-height:44px;min-width:80px;padding:8px 10px;background:#383832;color:#f5ddae;border:1px solid #75684e;border-radius:8px;font-size:13px;font-weight:800}
+.sheet-bar .eyebrow{font-size:9px;letter-spacing:1.2px}
+.aux-sheet-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable}
+.aux-sheet .view{display:none;padding:14px}
+.aux-sheet .view.active{display:block;animation:none}
+.aux-sheet .section-head{margin-bottom:10px}
+.aux-sheet .section-head h2{font-size:20px}
+.aux-sheet .section-head p{font-size:12px}
+.aux-sheet .atlas-list{padding-bottom:20px}
+.aux-sheet .search-shell{position:relative}
+.aux-sheet input,.aux-sheet select{min-height:44px}
+.aux-sheet button,.aux-sheet summary{touch-action:manipulation}
+.aux-sheet .quick-find button{min-height:44px}
+#modal{background:#202321;border:1px solid #776344;color:var(--field-ink)}
+#modal .modal-header{border-color:var(--field-stroke)}
+#modal::backdrop{background:#060706bd}
+@media(max-width:390px){.top{height:60px}.brand h1{font-size:17px}.brand-mark{padding:5px 8px 5px 6px}.top-actions{gap:5px}}
+@media(orientation:landscape) and (max-height:470px){
+ .top{height:50px;min-height:50px;padding-top:3px;padding-bottom:3px}
+ .brand .eyebrow,.brand h1 small{display:none}
+ .brand h1{font-size:17px}
+ .brand-mark{font-size:16px}
+ #view-map{padding-top:4px}
+ .atlas-heading{margin-bottom:5px}
+ .atlas-heading .eyebrow,.atlas-heading p{display:none}
+ .atlas-heading h2{font-size:20px}
+ .atlas-heading #mapFullScreen{min-height:44px}
+ .bottom-nav{padding-top:2px;padding-bottom:max(3px,env(safe-area-inset-bottom))}
+ .bottom-nav button{min-height:44px!important;display:flex;justify-content:center;align-items:center;gap:7px}
+ .bottom-nav button span{font-size:17px}
+ .aux-sheet-inner{height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 6px);max-height:none;width:min(100%,900px)}
+ .sheet-bar{padding:3px 12px}
+ .aux-sheet .view{padding:10px 14px}
+}
+
+/* M16.1 minimum interactive size, including secondary index and room sheets. */
+.chip,.quick-find button,.floor-toggle button,.choice button,.craft-map-choice,
+.site-picker select,.site-picker button,.crew-card input,.filterbar button,
+.map-card-items button,.map-card-actions button{min-height:44px}
+
+
+/* M16.2 — interactive map is the work surface, not a page of controls.
+   'slice' crops the SVG viewport; app.js calibrates hit testing and pin sizes. */
+#view-map{padding-top:5px;padding-bottom:0}
+#view-map .atlas-heading{margin-bottom:5px;min-height:44px}
+#view-map .atlas-heading .eyebrow,#view-map .atlas-heading p{display:none}
+#view-map .atlas-heading h2{font-size:21px;line-height:1.15;margin:0;font-weight:820}
+#view-map #mapFullScreen{min-width:84px;min-height:44px;font-size:12px}
+#interactiveMap{isolation:isolate;overflow:hidden}
+#interactiveMap .map-topline{display:none}
+#mapViewport{
+ aspect-ratio:auto!important;
+ height:calc(100dvh - 188px)!important;
+ min-height:280px!important;
+ max-height:1000px!important;
+ touch-action:none;
+}
+#mapViewport #worldMap{display:block;width:100%;height:100%;touch-action:none}
+#interactiveMap .map-tools{top:9px;right:9px;z-index:6}
+#interactiveMap .map-tools button{height:44px;width:44px;min-height:44px;min-width:44px;backdrop-filter:none}
+.map-key-disclosure{
+ position:absolute;z-index:7;left:9px;bottom:9px;
+ width:min(438px,calc(100% - 18px));
+ max-height:calc(100% - 16px);
+ color:#eee6d5;isolation:isolate;
+}
+.map-key-disclosure>summary{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;
+ width:max-content;min-width:157px;min-height:44px;
+ padding:8px 12px;list-style:none;
+ background:#20211feF;border:1px solid #ba9461;border-radius:9px;
+ font-weight:850;font-size:12px;letter-spacing:.6px;cursor:pointer;
+ color:#f1d39a;touch-action:manipulation;
+ box-shadow:0 3px 12px #0009;
+}
+.map-key-disclosure>summary::-webkit-details-marker{display:none}
+.map-key-disclosure>summary span{font-size:17px}
+.map-key-disclosure[open]>summary{margin-bottom:6px}
+.map-key-disclosure[open]>summary span{transform:rotate(180deg)}
+.map-filter-scroll{
+ background:#1e211ff8;border:1px solid #8c7552;border-radius:12px;
+ padding:10px;max-height:min(65dvh,450px);max-height:min(65dvh,calc(100dvh - 150px));
+ overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+ touch-action:pan-y;box-shadow:0 10px 26px #000b;
+}
+.map-filter-scroll .map-key-head{margin:2px 0 9px}
+.map-filter-scroll .map-key-head strong{font-size:11px;letter-spacing:.6px;white-space:normal}
+.map-filter-scroll .map-key-head span{display:none}
+.map-filter-scroll .map-legend{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.map-filter-scroll .legend-button{min-height:44px;background:#292d2a;border-color:#4e544d;padding:6px}
+.map-filter-scroll .legend-label{font-size:11px}
+.map-filter-scroll .craft-strip-heading{margin:13px 1px 7px}
+.map-filter-scroll .craft-strip-heading span{display:none}
+.map-filter-scroll .craft-map-strip{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+.map-filter-scroll .map-route-order{display:flex;flex-wrap:wrap;gap:4px;margin-top:14px}
+.map-filter-scroll .map-route-order span{white-space:nowrap}
+.map-filter-scroll .map-guide{margin:9px 0 2px;font-size:11px}
+#interactiveMap .map-context{
+ left:8px;right:8px;bottom:8px;max-height:75%;width:auto;
+ overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;
+ -webkit-overflow-scrolling:touch;padding:7px 14px 13px;
+ background:#20221ff5;backdrop-filter:none;
+ border-radius:14px;border-color:#ba965d;
+}
+.map-sheet-handle{height:4px;width:44px;border-radius:9px;background:#9c947f;margin:1px auto 8px}
+.map-context .map-card-top button{min-width:44px;min-height:44px}
+.map-context .map-card-top{margin-bottom:0}
+.map-context h3{font-size:18px;margin:0 0 7px}
+.map-context p{font-size:12px;line-height:1.45;margin:5px 0 8px}
+.map-sheet-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;margin:9px 0}
+.map-sheet-facts>div{display:grid;gap:3px;background:#2a2d29;border:1px solid #525348;border-radius:8px;padding:8px 9px}
+.map-sheet-facts small{font-size:9px;font-weight:850;letter-spacing:1px;color:#c9a778}
+.map-sheet-facts strong{font-size:12px;line-height:1.4;color:#f1ecdd;overflow-wrap:anywhere}
+.map-sheet-footnote{font-size:11px;color:#d6bd90;line-height:1.3;margin-bottom:8px}
+.map-accuracy-note{font-size:11px;color:#d3bc96;margin:7px 0}
+.map-accuracy-note summary{cursor:pointer;min-height:44px;display:flex;align-items:center;border-top:1px solid #4b5048}
+.map-accuracy-note p{font-size:11px}
+.map-context .map-card-items button,.map-context .map-card-actions .button{min-height:44px}
+#interactiveMap.map-expanded #mapViewport{
+ height:calc(100dvh - 29px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+ max-height:none!important;min-height:0!important;
+}
+#interactiveMap.map-expanded .map-topline{display:flex}
+#interactiveMap.map-expanded .map-key-disclosure{bottom:max(12px,env(safe-area-inset-bottom))}
+#interactiveMap.map-expanded .map-context{max-height:72%}
+@media(orientation:landscape) and (max-height:470px){
+ #view-map{padding-top:3px}
+ #view-map .atlas-heading{min-height:44px;margin-bottom:2px}
+ #view-map .atlas-heading h2{font-size:18px}
+ #mapViewport{height:calc(100dvh - 155px - env(safe-area-inset-bottom))!important;min-height:160px!important}
+ .top{height:46px;min-height:46px}
+ .map-key-disclosure>summary{min-height:44px}
+ .map-filter-scroll{max-height:calc(100dvh - 172px - env(safe-area-inset-bottom))}
+ #interactiveMap .map-context{max-height:95%;width:min(390px,calc(100% - 16px));right:auto}
+ #interactiveMap.map-expanded .map-context{max-height:85%}
+}
+@media(max-width:370px){.map-filter-scroll .map-legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* M16.3 — Tower of Babble: one objective at a time, source-backed instructions.
+   Presentation only; D.quests, save keys, map links and player identities remain intact. */
+#view-quest{padding-top:9px;padding-bottom:calc(102px + env(safe-area-inset-bottom));max-width:850px;margin:0 auto}
+#view-quest .quest-heading{margin:0 0 11px;align-items:start}
+#view-quest .quest-heading h2{font-size:clamp(23px,5vw,29px);line-height:1.1;letter-spacing:-.65px;margin:2px 0 5px;color:#f2eadb}
+#view-quest .quest-heading p{max-width:none;font-size:12px;line-height:1.4;color:#c1c7be}
+#view-quest .quest-heading .eyebrow{font-size:10px;letter-spacing:1.4px;color:#e3b773}
+.quest-route-label{font-size:10px;font-weight:900;letter-spacing:1.25px;color:#d4b786;margin:0 0 5px}
+#view-quest .quest-route-choice{margin:0 0 9px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-radius:10px;background:#1c211f;border:1px solid #555046;padding:4px;gap:4px}
+#view-quest .quest-route-choice button{padding:7px 8px;min-height:51px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:#292d29;border-color:#454942;color:#deddd2;border-radius:8px;font-size:14px;letter-spacing:1px;font-weight:900}
+#view-quest .quest-route-choice button small{display:block;font-size:10px;color:#c0c2b7;font-weight:600;letter-spacing:.2px}
+#view-quest .quest-route-choice button.on{background:#ddae69;border-color:#f1c884;color:#201e18;box-shadow:inset 0 0 0 1px #f6d29c}
+#view-quest .quest-route-choice button.on small{color:#3d2c1b}
+#view-quest .quest-route-choice button:focus-visible{outline:2px solid #ffe5ac;outline-offset:3px}
+.quest-crew-disclosure{margin:0 0 9px;background:#202624;border:1px solid #4b5650;border-radius:9px;overflow:hidden}
+.quest-crew-disclosure>summary{display:flex;gap:8px;align-items:center;justify-content:space-between;min-height:44px;padding:8px 12px;font-size:11px;font-weight:850;letter-spacing:.55px;color:#f0d5a0;cursor:pointer;list-style:none}
+.quest-crew-disclosure>summary::-webkit-details-marker{display:none}
+.quest-crew-disclosure>summary span{font-size:10px;letter-spacing:0;font-weight:600;color:#bfc9c0}
+.quest-crew-disclosure[open]>summary{border-bottom:1px solid #49534a}
+.quest-crew-summary{padding:10px}
+.quest-roster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.quest-roster-person{padding:7px 9px;background:#2a312e;border:1px solid #3e4c44;border-radius:7px;min-width:0;display:grid;gap:2px}
+.quest-roster-person span{font-size:9px;letter-spacing:.9px;font-weight:800;color:#c5ae84}
+.quest-roster-person strong{font-size:12px;font-weight:750;overflow-wrap:anywhere;color:#f3e9d5}
+.quest-crew-footnote{font-size:11px;line-height:1.5;color:#c2c9c0;margin:9px 0}
+.quest-crew-disclosure .crew-access{width:calc(100% - 20px);margin:0 10px 10px;min-height:44px}
+.quest-progress{background:#1d2321;border:1px solid #414a41;padding:10px 12px 8px;border-radius:9px;margin:0 0 9px}
+.quest-progress-text{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;font-weight:850;letter-spacing:.75px;color:#d0d1c2}
+.quest-progress-text strong{font-size:17px;letter-spacing:-.4px;color:#f3d5a0}
+.quest-progress .progress-track{margin:7px 0 0;height:6px;background:#3d443f}
+.quest-progress .progress-bar{background:#d7ae6c}
+#view-quest .quest-prep{margin:0 0 9px;border:1px solid #716344;border-left:3px solid #dfb26b;background:#272923;border-radius:9px;overflow:hidden}
+#view-quest .quest-prep summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:6px;font-weight:850;font-size:11px;letter-spacing:.3px;color:#f1d9a9;padding:9px 11px}
+#view-quest .quest-prep summary span{color:#c6c2ae;font-size:10px;letter-spacing:0;font-weight:650}
+.quest-prep-content{padding:0 12px 10px}
+#view-quest .quest-prep p{margin:5px 0;color:#d0cbbb;font-size:12px;line-height:1.55}
+#view-quest .quest-next{background:linear-gradient(125deg,#3b3529,#262b26 62%);border:1px solid #d4a966;border-top:4px solid #e8bb74;border-radius:12px;padding:13px 14px 12px;margin:0 0 13px}
+#view-quest .quest-next .num{display:flex;justify-content:space-between;gap:8px;color:#f1c780;font-size:10px;letter-spacing:1.15px;font-weight:950}
+#view-quest .quest-next .num span{white-space:nowrap;color:#e9d6af;letter-spacing:0}
+#view-quest .quest-next h3{font-size:clamp(18px,4.5vw,23px);line-height:1.2;color:#fff0d2;letter-spacing:-.35px;margin:8px 0 7px}
+#view-quest .quest-next>p{font-size:12px;line-height:1.58;color:#e0e1d6;margin:0 0 9px;overflow-wrap:anywhere}
+.quest-next-meta{display:flex;flex-wrap:wrap;gap:6px 8px;margin:8px 0}
+.quest-next-meta span{display:inline-flex;align-items:center;min-height:27px;padding:4px 8px;border:1px solid #70634e;background:#252925;border-radius:6px;color:#efd5ab;font-size:11px;font-weight:750}
+#view-quest .quest-next-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:12px 0 5px}
+#view-quest .quest-next-actions button{min-height:48px;white-space:normal;line-height:1.2;text-align:center;padding:8px 9px;border-radius:8px}
+#view-quest .quest-next-actions .quest-location{background:#d7a966;color:#1d211d;border-color:#ebc689}
+#view-quest .quest-next-actions .quest-complete{background:#323c35;color:#eaf1e5;border-color:#719277}
+#view-quest .quest-next .quest-manual-caveat{font-size:10px;line-height:1.4;color:#cbbd9e;margin:7px 0 0}
+#view-quest .quest-complete{border-color:#76ae8f;background:#26392d}
+.quest-list-heading{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:0 1px 8px;color:#e8dbc7}
+.quest-list-heading strong{font-size:11px;letter-spacing:.9px;color:#ddbd86}
+.quest-list-heading span{color:#b6c2b8;font-size:10px;text-align:right}
+#view-quest .quest-step{margin:6px 0;border-radius:9px;border-color:#48534a;background:#202724;padding:10px 11px}
+#view-quest .quest-step.current{border-color:#d0a765;background:#292b24}
+#view-quest .quest-step.done{opacity:1;border-color:#406f59;background:#1c2922}
+#view-quest .quest-step .step-top{align-items:center;gap:10px}
+#view-quest .quest-step .tick{width:44px;min-width:44px;height:44px;min-height:44px;font-size:16px}
+#view-quest .quest-step .tick.checked{background:#2a6750;color:#eaf9e7;border-color:#74a789}
+.quest-step-head{flex:1;min-width:0}
+.quest-step-head strong{display:block;font-size:13px;line-height:1.35;color:#f0eadb}
+.quest-step-head .step-count{font-size:10px;color:#bac7bb;margin:3px 0 0}
+.quest-step-state{font-size:9px;letter-spacing:.9px;font-weight:850;color:#ccae7c;display:block;margin-bottom:3px}
+.quest-step.done .quest-step-state{color:#96d5ad}
+#view-quest .quest-step-details{margin:8px 0 0;border-top:1px solid #445248;padding-top:0}
+#view-quest .quest-step-details>summary{min-height:44px;font-size:11px;color:#e7cd99;padding:6px 0;letter-spacing:.25px}
+#view-quest .quest-step-details>summary::before{font-size:18px}
+.quest-step-body{padding:0 0 6px}
+#view-quest .quest-step-body>p{font-size:12px;line-height:1.58;color:#d5dbd0;margin:6px 0 12px}
+#view-quest .quest-step-body .step-extra{margin:0;gap:7px}
+#view-quest .quest-step-body .step-extra button{min-height:44px}
+#view-quest .quest-step-body .assign{max-width:none;width:100%;min-height:44px;font-size:13px;color:#f0ebdf;background:#29342e;border-color:#697166}
+.quest-troubleshooting{margin:7px 0 0;border:1px solid #495248;border-radius:7px;padding:0 10px;background:#262d26}
+.quest-troubleshooting summary{min-height:44px;display:flex;align-items:center;color:#e2c18c;font-size:11px;font-weight:750;cursor:pointer}
+#view-quest .quest-troubleshooting p{font-size:11px;line-height:1.55;margin:0 0 9px;color:#cbd1c6}
+@media(min-width:700px){
+ #view-quest{padding-inline:24px}
+ .quest-roster{grid-template-columns:repeat(4,minmax(0,1fr))}
+ #view-quest .quest-next{padding:17px 19px}
+ #view-quest .quest-next-actions{max-width:485px}
+}
+@media(orientation:landscape) and (max-height:470px){
+ #view-quest{padding-top:5px}
+ #view-quest .quest-heading{margin-bottom:5px}
+ #view-quest .quest-heading h2{font-size:20px;margin:2px 0}
+ #view-quest .quest-heading p{display:none}
+ #view-quest .quest-route-choice{margin-bottom:6px}
+ #view-quest .quest-route-choice button{min-height:44px;flex-direction:row;gap:8px}
+ #view-quest .quest-route-choice button small{font-size:10px}
+ #view-quest .quest-next{padding:11px 13px}
+}
+
+
+/* M16.3 short landscape: surface the current objective and its map action
+   before secondary progress/crew panels. The full detail list stays scrollable. */
+@media(orientation:landscape) and (max-height:470px){
+ #view-quest.active{display:flex;flex-direction:column;gap:0}
+ #view-quest .quest-heading{order:0}
+ #view-quest .quest-route-label{order:1;margin-bottom:2px}
+ #view-quest .quest-route-choice{order:2}
+ #view-quest #questPanel{order:3;display:flex;flex-direction:column;gap:0}
+ #view-quest #questCrewDisclosure{order:4;margin:7px 0 0}
+ #view-quest #questPanel .quest-next{order:0;margin:3px 0 9px;padding:9px 12px}
+ #view-quest #questPanel .quest-next h3{font-size:19px;margin:5px 0 4px}
+ #view-quest #questPanel .quest-next>p:not(.quest-manual-caveat){
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+  overflow:hidden;line-height:1.4;margin:0 0 4px;font-size:12px
+ }
+ #view-quest #questPanel .quest-next-meta{margin:5px 0;gap:5px}
+ #view-quest #questPanel .quest-next-meta span{min-height:22px;padding:2px 6px}
+ #view-quest #questPanel .quest-next-actions{margin:5px 0 0;gap:6px}
+ #view-quest #questPanel .quest-next-actions button{min-height:44px;padding:5px 7px}
+ #view-quest #questPanel .quest-next .quest-manual-caveat{font-size:10px;margin:5px 0 0}
+ #view-quest #questPanel .quest-progress{order:1;margin:1px 0 8px}
+ #view-quest #questPanel .quest-prep{order:2}
+ #view-quest #questPanel .quest-list-heading{order:3}
+ #view-quest #questPanel .quest-step{order:4}
+}
+
+
+/* M16.3 acceptance refinement: at 667×375, both objective actions must sit
+   entirely above the fixed bottom tabs; hide decorative labels, not gameplay. */
+@media(orientation:landscape) and (max-height:400px){
+ #view-quest .quest-heading .eyebrow{display:none}
+ #view-quest .quest-heading h2{font-size:18px;line-height:1.05;margin:0}
+ #view-quest .quest-heading{margin:0 0 1px}
+ #view-quest .quest-route-label{display:none}
+ #view-quest .quest-route-choice{margin:1px 0 2px}
+ #view-quest #questPanel .quest-next{padding:6px 10px;margin:1px 0 7px}
+ #view-quest #questPanel .quest-next h3{font-size:17px;line-height:1.15;margin:3px 0 2px}
+ #view-quest #questPanel .quest-next .num{font-size:9px}
+ #view-quest #questPanel .quest-next>p:not(.quest-manual-caveat){font-size:11px;line-height:1.3;margin:0 0 3px}
+ #view-quest #questPanel .quest-next-meta{margin:3px 0}
+ #view-quest #questPanel .quest-next-actions{margin:3px 0 0}
+ #view-quest #questPanel .quest-next .quest-manual-caveat{display:none}
+}
+
+
+/* Landscape reading order: retain the original #questPanel DOM and test
+   contracts while visually putting the collapsible Crew immediately after
+   the active objective, before progress and the full quest archive. */
+@media(orientation:landscape) and (max-height:470px){
+ #view-quest #questPanel{display:contents}
+ #view-quest #questPanel .quest-next{order:3}
+ #view-quest #questCrewDisclosure{order:4;margin:5px 0 8px}
+ #view-quest #questPanel .quest-progress{order:5}
+ #view-quest #questPanel .quest-prep{order:6}
+ #view-quest #questPanel .quest-list-heading{order:7}
+ #view-quest #questPanel .quest-step{order:8}
+}
+
+
+/* M16.4 — source-backed nine-buildable workbench; responsive phone-first layout.
+   All colors, codes and part checkboxes come from the unmodified data catalog. */
+#view-craft{padding-top:8px;padding-bottom:calc(94px + env(safe-area-inset-bottom));max-width:980px;margin-inline:auto}
+#view-craft .craft-heading{margin:0 0 6px;align-items:start}
+#view-craft .craft-heading h2{font-size:clamp(22px,5vw,29px);line-height:1.1;letter-spacing:-.4px;margin:2px 0 4px;color:#f3ead7}
+#view-craft .craft-heading .eyebrow{font-size:10px;letter-spacing:1.1px}
+#view-craft .craft-heading p{font-size:12px;max-width:none;color:#c9cec3;line-height:1.4}
+#view-craft .craft-guide{font-size:11px;line-height:1.45;border:1px solid #5c594a;background:#282b25;color:#e2d3b9;padding:9px 11px;margin:0 0 10px;border-radius:9px}
+.craft-library-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px 12px;margin-bottom:7px}
+.craft-library-header>div{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 9px}
+.craft-library-header strong{font-size:11px;letter-spacing:.9px;font-weight:900;color:#ebcc96}
+.craft-library-header span{font-size:10px;line-height:1.4;color:#becdc5}
+.craft-library-progress{font-size:10px;color:#d0b98d!important;font-weight:750}
+#view-craft .craft-selector-grid{display:flex;grid-template-columns:none;gap:7px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:2px 1px 9px;margin:0 0 6px;scrollbar-width:thin;scrollbar-color:#8c7657 #262e2a;-webkit-overflow-scrolling:touch}
+#view-craft .craft-selector{scroll-snap-align:start;flex:0 0 150px;width:150px;min-width:150px;min-height:64px;padding:8px 9px;gap:8px;white-space:normal;border-radius:9px;background:#252d28;border:1px solid #515a50;border-left:4px solid var(--craft-color);color:#e5e8db;align-items:center}
+#view-craft .craft-selector.selected{background:#35372d;border-color:var(--craft-color);box-shadow:inset 0 0 0 1px var(--craft-color)}
+#view-craft .craft-selector:focus-visible{outline:2px solid #ffe1ab;outline-offset:2px}
+#view-craft .craft-selector .craft-emblem{min-width:37px;width:37px;height:37px;display:grid;place-items:center;font-size:12px;border:1px solid var(--craft-color);border-radius:8px;background:#191d1b;color:var(--craft-color);font-weight:950}
+#view-craft .craft-selector .craft-label{min-width:0;flex:1}
+#view-craft .craft-selector .craft-label strong{font-size:12px;line-height:1.2;color:#f5ead4;white-space:normal}
+#view-craft .craft-selector .craft-label small{font-size:10px;line-height:1.2;color:#c5cfc4;white-space:normal}
+#view-craft .craft-detail{padding:12px 11px 13px;background:#232a26;border:1px solid #5d6151;border-top:4px solid var(--craft-color);border-radius:12px;overflow:visible}
+#view-craft .craft-detail-head{display:flex;align-items:flex-start;gap:9px}
+#view-craft .craft-large-symbol{display:grid;place-items:center;flex:0 0 53px;width:53px;height:53px;border-radius:10px;border:1px solid var(--craft-color);color:var(--craft-color);font-weight:950;background:#151b19;font-size:16px}
+#view-craft .craft-detail-head>div{min-width:0}
+#view-craft .craft-detail-head .kicker{font-size:10px;letter-spacing:.9px}
+#view-craft .craft-detail-head h3{font-size:clamp(20px,4.6vw,26px);line-height:1.1;letter-spacing:-.35px;color:#f4edde;margin:2px 0 4px}
+#view-craft .craft-detail-head p{font-size:12px;color:#d4d6c9;line-height:1.45;margin:0}
+#view-craft .craft-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(135px,1fr);align-items:center;gap:9px;margin:11px 0 7px}
+#view-craft .craft-status{font-size:12px;font-weight:850;color:#e6d6b8}
+#view-craft .craft-show{min-height:44px;background:var(--craft-color)!important;border-color:var(--craft-color)!important;color:#191c18!important;font-size:12px;padding:8px 10px;white-space:normal}
+#view-craft .craft-part-progress{height:7px;background:#3e463e;border-radius:20px;overflow:hidden;margin:0 0 11px}
+#view-craft .craft-part-progress>div{height:100%;background:var(--craft-color);border-radius:20px}
+.craft-part-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0 8px}
+.craft-part-heading strong{font-size:11px;font-weight:900;letter-spacing:1px;color:#efcd95}
+.craft-part-heading span{font-size:10px;color:#c8ccc2;text-align:right}
+#view-craft .craft-part-list{display:grid;grid-template-columns:1fr;gap:8px;margin:0 0 12px}
+#view-craft .craft-part-row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:7px 10px;align-items:start;min-width:0;padding:10px;background:#2c352f;border:1px solid #596253;border-radius:9px}
+#view-craft .craft-part-row.is-done{background:#203328;border-color:#6ca780}
+#view-craft .craft-part-row .tick{min-width:44px;width:44px;min-height:44px;height:44px;align-self:start;font-size:18px;border-radius:9px}
+#view-craft .craft-part-row .craft-part-info{min-width:0;display:grid;gap:5px}
+#view-craft .craft-part-row .craft-part-info strong{font-size:14px;line-height:1.35;color:#f1edde;overflow-wrap:anywhere}
+#view-craft .craft-part-row .mini-craft-code{display:inline-block;font-size:10px;letter-spacing:.3px;border-radius:5px;background:#17221d;color:var(--craft-color);padding:3px 5px}
+#view-craft .craft-part-row .craft-area{font-size:11px;font-weight:800;line-height:1.45;color:#f0d09b;overflow-wrap:anywhere}
+#view-craft .craft-room{display:grid;gap:2px;margin-top:1px}
+#view-craft .craft-room span{font-size:9px;letter-spacing:1px;font-weight:850;color:#b2c6b9}
+#view-craft .craft-room p{font-size:11px;line-height:1.45;color:#d3ded1;margin:0;overflow-wrap:anywhere}
+#view-craft .craft-part-guidance{font-size:11px;line-height:1.45;color:#d6d9cc;overflow-wrap:anywhere}
+#view-craft .craft-alternates{font-size:10px;font-weight:750;line-height:1.4;color:#edc58d;overflow-wrap:anywhere}
+#view-craft .craft-part-warning{font-size:10px;line-height:1.4;color:#e5c5a0}
+#view-craft .craft-locate{grid-column:2;justify-self:start;min-height:44px;min-width:92px;border:1px solid #c5a572;background:#3c3d30;color:#f9e5c0;font-size:11px;padding:9px 10px}
+#view-craft .craft-bench{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px dashed var(--craft-color);padding:11px 12px;border-radius:9px;background:#2b332b;margin:6px 0 10px;min-width:0}
+#view-craft .craft-bench-copy{min-width:0;display:grid;gap:3px}
+#view-craft .craft-bench-copy strong{font-size:11px;font-weight:900;letter-spacing:.7px;color:#e9c794}
+#view-craft .craft-bench-copy span{font-size:11px;color:#e0d9c5;line-height:1.4;overflow-wrap:anywhere}
+#view-craft .craft-bench button{min-height:44px;white-space:normal;text-align:center;font-size:11px;max-width:156px}
+#view-craft .craft-accuracy{border:1px solid #566356;border-radius:9px;background:#232e27;margin-top:10px}
+#view-craft .craft-accuracy summary{display:flex;align-items:center;min-height:44px;cursor:pointer;padding:8px 12px;font-size:11px;font-weight:800;color:#e7c68d}
+#view-craft .craft-accuracy p{font-size:11px;line-height:1.55;color:#d1d4c8;padding:0 12px 11px;margin:0}
+@media(min-width:660px){
+ #view-craft .craft-selector{flex-basis:158px;width:158px}
+ #view-craft .craft-part-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #view-craft .craft-part-row{grid-template-columns:44px minmax(0,1fr)}
+ #view-craft .craft-bench{grid-template-columns:minmax(0,1fr) 180px}
+ #view-craft .craft-bench button{max-width:none}
+}
+@media(max-width:390px){
+ #view-craft .craft-selector{flex-basis:142px;width:142px;min-width:142px}
+ #view-craft .craft-bench{grid-template-columns:1fr}
+ #view-craft .craft-actions{grid-template-columns:1fr}
+ #view-craft .craft-show{width:100%}
+}
+@media(orientation:landscape) and (max-height:470px){
+ #view-craft{padding-top:4px}
+ #view-craft .craft-heading{margin:0 0 4px}
+ #view-craft .craft-heading .eyebrow,#view-craft .craft-heading p{display:none}
+ #view-craft .craft-heading h2{font-size:19px;margin:0}
+ #view-craft .craft-guide{display:none}
+ #view-craft .craft-library-header{margin-bottom:2px}
+ #view-craft .craft-library-header strong{font-size:10px}
+ #view-craft .craft-selector-grid{margin-bottom:3px;padding:1px 1px 6px}
+ #view-craft .craft-selector{min-height:46px;height:46px;padding:4px 8px}
+ #view-craft .craft-selector .craft-emblem{width:31px;height:31px;min-width:31px;font-size:10px}
+ #view-craft .craft-selector .craft-label strong{font-size:11px}
+ #view-craft .craft-selector .craft-label small{font-size:9px}
+ #view-craft .craft-detail{padding:8px 10px}
+ #view-craft .craft-detail-head h3{font-size:19px;margin:2px 0}
+ #view-craft .craft-detail-head p{font-size:11px;line-height:1.3;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+ #view-craft .craft-large-symbol{flex-basis:43px;width:43px;height:43px;font-size:13px}
+ #view-craft .craft-actions{margin:7px 0 5px}
+ #view-craft .craft-part-progress{margin-bottom:7px}
+ #view-craft .craft-part-heading{margin:4px 0 7px}
+ #view-craft .craft-part-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #view-craft .craft-part-row{padding:8px}
+}
+
+
+/* M16.5A: render the MAP tab using a native SVG rather than an unsupported
+   Unicode symbol; preserve original two-thumb controls and 44px targets. */
+.bottom-nav .nav-map-icon{display:inline-grid;place-items:center;flex:0 0 21px;width:21px;height:21px;line-height:1}
+.bottom-nav .nav-map-icon svg{display:block;width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8}

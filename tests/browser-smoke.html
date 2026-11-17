@@ -12,16 +12,48 @@
    check(!!doc,"iframe same origin");
    const click=selector=>{const el=doc.querySelector(selector);check(el,"Missing "+selector);el.dispatchEvent(new win.MouseEvent("click",{bubbles:true}));};
    check(doc.querySelector("#view-map").classList.contains("active"),"interactive map must be initial view");
+
+   // M16.5A: native vector nav symbol works without rare glyph fonts,
+   // and iOS Home Screen icon points at the dedicated PNG asset.
+   const mapIcon=doc.querySelector('nav.bottom-nav button[data-view="map"] .nav-map-icon svg');
+   check(!!mapIcon&&mapIcon.querySelectorAll("path").length===2,"MAP uses source-native SVG rather than unsupported Unicode glyph");
+   check(win.getComputedStyle(mapIcon).display==="block"&&mapIcon.getBoundingClientRect().width>=18,"MAP SVG renders at phone-readable dimensions");
+   const appleIcon=doc.querySelector('link[rel="apple-touch-icon"]');
+   check(!!appleIcon&&appleIcon.getAttribute("href")==="./apple-touch-icon.png","Apple touch icon references PNG");
+   check(appleIcon.getAttribute("sizes")==="180x180","Apple touch icon declares 180px");
+   const imageResponse=await fetch("../apple-touch-icon.png");
+   check(imageResponse.ok&&imageResponse.headers.get("content-type")?.includes("image/png"),"Apple PNG exists in served app");
+
    check(doc.querySelector("#mapLegend"),"map key must exist");
    check(doc.querySelectorAll("#mapLegend [data-map-key]").length===11,"all ten icon categories plus All");
    check(doc.querySelectorAll("#mapPins [data-group]").length>=12,"site-linked category pins should be shown without fake item coordinates");
    check(doc.querySelectorAll("#mapPins [data-zone]").length===10,"all ten mapped site pins");
    check(doc.querySelector("#worldMap image").getAttribute("href")==="./world-art.svg","reference vector artwork is present");
    check((await fetch("../world-art.svg")).ok,"local map artwork is served");
+   // M16.2 source geometry and compact key controls.
+   const drawer=doc.querySelector("#mapKeyDisclosure");
+   check(!!drawer&&!drawer.open,"map filter drawer is closed on first load");
+   check(win.getComputedStyle(drawer).position==="absolute","key overlays the map instead of pushing it");
+   click("#mapKeyDisclosure summary");
+   check(drawer.open,"tap expands compact key");
+   check(doc.querySelectorAll("#mapLegend [data-map-key]").length===11,"all original categories stay available");
+   check(win.getComputedStyle(doc.querySelector(".map-filter-scroll")).overscrollBehaviorY==="contain","key scroll is contained");
+   click('[data-map-key="perk"]');
+   check(!drawer.open,"choosing category collapses drawer to restore map space");
+   check(doc.querySelector('[data-map-key="perk"]').getAttribute("aria-pressed")==="true","filter state persists");
+   click("#mapKeyDisclosure summary");
+   check(drawer.open,"filter drawer can reopen");
+   doc.dispatchEvent(new win.KeyboardEvent("keydown",{bubbles:true,key:"Escape"}));
+   check(!drawer.open,"Escape closes the key");
+   click('[data-map-key="all"]');
+
 
    // The scan runs on-device while the map remains interactive.
    check(doc.querySelector("#mapScanPanel").hidden,"scan should be closed by default");
-   click("#openMapScan");
+   click("#helpBtn");
+   check(doc.querySelector("#modal").open,"Help opens");
+   click("#helpMapScan");
+   check(!doc.querySelector("#modal").open,"Help closes when scanner launches");
    check(!doc.querySelector("#mapScanPanel").hidden,"player can open map scanner");
    click("#startMapScan");
    check(win.TZ_SCAN?.active,"scan should start recording without blocking map");
@@ -105,6 +137,8 @@
    nt("touchmove",[touch(8,px-32,py),touch(9,px+82,py)]);
    nt("touchend",[],[touch(8,px-32,py),touch(9,px+82,py)]);
    check(win.TZ_MAP_TELEMETRY().zoom>initialNativeZoom,"native two-finger pinch zooms map");
+   check(doc.querySelector("#worldMap").getAttribute("preserveAspectRatio")==="xMidYMid slice","map uses cropped source geometry");
+   check(win.getComputedStyle(doc.querySelector("#mapViewport")).touchAction==="none","map native gestures avoid page scrolling");
    fixedPin=doc.querySelector('#mapPins [data-zone="farm"] .site-pin');
    check(Math.abs(fixedPin.getBoundingClientRect().width-iconWidth)<1.2,"native touch pinch keeps icon size constant");
    click("#resetMap");
@@ -113,7 +147,9 @@
    check(!doc.querySelector("#mapContext").hidden,"tapping a perk category opens location-index sheet");
    check(doc.querySelector("#mapContext").textContent.includes("Quick Revive"),"depot's real perk is in site list");
    click('#mapContext [data-map-item^="perk-depot-quick-revive"]');
-   check(doc.querySelector("#mapContext").textContent.includes("Where:"),"individual item sheet contains real room description");
+   check(doc.querySelector("#mapContext").querySelector(".map-sheet-facts")?.textContent.includes("AREA / ROOM"),"item bottom sheet displays grounded room");
+   check(doc.querySelector("#mapContext").querySelector(".map-sheet-facts")?.textContent.includes("COST / ACCESS"),"item bottom sheet displays price or requirement");
+   check(doc.querySelector("#mapContext").querySelector(".map-accuracy-note"),"accuracy caveat remains accessible");
    click("#closeMapContext");
    check(doc.querySelector("#mapContext").hidden,"map sheet dismisses cleanly");
    click('[data-map-key="turbine"]');
@@ -129,12 +165,43 @@
    check(doc.querySelector("#interactiveMap").classList.contains("map-expanded"),"map expands for closer inspection");
    click("#mapExit");
    check(!doc.querySelector("#interactiveMap").classList.contains("map-expanded"),"map exits expanded mode");
-   check(doc.querySelectorAll('nav.bottom-nav button').length===6,"Six clearly labeled destinations including Craft");
+   check(doc.querySelectorAll('nav.bottom-nav button').length===3,"Three primary tabs only");
+   check(Array.from(doc.querySelectorAll('nav.bottom-nav button')).map(e=>e.dataset.view).join(",")==="map,quest,craft","correct three-tab destination order");
+   const navRect=doc.querySelector("nav.bottom-nav").getBoundingClientRect();
+   check(navRect.left>=-1&&navRect.right<=win.innerWidth+1&&navRect.width>=win.innerWidth-20,"three-tab navigation stays within the usable iframe viewport");
+   check(doc.querySelector('nav.bottom-nav button[data-view="map"]').getBoundingClientRect().left>=0,"MAP tab not clipped");
+   const craftRect=doc.querySelector('nav.bottom-nav button[data-view="craft"]').getBoundingClientRect();
+   check(craftRect.right<=win.innerWidth+1&&craftRect.width>=44,"last CRAFTABLES tab remains fully reachable");
    click('nav button[data-view="craft"]');
    check(doc.querySelector("#view-craft").classList.contains("active"),"Craftables has its own view");
    check(doc.querySelectorAll("#craftPanel [data-craft-select]").length===9,"All nine buildables selectable");
    check(doc.querySelector("#craftPanel").textContent.includes("Jet Gun"),"Jet Gun shown as the default craftable");
    check(doc.querySelector("#craftPanel").textContent.includes("Hunter's Cabin"),"Jet Gun gauge area is displayed");
+   // M16.4: interactive source-built craft library, full color/code parity,
+   // alternate spawn wording and moving-bus exception.
+   const craftOptions=Array.from(doc.querySelectorAll("#craftPanel [data-craft-select]"));
+   check(craftOptions.length===9,"craft selector retains all nine original recipes");
+   check(new Set(craftOptions.map(b=>b.style.getPropertyValue("--craft-color"))).size===9,"all nine builds retain distinct original colors");
+   for(const [id,code] of [["turbine","TB"],["shield","ZS"],["turret","TR"],["trap","ET"],["power","PS"],["jet","JG"],["pap","PAP"],["nav","NAV"],["bus","BUS"]]){
+    click('#craftPanel [data-craft-select="'+id+'"]');
+    check(doc.querySelector("#craftPanel .craft-large-symbol").textContent===code,"color-coded craft identity: "+id);
+    check(doc.querySelector('#craftPanel [data-craft-select="'+id+'"]').getAttribute("aria-pressed")==="true","selected craft is announced: "+id);
+    check(doc.querySelector("#craftPanel .craft-part-progress").getAttribute("aria-valuenow")!==null,"accessible part progress: "+id);
+   }
+   check(doc.querySelector("#craftPanel").textContent.includes("NO FIXED BENCH"),"bus upgrade does not invent stationary workbench");
+   click('#craftPanel [data-craft-bench="bus"]');
+   check(doc.querySelector("#view-map").classList.contains("active"),"bus installation links to source-map overview");
+   check(doc.querySelector("#mapContext").hidden,"bus installation does not invent a static bench pin");
+   click('nav button[data-view="craft"]');
+   click('#craftPanel [data-craft-select="nav"]');
+   check(doc.querySelector("#craftPanel .craft-alternates"),"NAV candidate spawn areas are not mislabeled as guaranteed pickups");
+   check(doc.querySelector("#craftPanel").textContent.includes("One possible spawn"),"source-accuracy caveat accompanies alternates");
+   click('#craftPanel [data-craft-select="jet"]');
+   check(doc.querySelector("#craftPanel .craft-room")?.textContent.includes("Tunnel"),"real source room guidance displayed");
+   check(doc.querySelectorAll("#craftPanel .craft-part-row").length===4,"Jet Gun has all four independently tracked parts");
+   check(doc.querySelectorAll("#craftPanel [data-craft-locate]").length===4,"each component has a map-area action");
+   check(doc.querySelector("#craftPanel .craft-accuracy"),"precise placement caveats stay available in the UI");
+
    click('#craftPanel [data-craft-map="jet"]');
    check(doc.querySelector("#view-map").classList.contains("active"),"Craftable filter jumps to world map");
    check(doc.querySelector('#craftMapStrip [data-craft-map="jet"]').getAttribute("aria-pressed")==="true","Jet Gun color filter active");
@@ -161,15 +228,50 @@
    click('nav button[data-view="quest"]');
    check(doc.querySelector("#view-quest").classList.contains("active"),"Easter Egg opens independently from map");
    check(doc.querySelector("#view-quest h2").textContent.includes("Easter Egg Walkthrough"),"walkthrough heading");
+   // M16.3 — the selected route is an interactive, accessible state; one
+   // objective is open by default and every other step remains available.
+   check(doc.querySelectorAll('#questPanel [data-quest-step]').length===6,"Maxis preserves six source-authored objectives");
+   check(doc.querySelector('#questPanel .quest-next')?.textContent.includes("STEP 1 OF 6"),"first unfinished Maxis objective is prominent");
+   check(doc.querySelectorAll('#questPanel .quest-step-details[open]').length===1,"only current objective details open by default");
+   check(!doc.querySelector("#questPrerequisites").open,"prerequisites stay compact but accessible");
+   click("#questPrerequisites summary");
+   check(doc.querySelector("#questPrerequisites").open,"source-backed setup requirements expand");
+   click("#questPrerequisites summary");
+   check(!doc.querySelector("#questPrerequisites").open,"setup requirements collapse again");
+   const crewDisclosure=doc.querySelector("#questCrewDisclosure");
+   check(!crewDisclosure.open,"Crew disclosure starts collapsed");
+   click("#questCrewDisclosure summary");
+   check(crewDisclosure.open,"Crew disclosure expands");
+   check(doc.querySelectorAll("#questCrewSummary .quest-roster-person").length===4,"four saved player slots visible");
+   click("#questCrewDisclosure summary");
+   check(!crewDisclosure.open,"Crew roster can collapse");
    click('[data-side="richtofen"]');
    check(doc.querySelector("#questPanel").textContent.includes("Four-player simultaneous EMP throw"),"Richtofen checklist");
    click('[data-quest-done="0"]');
    check(doc.querySelector("#questPanel").textContent.includes("1/8"),"Richtofen progress check");
+   check(doc.querySelectorAll('#questPanel [data-quest-step]').length===8,"Richtofen retains eight distinct steps");
+   check(doc.querySelector("#questPanel .quest-next")?.textContent.includes("STEP 2 OF 8"),"next incomplete step advances after manual completion");
+   check(doc.querySelector('#questPanel [data-quest-step="0"] .quest-step-details').open===false,"completed objective is collapsed");
+   check(doc.querySelector('#questPanel [data-quest-step="1"] .quest-step-details').open===true,"current objective instructions expand");
+   check(doc.querySelector("#questPanel [data-quest-step='0'] .tick").getAttribute("aria-pressed")==="true","completed checkbox is accessible");
+   const assignR=doc.querySelector('#questPanel [data-assignment="1"]');
+   check(!!assignR,"current step exposes player assignment");
+   assignR.value="2";
+   assignR.dispatchEvent(new win.Event("change",{bubbles:true}));
+   check(JSON.parse(win.localStorage.getItem("tranzit-atlas-save-v1")).assign["richtofen:1"]==="2","Richtofen player assignment persists using v1 save key");
+   check(doc.querySelector("#questCrewSummary").textContent.includes("1 of 8 Richtofen objectives assigned"),"Crew summary updates after assignment");
+   click('[data-side="maxis"]');
+   check(doc.querySelectorAll('#questPanel [data-quest-step]').length===6,"Maxis path is independent from Richtofen");
+   check(!doc.querySelector('#questPanel [data-quest-step="0"]').classList.contains("done"),"Richtofen completion did not mark Maxis");
+   click('[data-side="richtofen"]');
+   check(doc.querySelector("#questPanel").textContent.includes("1/8"),"Richtofen progress preserved across route switch");
+
    click('[data-quest-zone="power"]');
    check(doc.querySelector("#view-map").classList.contains("active"),"Easter egg location button returns to map");
    check(doc.querySelector("#mapContext").textContent.includes("Power Station"),"correct map location sheet opens");
    click("#globalFind");
-   check(doc.querySelector("#view-atlas").classList.contains("active"),"Find still opens");
+   check(doc.querySelector("#view-atlas").classList.contains("active"),"Find sheet still opens");
+   check(!doc.querySelector("#auxSheet").hidden,"Find overlay is visible");
    click('[data-quick-find="Jet Gun"]');
    check(doc.querySelector("#atlasItems").textContent.includes("Jet Gun"),"Jet Gun search returns results");
    const item=doc.querySelector('#atlasItems [data-show-item]');
@@ -179,16 +281,39 @@
    click("#modal [data-find-on-map]");
    check(doc.querySelector("#view-map").classList.contains("active"),"search result links back to map");
    check(!doc.querySelector("#mapContext").hidden,"search result map selection opens its details");
-   click('nav button[data-view="zones"]');
+   click('#mapPins [data-zone="town"]');
+   click('#mapContext [data-open-zone="town"]');
+   check(!doc.querySelector("#auxSheet").hidden,"interior sheet opens from map location in two actions");
    const select=doc.querySelector("#zoneSelect");select.value="town";
    select.dispatchEvent(new win.Event("change",{bubbles:true}));
    check(doc.querySelector("#zonePlan").textContent.includes("Bank"),"Town site notes preserved");
-   click('nav button[data-view="crew"]');
+   click("#closeSheet");
+   check(doc.querySelector("#auxSheet").hidden,"sheet close/back restores main screen");
+   click('nav button[data-view="quest"]');
+   click("#questCrewDisclosure summary");
+   check(doc.querySelector("#questCrewDisclosure").open,"Crew opens from an actual visible disclosure");
+   click("#crewAccess");
+   check(!doc.querySelector("#auxSheet").hidden,"Crew secondary panel opens from Easter Egg");
    check(doc.querySelectorAll("details.build-card[data-build]").length===9,"nine buildables preserved");
    click('#crewPanel [data-part="jet:1"]');
    check(JSON.parse(win.localStorage.getItem("tranzit-atlas-save-v1")).parts["jet:1"]===true,"another Crew part saves separately from map-collected Jet engine");
    const legend=win.getComputedStyle(doc.querySelector(".legend-button"));
    check(parseFloat(legend.minHeight)>=44,"map legend uses phone-sized tap targets");
+   check(doc.querySelector("#view-crew").classList.contains("active"),"Crew panel marked active");
+   check(doc.querySelectorAll(".bottom-nav button").length===3,"secondary views never create primary tabs");
+   const focusClose=doc.querySelector("#closeSheet");
+   check(parseFloat(win.getComputedStyle(focusClose).minHeight)>=44,"back/close target at least 44 pixels");
+   click("#closeSheet");
+   check(doc.querySelector("#auxSheet").hidden,"Crew panel dismisses without lost parts");
+   click('nav button[data-view="quest"]');
+   check(doc.querySelector("#questPanel").textContent.includes("1/8"),"quest completion survives opening and closing Crew");
+   check(JSON.parse(win.localStorage.getItem("tranzit-atlas-save-v1")).assign["richtofen:1"]==="2","assigned player survives Crew navigation");
+   click("#globalFind");
+   check(doc.body.classList.contains("sheet-open"),"secondary search locks background scroll");
+   doc.dispatchEvent(new win.KeyboardEvent("keydown",{key:"Escape",bubbles:true}));
+   check(doc.querySelector("#auxSheet").hidden,"Escape closes secondary search");
+   check(!doc.body.classList.contains("sheet-open"),"sheet close restores background scrolling");
+   check(JSON.parse(win.localStorage.getItem("tranzit-atlas-save-v1")).parts["jet:1"]===true,"secondary navigation preserves checklist progress");
    result.textContent="TRANZIT_MAP_PASS";
   }catch(error){result.textContent="UI_FAIL: "+String(error&&error.message||error);document.body.setAttribute("data-failed","1");}
  });

@@ -13,7 +13,7 @@ function boot(seed=null){
  const els=Object.fromEntries(names.map(n=>[n,new Element(n)]));
  let stored=seed;
  const localStorage={getItem(){return stored},setItem(k,s){assert.equal(k,'tranzit-atlas-save-v1');stored=s;}};
- const document={events:{},querySelector(k){if(!k.startsWith('#'))throw Error(k);return els[k.slice(1)]||(els[k.slice(1)]=new Element(k));},querySelectorAll(k){if(k==='.bottom-nav button')return ['map','zones','quest','atlas','craft','crew'].map(view=>Object.assign(new Element('nav'),{dataset:{view}}));if(k==='.view')return ['map','zones','quest','atlas','crew'].map(view=>new Element('view-'+view));if(k==='[data-side]')return ['maxis','richtofen'].map(side=>Object.assign(new Element('button'),{dataset:{side}}));return[];},createElementNS(ns,tag){return new Element(tag)},addEventListener(k,fn){this.events[k]=fn;}};
+ const document={events:{},querySelector(k){if(!k.startsWith('#'))throw Error(k);return els[k.slice(1)]||(els[k.slice(1)]=new Element(k));},querySelectorAll(k){if(k==='.bottom-nav button')return ['map','quest','craft'].map(view=>Object.assign(new Element('nav'),{dataset:{view}}));if(k==='.view')return ['map','zones','quest','atlas','crew','craft'].map(view=>new Element('view-'+view));if(k==='[data-side]')return ['maxis','richtofen'].map(side=>Object.assign(new Element('button'),{dataset:{side}}));return[];},createElementNS(ns,tag){return new Element(tag)},addEventListener(k,fn){this.events[k]=fn;}};
  const window={addEventListener(){},scrollTo(){}};const navigator={onLine:true};const location={protocol:'http:'};
  const sandbox={window,document,navigator,location,localStorage,console:{warn(){}}};
  vm.runInNewContext(read('data.js'),sandbox,{filename:'data.js'});
@@ -112,10 +112,11 @@ test('quick find searches names and returns a visible count',()=>{
  assert.match(els.atlasItems.innerHTML,/Jet Gun/);
  assert.equal(saved().atlasFilter,'all');
 });
-test('global search navigates to FIND without losing progress',()=>{
+test('global search opens a secondary Find sheet without losing progress',()=>{
  const {click,saved,els}=boot();
  click({questDone:'0'});click({},'globalFind');
- assert.equal(saved().view,'atlas');
+ assert.equal(saved().view,'map');
+ assert.equal(els.auxSheet.hidden,false);
  assert.equal(saved().done['maxis:0'],true);
  assert.match(els.atlasItems.innerHTML,/Quick Revive/);
 });
@@ -200,4 +201,140 @@ test('part checklist is shared between Craftables and Crew',()=>{
  assert.match(els.craftPanel.innerHTML,/1 of 4 parts checked/);
  click({view:'crew'});
  assert.match(els.crewPanel.innerHTML,/Jet Gun/);
+});
+
+test('M16.1 legacy saved view migrates without losing quest, parts, names, or assignments',()=>{
+ const old=JSON.stringify({view:'crew',crew:['Alpha','Bravo','Charlie','Delta'],done:{'maxis:0':true},parts:{'jet:0':true},assign:{'maxis:0':'2'}});
+ const {saved,click,els}=boot(old);
+ assert.equal(saved().view,'quest');assert.equal(saved().crew[2],'Charlie');
+ assert.equal(saved().parts['jet:0'],true);assert.equal(saved().done['maxis:0'],true);
+ assert.equal(saved().assign['maxis:0'],'2');
+ click({},'crewAccess');assert.equal(els.auxSheet.hidden,false);
+ click({},'closeSheet');assert.equal(els.auxSheet.hidden,true);
+});
+test('M16.1 room and search overlays return to map without rewriting part progress',()=>{
+ const {saved,click,els}=boot();click({part:'jet:0'});
+ click({openZone:'town'});assert.equal(els.auxSheet.hidden,false);
+ assert.equal(saved().zone,'town');assert.equal(saved().view,'map');
+ click({},'closeSheet');assert.equal(els.auxSheet.hidden,true);
+ click({},'globalFind');assert.equal(els.auxSheet.hidden,false);
+ click({view:'craft'});assert.equal(els.auxSheet.hidden,true);
+ assert.equal(saved().view,'craft');assert.equal(saved().parts['jet:0'],true);
+});
+
+
+test('M16.3 first Maxis objective is prominent while future steps stay collapsed',()=>{
+ const {els,saved}=boot();
+ assert.equal(saved().side,'maxis');
+ const html=els.questPanel.innerHTML;
+ assert.match(html,/YOUR NEXT OBJECTIVE/);
+ assert.match(html,/STEP 1 OF 6/);
+ assert.match(html,/data-quest-step="0" aria-current="step"/);
+ assert.equal((html.match(/data-quest-step="\d+"/g)||[]).length,6);
+ assert.equal((html.match(/class="step-reveal quest-step-details" open/g)||[]).length,1);
+ assert.match(html,/id="questPrerequisites"/);
+ assert.match(html,/Original difficulty/);
+ assert.match(els.questCrewSummary.innerHTML,/PLAYER 4/);
+});
+test('M16.3 completed step collapses and advances first unfinished step',()=>{
+ const {els,click,saved}=boot();
+ click({questDone:'0'});
+ assert.equal(saved().done['maxis:0'],true);
+ assert.match(els.questPanel.innerHTML,/STEP 2 OF 6/);
+ assert.match(els.questPanel.innerHTML,/data-quest-step="1" aria-current="step"/);
+ assert.match(els.questPanel.innerHTML,/class="step quest-step done/);
+ assert.equal((els.questPanel.innerHTML.match(/class="step-reveal quest-step-details" open/g)||[]).length,1);
+ click({questDone:'0'});
+ assert.equal(saved().done['maxis:0'],false);
+ assert.match(els.questPanel.innerHTML,/STEP 1 OF 6/);
+});
+test('M16.3 old save retains independent route completion, names and assignments',()=>{
+ const seed=JSON.stringify({view:'quest',side:'richtofen',done:{'richtofen:0':true,'maxis:1':true},assign:{'richtofen:1':'2'},crew:['Marlton','Misty','Samuel','Russman'],parts:{'jet:0':true}});
+ const {els,saved,click}=boot(seed);
+ assert.match(els.questPanel.innerHTML,/STEP 2 OF 8/);
+ assert.match(els.questPanel.innerHTML,/Assigned: Samuel/);
+ assert.match(els.questCrewSummary.innerHTML,/Samuel/);
+ assert.equal(saved().done['richtofen:0'],true);
+ assert.equal(saved().done['maxis:1'],true);
+ assert.equal(saved().parts['jet:0'],true);
+ click({side:'maxis'});
+ assert.match(els.questPanel.innerHTML,/1\/6/);
+ assert.equal(saved().done['richtofen:0'],true);
+ click({side:'richtofen'});
+ assert.match(els.questPanel.innerHTML,/1\/8/);
+ assert.equal(saved().assign['richtofen:1'],'2');
+});
+test('M16.3 crew editor and step assignment use unchanged persisted keys',()=>{
+ const {els,document,click,saved}=boot();
+ click({view:'quest'});
+ click({},'crewAccess');
+ assert.equal(els.auxSheet.hidden,false);
+ document.events.change({target:{id:'questAssign0',dataset:{assignment:'0'},value:'1'}});
+ assert.equal(saved().assign['maxis:0'],'1');
+ assert.match(els.questCrewSummary.innerHTML,/1 of 6 Maxis objectives assigned/);
+ document.events.input({target:{dataset:{crew:'1'},value:'Field Operator'}});
+ assert.equal(saved().crew[1],'Field Operator');
+ assert.match(els.questCrewSummary.innerHTML,/Field Operator/);
+ assert.match(els.questPanel.innerHTML,/Assigned: Field Operator/);
+ click({},'closeSheet');assert.equal(els.auxSheet.hidden,true);
+});
+
+
+test('M16.4 each of nine craft selectors preserves saved color-coded build identity',()=>{
+ const {els,click,saved}=boot();
+ for(const [id,code,part] of [
+  ['turbine','TB','Mannequin'],['shield','ZS','Car door'],['turret','TR','Unusable RPD'],
+  ['trap','ET','Battery'],['power','PS','Power board'],['jet','JG','Jet engine'],
+  ['pap','PAP','Machine'],['nav','NAV','Meteorite'],['bus','BUS','Roof hatch']
+ ]){
+  click({craftSelect:id});
+  assert.equal(saved().craftSelected,id);
+  assert.match(els.craftPanel.innerHTML,new RegExp('class="craft-large-symbol"[^>]*>'+code+'<'));
+  assert.ok(els.craftPanel.innerHTML.includes(part),id+' first part');
+  assert.match(els.craftPanel.innerHTML,/data-craft-locate/);
+  assert.match(els.craftPanel.innerHTML,/craft-part-progress/);
+  assert.match(els.craftPanel.innerHTML,/aria-valuenow/);
+ }
+});
+test('M16.4 source rooms and alternate-area warnings stay grounded',()=>{
+ const {els,click}=boot();
+ click({craftSelect:'jet'});
+ assert.match(els.craftPanel.innerHTML,/ROOM \/ REFERENCE/);
+ assert.match(els.craftPanel.innerHTML,/Tunnel/);
+ assert.match(els.craftPanel.innerHTML,/Hunter&#39;s Cabin/);
+ click({craftSelect:'nav'});
+ assert.match(els.craftPanel.innerHTML,/ALTERNATE AREAS/);
+ assert.match(els.craftPanel.innerHTML,/One possible spawn/);
+ click({craftSelect:'pap'});
+ assert.match(els.craftPanel.innerHTML,/not three independently measured pins/);
+ click({craftSelect:'bus'});
+ assert.match(els.craftPanel.innerHTML,/NO FIXED BENCH/);
+ assert.match(els.craftPanel.innerHTML,/one room is empty/i);
+});
+test('M16.4 collected craft steps retain old v1 slots and shared crew counts',()=>{
+ const {els,click,saved}=boot();
+ click({view:'craft'});
+ click({craftSelect:'jet'});
+ click({part:'jet:0'});click({part:'jet:1'});
+ assert.equal(saved().parts['jet:0'],true);
+ assert.equal(saved().parts['jet:1'],true);
+ assert.match(els.craftPanel.innerHTML,/2 of 4 parts checked/);
+ click({view:'crew'});
+ assert.match(els.crewPanel.innerHTML,/Jet Gun/);
+ assert.match(els.crewPanel.innerHTML,/2\/4/);
+ click({view:'craft'});
+ assert.match(els.craftPanel.innerHTML,/2 of 4 parts checked/);
+ click({part:'jet:0'});
+ assert.equal(saved().parts['jet:0'],false);
+ assert.match(els.craftPanel.innerHTML,/1 of 4 parts checked/);
+});
+test('M16.4 moving bus install opens overview instead of invented static bench pin',()=>{
+ const {els,click,saved}=boot();
+ click({craftSelect:'bus'});
+ click({craftBench:'bus'});
+ assert.equal(saved().view,'map');
+ assert.equal(saved().craftFocus,'bus');
+ assert.equal(saved().craftSelected,'bus');
+ assert.equal(saved().mapKind,'part');
+ assert.match(els.craftPanel.innerHTML,/NO FIXED BENCH/);
 });

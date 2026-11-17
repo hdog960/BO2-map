@@ -60,7 +60,9 @@ test('PWA manifest launches from project relative URL',()=>{
 });
 test('top navigation matches actual view elements',()=>{
  const html=read('index.html');
- for(const view of ['map','zones','quest','atlas','crew']){assert.ok(html.includes('id="view-'+view+'"'));assert.ok(html.includes('data-view="'+view+'"'));}
+ for(const view of ['map','quest','craft']){assert.ok(html.includes('id="view-'+view+'"'));assert.ok(html.includes('data-view="'+view+'"'));}
+ for(const view of ['zones','atlas','crew'])assert.ok(html.includes('id="view-'+view+'"'));
+ assert.equal((html.match(/data-view="/g)||[]).length,3);assert.match(html,/id="auxSheet"/);
 });
 test('all script resources are local to the repository',()=>{
  const html=read('index.html');
@@ -110,7 +112,9 @@ test('map category badges are tethered to known sites, never arbitrary item coor
 });
 test('world atlas exposes a visible icon key and separate Easter Egg tab',()=>{
  const html=read('index.html');
- for(const view of ['map','quest','atlas','zones','crew'])assert.ok(html.includes('data-view="'+view+'"'),view);
+ for(const view of ['map','quest','craft'])assert.ok(html.includes('data-view="'+view+'"'),view);
+ for(const view of ['atlas','zones','crew'])assert.ok(html.includes('id="view-'+view+'"'),view);
+ assert.match(html,/id="crewAccess"/);assert.match(html,/id="closeSheet"/);
  for(const node of ['interactiveMap','mapLegend','mapContext','mapViewport','mapFullScreen','mapExit','questPanel'])assert.ok(html.includes('id="'+node+'"'),node);
  assert.match(html,/MAP KEY/);
  assert.match(html,/EASTER EGG/);
@@ -171,12 +175,13 @@ test('pinch and drag use bounded camera-space deltas and retain desktop fallback
  assert.match(app,/pointercancel/);
  assert.match(app,/wheel",e=>/);
 });
-test('Map Diagnostics is available in the map view and offline precache',()=>{
+test('Map Diagnostics is accessible through Help and remains offline precached',()=>{
  const html=read('index.html'),sw=read('sw.js'),js=read('diagnostics.js');
  for(const id of ['openMapScan','mapScanPanel','startMapScan','stopMapScan','copyMapScan','mapScanReport'])
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/src="\.\/diagnostics\.js"/);
  assert.match(sw,/'\.\/diagnostics\.js'/);
+ assert.match(read('app.js'),/id==="helpMapScan"/);
  assert.match(js,/TRANZIT MAP PERFORMANCE SCAN v2/);
  assert.match(js,/requestAnimationFrame/);
  assert.match(js,/pointermove/);
@@ -204,8 +209,64 @@ test('iPhone uses native touch streams instead of brittle pointer capture',()=>{
 });
 test('initial map allows panning and reports blocked camera input separately',()=>{
  const app=read('app.js'),diag=read('diagnostics.js');
- assert.match(app,/let zoom=1\.7,panX=-252,panY=-203/);
+ assert.match(app,/let zoom=1,panX=0,panY=0/);
+ assert.match(app,/Math\.max\(width\/MAP_W,height\/MAP_H\)/);
+ assert.match(app,/const spanX=.*\/m\.k/);
  for(const key of ['nativeTouchHandled','pointerHandled','panChanged','panAtBoundary','cameraFrames','pointerCaptureLost'])
   assert.ok(app.includes(key)&&diag.includes(key),key);
  assert.match(diag,/Camera movement blocked by edge/);
+});
+
+test('M16.4 full source item-placement and world site parity',()=>{
+ assert.equal(D.items.length,130);
+ assert.equal(D.zones.length,10);
+ assert.equal(D.items.filter(x=>x.mapMode==='site-callout').length,91);
+ assert.equal(D.items.filter(x=>x.mapMode==='index-only').length,39);
+ assert.deepEqual(Array.from(D.zones.filter(x=>x.stop).sort((a,b)=>a.stop-b.stop),x=>x.stop),[1,2,3,4,5]);
+ assert.equal(new Set(D.items.map(x=>x.id)).size,130);
+ for(const item of D.items){
+  assert.ok(zones.has(item.zone),item.id);
+  if(item.alternateZones)for(const alt of item.alternateZones)assert.ok(zones.has(alt),item.id+': '+alt);
+  if(item.mapMode==='index-only')assert.ok(item.mapReason,item.id+' must explain unplaced entry');
+ }
+});
+test('M16.4 nine build identities, source part references and benches remain stable',()=>{
+ const expected=[['turbine','TB'],['shield','ZS'],['turret','TR'],['trap','ET'],['power','PS'],['jet','JG'],['pap','PAP'],['nav','NAV'],['bus','BUS']];
+ assert.deepEqual(Array.from(D.builds,b=>[b.id,b.code]),expected);
+ assert.equal(new Set(D.builds.map(b=>b.color)).size,9);
+ for(const b of D.builds){
+  assert.match(b.color,/^#[0-9a-fA-F]{6}$/);
+  for(const [name,help,refs] of b.parts){
+   assert.ok(name&&help&&refs.length>0,b.id+' needs each part source');
+   for(const id of refs){
+    const part=D.items.find(i=>i.id===id);
+    assert.ok(part,b.id+' missing '+id);
+    assert.equal(part.type,'part');
+    assert.ok(zones.has(part.zone));
+   }
+  }
+  if(b.id==='bus')assert.equal(b.benchItemId,null);
+  else assert.ok(D.items.some(i=>i.id===b.benchItemId&&i.type==='bench'),b.id+' needs bench');
+ }
+});
+test('M16.4 craft UI keeps original room guidance, alternate sites, movable bus limits',()=>{
+ const app=read('app.js'),html=read('index.html'),css=read('styles.css');
+ for(const k of ['craftCatalog(chosen,i)','craftLocations(chosen,i)','craftLocationLabel(chosen,i)','data-craft-locate','data-craft-bench','data-part','craft-part-progress','aria-valuenow','craft-room','craft-alternates','craft-accuracy'])assert.ok(app.includes(k),k);
+ assert.match(app,/mobileInstall=bench&&!build\.benchItemId/);
+ assert.match(app,/One possible spawn/);
+ assert.match(html,/id="view-craft"/);
+ assert.match(css,/\.craft-selector-grid\{display:flex/);
+ assert.match(css,/@media\(orientation:landscape\) and \(max-height:470px\)/);
+});
+test('M16.4 original saves, diagnostics, offline, quests and controls stay present',()=>{
+ const html=read('index.html'),app=read('app.js'),sw=read('sw.js');
+ assert.equal(D.quests.maxis.length,6);
+ assert.equal(D.quests.richtofen.length,8);
+ assert.match(app,/tranzit-atlas-save-v1/);
+ assert.match(app,/function nativeTouchMove/);
+ assert.match(app,/function renderQuestCrewSummary/);
+ assert.match(html,/id="mapKeyDisclosure"/);
+ assert.match(html,/id="helpBtn"/);
+ assert.match(html,/src="\.\/diagnostics\.js"/);
+ for(const x of ['./data.js','./app.js','./world-art.svg','./diagnostics.js'])assert.ok(sw.includes(x),x);
 });

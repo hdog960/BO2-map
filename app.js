@@ -45,15 +45,58 @@ function craftLocationLabel(build,index){
 const markPrice=v=>v?'<span class="meta">'+esc(v)+(v==="Turbine"||v==="Grenade"||v==="Power or Turbine"||v==="Remote Turbine"?"":" pts")+"</span>":"";
 function category(type){return D.types[type]||D.types.secret}
 function modal(title,body){$("#modalTitle").textContent=title;$("#modalBody").innerHTML=body;const d=$("#modal");if(!d.open)d.showModal();}
+// M16.1: older saved destinations become secondary sheets without changing the save key.
+if(state.view==="atlas"||state.view==="zones"){state.view="map";save();}
+else if(state.view==="crew"){state.view="quest";save();}
+if(!["map","quest","craft"].includes(state.view)){state.view="map";save();}
+let sheetView=null, sheetReturnFocus=null;
+const secondaryViews=new Set(["atlas","zones","crew"]);
 function renderNav(){
  $$(".bottom-nav button").forEach(b=>{
   const active=b.dataset.view===state.view;
   b.classList.toggle("selected",active);
   if(active)b.setAttribute("aria-current","page");else b.removeAttribute?.("aria-current");
  });
- $$(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+state.view));
+ $$(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+(secondaryViews.has(v.id.slice(5))?sheetView:state.view)));
 }
-function go(view){state.view=view;save();renderNav();if(view==="map")renderMap();if(view==="zones")renderZones();if(view==="quest")renderQuest();if(view==="atlas")renderAtlas();if(view==="crew")renderCrew();if(view==="craft")renderCraftPanel();window.scrollTo({top:0,behavior:"auto"});}
+function closeSheet(restoreFocus=true){
+ if(!sheetView)return;
+ sheetView=null;
+ $("#auxSheet").hidden=true;
+ document.body?.classList?.remove("sheet-open");
+ renderNav();
+ if(restoreFocus)sheetReturnFocus?.focus?.();
+ sheetReturnFocus=null;
+}
+function openSheet(view){
+ if(!secondaryViews.has(view))return;
+ if(!sheetView)sheetReturnFocus=document.activeElement;
+ // Secondary features inherit a visible, semantically correct primary tab.
+ if(view==="crew")state.view="quest";
+ else state.view="map";
+ save();
+ sheetView=view;
+ $("#auxSheet").hidden=false;
+ document.body?.classList?.add("sheet-open");
+ $("#sheetTitle").textContent={atlas:"Find anything",zones:"Interior & sites",crew:"Crew & match"}[view];
+ renderNav();
+ if(view==="atlas"){renderAtlas();$("#atlasSearch").focus?.();}
+ else if(view==="zones")renderZones();
+ else renderCrew();
+ $("#auxSheet").scrollTop=0;
+ if(view==="atlas")$("#atlasSearch").focus?.();
+ else $("#closeSheet").focus?.();
+}
+function go(view){
+ if(secondaryViews.has(view)){openSheet(view);return;}
+ if(!["map","quest","craft"].includes(view))return;
+ closeSheet(false);
+ state.view=view;save();renderNav();
+ if(view==="map")renderMap();
+ if(view==="quest")renderQuest();
+ if(view==="craft")renderCraftPanel();
+ window.scrollTo({top:0,behavior:"auto"});
+}
 function selectZone(id){state.zone=id;state.floor=0;save();go("zones");}
 function showItem(id){
  const item=D.items.find(x=>x.id===id);if(!item)return;
@@ -72,7 +115,7 @@ const MAP_PRIORITY={perk:0,goal:1,box:2,bench:3,turbine:4,paid:5,special:6,weapo
 // Category badges are callouts connected to the verified *site*, not in-room pins.
 // See data.js item.mapMode and the complete placement audit in AUDIT_ICON_PLACEMENT.md.
 // Start zoomed enough to actually explore the map with a finger; Reset still fits all.
-let zoom=1.7,panX=-252,panY=-203,pointers=new Map(),dragged=false,lastDrag=0,lastDragPoint=null;
+let zoom=1,panX=0,panY=0,pointers=new Map(),dragged=false,lastDrag=0,lastDragPoint=null;
 let nativeTouchSeen=false,nativeTouches=new Map(),nativeDrag=false;
 let nativeTouchHandled=0,pointerHandled=0,panChanged=0,panAtBoundary=0,gestureStarts=0,pointerCaptureLost=0;
 
@@ -224,8 +267,13 @@ function closeMapContext(){
  const pop=$("#mapContext");pop.hidden=true;pop.innerHTML="";state.selected=null;save();
 }
 function mapCard(body,eyebrow,title){
- const pop=$("#mapContext");pop.hidden=false;
- pop.innerHTML='<div class="map-card-top"><span>'+esc(eyebrow)+'</span><button type="button" id="closeMapContext" aria-label="Close map information">✕</button></div><h3>'+esc(title)+'</h3>'+body;
+ const pop=$("#mapContext");
+ // A pin tap takes priority over the filter drawer. The sheet scrolls on its
+ // own and never blocks a native drag/pinch starting outside the sheet.
+ const filter=$("#mapKeyDisclosure");if(filter)filter.open=false;
+ pop.hidden=false;
+ pop.innerHTML='<div class="map-sheet-handle" aria-hidden="true"></div><div class="map-card-top"><span>'+esc(eyebrow)+'</span><button type="button" id="closeMapContext" aria-label="Close map information">✕</button></div><h3>'+esc(title)+'</h3>'+body;
+ pop.scrollTop=0;
 }
 function showCraftOnMap(buildId,partIndex=null,bench=false){
  const build=buildById(buildId);if(!build)return;
@@ -234,11 +282,13 @@ function showCraftOnMap(buildId,partIndex=null,bench=false){
  state.mapKind="part";
  const source=bench?D.items.find(i=>i.id===build.benchItemId):partIndex!==null?craftCatalog(build,partIndex)[0]:null;
  const siteIds=partIndex!==null?craftLocations(build,partIndex):[];
+ // Bus upgrades attach to a moving bus. Do not simulate a stationary bench pin.
+ const mobileInstall=bench&&!build.benchItemId;
  state.selected=source?.id||null;
  if(partIndex===null&&!bench)state.selected=null;
  go("map");
  // Whole-map overview shows all candidate part sites at once.
- if(partIndex===null&&!bench||siteIds.length>1){
+ if(mobileInstall||(partIndex===null&&!bench)||siteIds.length>1){
   zoom=1;panX=0;panY=0;renderMapMarkers();applyTransform();
   return;
  }
@@ -254,7 +304,7 @@ function context(key){
   state.selected=key;
   const arr=state.craftFocus?placedItems(z.id).filter(i=>i.buildId===state.craftFocus):placedItems(z.id);
   const notable=arr.slice().sort((a,b)=>(MAP_PRIORITY[a.type]??10)-(MAP_PRIORITY[b.type]??10)).slice(0,6);
-  mapCard('<p>'+esc(z.description)+'</p><p class="placement-warning">Category badges are linked to this site, not to verified in-building coordinates.</p><div class="map-card-items">'+notable.map(i=>'<button type="button" data-map-item="'+esc(i.id)+'"><span class="inline-pin" style="background:'+category(i.type).color+'">'+esc(MAP_SYMBOLS[i.type])+'</span>'+esc(i.name)+'</button>').join("")+'</div><div class="map-card-actions"><button type="button" class="button" data-map-more="'+z.id+'">All '+arr.length+' items here</button><button type="button" class="button ghost" data-open-zone="'+z.id+'">Room guide</button></div>',
+  mapCard('<p>'+esc(z.description)+'</p><div class="map-sheet-footnote">Known site, not a verified indoor pickup position.</div><div class="map-card-items">'+notable.map(i=>'<button type="button" data-map-item="'+esc(i.id)+'"><span class="inline-pin" style="background:'+category(i.type).color+'">'+esc(MAP_SYMBOLS[i.type])+'</span>'+esc(i.name)+'</button>').join("")+'</div><div class="map-card-actions"><button type="button" class="button" data-map-more="'+z.id+'">All '+arr.length+' items here</button><button type="button" class="button ghost" data-open-zone="'+z.id+'">Room guide</button></div>',
    z.stop?"BUS STOP "+z.stop:"LANDMARK",z.name);
  }else if(key.startsWith("more:")||key.startsWith("group:")){
   const ref=key.slice(key.indexOf(":")+1),parts=ref.split("|"),z=zone(parts[0]);if(!z)return;
@@ -269,7 +319,7 @@ function context(key){
   const tag=b?'<div class="craft-modal-tag" style="--craft-color:'+b.color+'"><b>'+esc(b.code)+'</b><span>'+esc(b.name)+(item.type==="bench"?" · Bench":" · Part")+'</span></div>':"";
   const partCheck=b&&ix!==null&&ix!==undefined?'<button class="button" type="button" data-part="'+b.id+':'+ix+'">'+(state.parts[b.id+":"+ix]?"✓ Collected":"Mark "+esc(b.code)+" part collected")+'</button>':"";
   const alts=item.alternateZones?.length?'<p><b>Alternate possible areas:</b> '+item.alternateZones.map(a=>esc(zone(a).name)).join(", ")+'</p>':"";
-  mapCard(tag+'<p><strong>Where:</strong> '+esc(item.room||zone(item.zone).description)+'</p>'+(item.price?'<div class="map-price">'+esc(item.price)+(isNaN(Number(item.price))?"":" points")+'</div>':"")+'<p>'+esc(item.detail||"See the location notes.")+'</p>'+alts+'<p class="placement-warning">'+esc(item.mapReason)+'</p><div class="map-card-actions">'+partCheck+(b?'<button class="button ghost" type="button" data-craft-view="'+b.id+'">All '+esc(b.name)+' parts</button>':'')+'<button type="button" class="button" data-toggle-item="'+esc(item.id)+'">'+(state.found[item.id]?"✓ Tracked":"Mark found / opened")+'</button><button type="button" class="button ghost" data-map-more="'+item.zone+'">More at '+esc(zone(item.zone).name)+'</button></div>',
+  mapCard(tag+'<div class="map-sheet-facts"><div><small>AREA / ROOM</small><strong>'+esc(item.room||zone(item.zone).description)+'</strong></div>'+(item.price?'<div><small>COST / ACCESS</small><strong>'+esc(item.price)+(isNaN(Number(item.price))?"":" points")+'</strong></div>':"")+'</div><p>'+esc(item.detail||"See the location notes.")+'</p>'+alts+'<details class="map-accuracy-note"><summary>Location accuracy</summary><p>'+esc(item.mapReason)+'</p></details><div class="map-card-actions">'+partCheck+(b?'<button class="button ghost" type="button" data-craft-view="'+b.id+'">All '+esc(b.name)+' parts</button>':'')+'<button type="button" class="button" data-toggle-item="'+esc(item.id)+'">'+(state.found[item.id]?"✓ Tracked":"Mark found / opened")+'</button><button type="button" class="button ghost" data-map-more="'+item.zone+'">More at '+esc(zone(item.zone).name)+'</button></div>',
    MAP_LABELS[item.type]+" · "+zone(item.zone).name,item.name);
  }
  save();
@@ -280,7 +330,9 @@ function refreshMapMetrics(){
  const svg=$("#worldMap"),r=svg.getBoundingClientRect();
  const width=r.width||svg.clientWidth||$("#mapViewport").clientWidth||MAP_W;
  const height=r.height||svg.clientHeight||$("#mapViewport").clientHeight||MAP_H;
- const k=Math.max(0.15,Math.min(width/MAP_W,height/MAP_H));
+ // The viewport intentionally crops the schematic (SVG slice), so use the same
+ // aspect scale for world, hit-testing and inverse-scaled labels. No fake pins.
+ const k=Math.max(0.15,Math.max(width/MAP_W,height/MAP_H));
  mapMetrics={left:r.left||0,top:r.top||0,k,
   offX:(width-MAP_W*k)/2,offY:(height-MAP_H*k)/2};
  overlayDirty=true;
@@ -323,11 +375,16 @@ function flushMapFrame(){
  mapRaf=0;applyTransform();
 }
 function clampMap(){
- // Allow a small drag at full overview scale. At higher zoom, bound the camera to
- // all four edges of the world so the full geography remains reachable.
- const slack=zoom<=1.001?110:0;
- panX=Math.max(MAP_W*(1-zoom)-slack,Math.min(slack,panX));
- panY=Math.max(MAP_H*(1-zoom)-slack,Math.min(slack,panY));
+ // SVG 'slice' crops the virtual world to the screen aspect ratio. Camera bounds
+ // must include the visible slice, or edge sites cannot be reached on portrait iPhones.
+ const m=mapMetrics||refreshMapMetrics(),svg=$("#worldMap");
+ const spanX=(svg.clientWidth||MAP_W)/m.k,spanY=(svg.clientHeight||MAP_H)/m.k;
+ const originX=m.offX/m.k,originY=m.offY/m.k;
+ const slack=zoom<=1.001?20:0;
+ const lowX=spanX-originX-MAP_W*zoom-slack,highX=-originX+slack;
+ const lowY=spanY-originY-MAP_H*zoom-slack,highY=-originY+slack;
+ panX=lowX>highX?(lowX+highX)/2:Math.max(lowX,Math.min(highX,panX));
+ panY=lowY>highY?(lowY+highY)/2:Math.max(lowY,Math.min(highY,panY));
 }
 function setZoom(next,center={x:MAP_W/2,y:MAP_H/2}){
  const old=zoom,newZoom=Math.min(4,Math.max(1,next));
@@ -372,23 +429,71 @@ function renderZones(){
  }
  $("#zonePlan").innerHTML=html;
 }
+function renderQuestCrewSummary(){
+ const panel=$("#questCrewSummary");if(!panel)return;
+ const assigned=Object.entries(state.assign).filter(([key,v])=>key.startsWith(state.side+":")&&v!==""&&v!==undefined&&v!==null).length;
+ panel.innerHTML='<div class="quest-roster">'+state.crew.map((name,i)=>
+  '<div class="quest-roster-person"><span>PLAYER '+(i+1)+'</span><strong>'+esc(name)+'</strong></div>'
+ ).join("")+'</div><p class="quest-crew-footnote">'+assigned+' of '+D.quests[state.side].length+' '+(state.side==="maxis"?"Maxis":"Richtofen")+' objectives assigned. Player names and assignments are saved on this device only.</p>';
+}
 function renderQuest(){
- $$("[data-side]").forEach(b=>{const active=b.dataset.side===state.side;b.classList.toggle("on",active);b.setAttribute("aria-pressed",String(active));});
- const steps=D.quests[state.side],completed=steps.filter((_,i)=>state.done[state.side+":"+i]).length;
+ if(!D.quests[state.side]){state.side="maxis";save();}
+ $$("[data-side]").forEach(b=>{
+  const active=b.dataset.side===state.side;
+  b.classList.toggle("on",active);
+  b.setAttribute("aria-pressed",String(active));
+ });
+ renderQuestCrewSummary();
+ const steps=D.quests[state.side];
+ const completed=steps.filter((_,i)=>!!state.done[state.side+":"+i]).length;
  const next=steps.findIndex((_,i)=>!state.done[state.side+":"+i]);
- let html='<details class="quest-prep"><summary>Before you start · Original difficulty required</summary><p>Choose Original, not Easy. Coordinate the four players and previous Easter egg completion state. The Richtofen route requires the Samuel player to hear the voice lines. All checkmarks are manual; nothing here can detect your live BO2 match.</p></details>';
- html+='<div class="stats quest-stats"><div class="stat"><strong>'+completed+'/'+steps.length+'</strong><span>STEPS DONE</span></div><div class="stat"><strong>'+Math.round(completed/steps.length*100)+'%</strong><span>PROGRESS</span></div><div class="stat"><strong>4</strong><span>PLAYERS</span></div></div>';
- html+='<div class="progress-track" aria-label="'+completed+' of '+steps.length+' objectives completed"><div class="progress-bar" style="width:'+(completed/steps.length*100)+'%"></div></div>';
- if(next>=0){
-  const step=steps[next];
-  html+='<div class="next"><div class="num">YOUR NEXT OBJECTIVE · STEP '+(next+1)+'</div><h3>'+esc(step.title)+'</h3><p>'+esc(step.note)+'</p><div class="actions"><button type="button" class="button" data-quest-zone="'+step.zone+'">⌖ '+esc(zone(step.zone).name)+'</button><button type="button" class="button ghost" data-quest-done="'+next+'">✓ Mark done</button></div></div>';
- }else html+='<div class="next"><div class="num">ALL CHECKLIST STEPS COMPLETE</div><h3>Confirm it in-game</h3><p>Listen for the matching character dialogue and confirm the in-game completion. These checkmarks are your own record.</p></div>';
- html+='<div class="site-diagram-heading"><strong>All steps</strong><span>Tap to expand instructions</span></div>';
+ const pct=Math.round(100*completed/steps.length);
+ const nextStep=next>=0?steps[next]:null;
+ let html='<div class="quest-progress" aria-label="'+completed+' of '+steps.length+' '+state.side+' objectives completed">'+
+  '<div class="quest-progress-text"><span><strong>'+completed+'/'+steps.length+'</strong> STEPS COMPLETE</span><span>'+pct+'%</span></div>'+
+  '<div class="progress-track" role="progressbar" aria-label="Completed '+state.side+' steps" aria-valuemin="0" aria-valuemax="'+steps.length+'" aria-valuenow="'+completed+'"><div class="progress-bar" style="width:'+pct+'%"></div></div></div>';
+ // Source-backed setup prerequisites, not an invented new route requirement.
+ html+='<details class="quest-prep" id="questPrerequisites"><summary>BEFORE YOU START <span>Original difficulty · 4 players</span></summary>'+
+  '<div class="quest-prep-content"><p>Use Original difficulty, not Easy. Coordinate all four players and verify any prior Easter egg completion state.</p>'+
+  (state.side==="richtofen"?'<p>On Richtofen’s route, the Samuel player must hear the required voice lines.</p>':"")+
+  '<p>Every checkbox is a manual record; the atlas cannot detect your BO2 match or sync progress between phones.</p></div></details>';
+ if(nextStep){
+  const who=state.assign[state.side+":"+next];
+  const assigned=who!==""&&who!==undefined?state.crew[Number(who)]:"Unassigned";
+  html+='<section class="next quest-next" aria-label="Next objective" aria-live="polite">'+
+   '<div class="num">YOUR NEXT OBJECTIVE <span>STEP '+(next+1)+' OF '+steps.length+'</span></div>'+
+   '<h3>'+esc(nextStep.title)+'</h3>'+
+   '<p>'+esc(nextStep.note)+'</p>'+
+   '<div class="quest-next-meta"><span>SITE · '+esc(zone(nextStep.zone).name)+'</span><span>♧ '+esc(assigned)+'</span></div>'+
+   '<div class="actions quest-next-actions">'+
+    '<button type="button" class="button quest-location" data-quest-zone="'+nextStep.zone+'">Show on map</button>'+
+    '<button type="button" class="button ghost quest-complete" data-quest-done="'+next+'">✓ Mark step complete</button></div>'+
+   '<p class="quest-manual-caveat">Confirm this action in-game before checking it off.</p></section>';
+ }else{
+  html+='<section class="next quest-next quest-complete" aria-label="Checklist completed">'+
+   '<div class="num">ALL CHECKLIST STEPS COMPLETE</div>'+
+   '<h3>Verify the Easter egg in-game</h3>'+
+   '<p>Your manual checklist is complete. Confirm the matching in-game dialogue and completion state; this app cannot verify or grant an achievement.</p></section>';
+ }
+ html+='<div class="quest-list-heading"><strong>ALL '+steps.length+' OBJECTIVES</strong><span>Completed steps stay collapsed</span></div>';
  steps.forEach((step,i)=>{
-  const key=state.side+":"+i,done=!!state.done[key],assigned=state.assign[key]||"";
+  const key=state.side+":"+i,done=!!state.done[key],isNext=i===next,assigned=state.assign[key]??"";
   const who=assigned!==""?state.crew[Number(assigned)]:"";
-  html+='<section class="step '+(done?"done":"")+'"><div class="step-top"><button class="tick '+(done?"checked":"")+'" type="button" data-quest-done="'+i+'" aria-label="'+(done?"Mark incomplete: ":"Mark complete: ")+esc(step.title)+'" aria-pressed="'+done+'">'+(done?"✓":i+1)+'</button><div><strong>'+esc(step.title)+'</strong><div class="step-count">'+esc(zone(step.zone).name)+(who?" · Assigned: "+esc(who):"")+(done?" · Done":"")+'</div></div></div>';
-  html+='<details class="step-reveal" '+(i===next?"open":"")+'><summary>Instructions & player</summary><p>'+esc(step.note)+'</p><div class="step-extra"><div class="flex between"><span class="pill">'+esc(zone(step.zone).name)+'</span><button type="button" class="button ghost" data-quest-zone="'+step.zone+'">Show location</button></div><label class="small muted">Assign to player<br><select class="assign" data-assignment="'+i+'"><option value="">Unassigned</option>'+state.crew.map((name,j)=>'<option value="'+j+'" '+(assigned===String(j)?"selected":"")+'>'+esc(name)+'</option>').join("")+'</select></label></div></details></section>';
+  const stepStatus=done?"COMPLETE":isNext?"CURRENT":"UPCOMING";
+  html+='<section class="step quest-step '+(done?"done ":"")+(isNext?"current":"")+'" data-quest-step="'+i+'" '+(isNext?'aria-current="step"':"")+'>'+
+   '<div class="step-top"><button class="tick '+(done?"checked":"")+'" type="button" data-quest-done="'+i+'" aria-label="'+(done?"Mark incomplete: ":"Mark complete: ")+esc(step.title)+'" aria-pressed="'+done+'">'+(done?"✓":i+1)+'</button>'+
+   '<div class="quest-step-head"><span class="quest-step-state">'+stepStatus+' · '+esc(zone(step.zone).name)+'</span>'+
+   '<strong>'+esc(step.title)+'</strong><div class="step-count">'+(who?"Assigned: "+esc(who):"No player assigned")+'</div></div></div>'+
+   '<details class="step-reveal quest-step-details" '+(isNext?"open":"")+'><summary>Instructions, location & crew</summary>'+
+   '<div class="quest-step-body"><p>'+esc(step.note)+'</p>'+
+   '<div class="step-extra"><div class="flex between"><span class="pill">SITE · '+esc(zone(step.zone).name)+'</span>'+
+   '<button type="button" class="button ghost" data-quest-zone="'+step.zone+'">Show location</button></div>'+
+   '<label class="small muted" for="questAssign'+i+'">Assign to player</label>'+
+   '<select class="assign" id="questAssign'+i+'" data-assignment="'+i+'" aria-label="Assign '+esc(step.title)+'"><option value="">Unassigned</option>'+
+    state.crew.map((name,j)=>'<option value="'+j+'" '+(assigned===String(j)?"selected":"")+'>'+esc(name)+'</option>').join("")+'</select>'+
+   '<details class="quest-troubleshooting"><summary>Checklist help</summary>'+
+   '<p>Follow the instructions for this objective exactly. Check difficulty, crew coordination and prior completion requirements; for Richtofen, verify the Samuel player hears the required lines. The atlas tracks only manual checks, not live in-game success.</p></details>'+
+   '</div></div></details></section>';
  });
  $("#questPanel").innerHTML=html;
 }
@@ -410,25 +515,58 @@ function renderAtlas(){
 function renderCraftPanel(){
  if(!buildById(state.craftSelected))state.craftSelected="jet";
  const chosen=buildById(state.craftSelected),panel=$("#craftPanel");
- let html='<div class="craft-selector-grid" aria-label="Choose a buildable">'+D.builds.map(b=>{
+ const previousPicker=panel.querySelector?.(".craft-selector-grid");
+ const previousSelection=panel.querySelector?.(".craft-selector.selected")?.dataset.craftSelect;
+ const previousScroll=previousPicker?.scrollLeft;
+ const completedBuilds=D.builds.filter(b=>b.parts.every((_,i)=>!!state.parts[b.id+":"+i])).length;
+ const collectedParts=D.builds.reduce((n,b)=>n+craftProgress(b).found,0);
+ const totalParts=D.builds.reduce((n,b)=>n+b.parts.length,0);
+ let html='<div class="craft-library-header"><div><strong>CHOOSE A BUILDABLE</strong><span>9 original builds · swipe to choose</span></div><span class="craft-library-progress">'+completedBuilds+'/9 ready · '+collectedParts+'/'+totalParts+' parts</span></div>';
+ html+='<div class="craft-selector-grid" role="group" aria-label="Choose one of nine color-coded buildables">'+D.builds.map(b=>{
   const p=craftProgress(b),active=b.id===chosen.id;
-  return '<button class="craft-selector '+(active?"selected":"")+'" type="button" data-craft-select="'+b.id+'" aria-pressed="'+active+'" style="--craft-color:'+b.color+'">'+
-   '<span class="craft-emblem" aria-hidden="true">'+esc(b.code)+'</span><span class="craft-label"><strong>'+esc(b.name)+'</strong><small>'+p.found+'/'+p.total+' collected</small></span></button>';
+  return '<button class="craft-selector '+(active?"selected":"")+'" type="button" data-craft-select="'+b.id+'" aria-pressed="'+active+'" aria-label="'+esc(b.name)+', '+p.found+' of '+p.total+' parts collected" style="--craft-color:'+b.color+'">'+
+   '<span class="craft-emblem" aria-hidden="true">'+esc(b.code)+'</span><span class="craft-label"><strong>'+esc(b.name)+'</strong><small>'+(p.found===p.total?"Ready to assemble":p.found+'/'+p.total+' parts checked')+'</small></span></button>';
  }).join("")+'</div>';
  const progress=craftProgress(chosen),allDone=progress.found===progress.total;
- html+='<section class="craft-detail" style="--craft-color:'+chosen.color+'"><div class="craft-detail-head"><span class="craft-large-symbol">'+esc(chosen.code)+'</span><div><div class="kicker">SELECTED BUILDABLE</div><h3>'+esc(chosen.name)+'</h3><p>'+esc(chosen.note)+'</p></div></div>';
- html+='<div class="craft-actions"><span class="craft-status">'+(allDone?"✓ All parts checked":progress.found+' of '+progress.total+' parts checked')+'</span><button class="button craft-show" type="button" data-craft-map="'+chosen.id+'">⌖ Show only this on map</button></div>';
- html+='<div class="craft-part-progress"><div style="width:'+((progress.found/progress.total)*100)+'%"></div></div>';
+ html+='<section class="craft-detail" style="--craft-color:'+chosen.color+'" aria-label="Selected '+esc(chosen.name)+' buildable"><div class="craft-detail-head">'+
+  '<span class="craft-large-symbol" aria-hidden="true">'+esc(chosen.code)+'</span><div><div class="kicker">SELECTED BUILDABLE · '+esc(chosen.code)+'</div><h3>'+esc(chosen.name)+'</h3><p>'+esc(chosen.note)+'</p></div></div>';
+ html+='<div class="craft-actions"><span class="craft-status" aria-live="polite">'+(allDone?"✓ All parts checked":progress.found+' of '+progress.total+' parts checked')+'</span>'+
+  '<button class="button craft-show" type="button" data-craft-map="'+chosen.id+'">Show only this on map</button></div>';
+ html+='<div class="craft-part-progress" role="progressbar" aria-label="'+esc(chosen.name)+' collected parts" aria-valuemin="0" aria-valuemax="'+progress.total+'" aria-valuenow="'+progress.found+'"><div style="width:'+((progress.found/progress.total)*100)+'%"></div></div>';
+ html+='<div class="craft-part-heading"><strong>PART CHECKLIST</strong><span>Tap a circle when collected · map each source area</span></div>';
  html+='<div class="craft-part-list">'+chosen.parts.map((part,i)=>{
   const done=!!state.parts[chosen.id+":"+i],sites=craftLocations(chosen,i),loc=craftLocationLabel(chosen,i);
-  const multi=sites.length>1;
-  const extra=multi?'<small class="craft-alternates">Possible areas; the part spawns at one location, not all of them.</small>':"";
-  const specific=chosen.id==="pap"?'All three Pack-a-Punch parts share a bank-area reference, not separately measured pins.':chosen.id==="bus"?'Each bus upgrade can appear in one of four powered rooms; one room is empty.':"";
-  return '<div class="craft-part-row '+(done?"is-done":"")+'"><button type="button" class="tick '+(done?"checked":"")+'" data-part="'+chosen.id+':'+i+'" aria-pressed="'+done+'" aria-label="'+(done?"Uncheck ":"Mark collected ")+esc(part[0])+'">'+(done?"✓":"○")+'</button><div class="craft-part-info"><strong><span class="mini-craft-code">'+esc(chosen.code)+'</span> '+esc(part[0])+'</strong><small>'+esc(loc)+'</small><small>'+esc(part[1])+'</small>'+extra+(specific?'<small>'+esc(specific)+'</small>':"")+'</div><button type="button" class="craft-locate" data-craft-locate="'+chosen.id+':'+i+'">'+(multi?"Show areas":"Map")+'</button></div>';
+  const references=craftCatalog(chosen,i),room=references.map(item=>item.room).filter(Boolean);
+  const rooms=[...new Set(room)],multi=sites.length>1;
+  const extra=multi?'<div class="craft-alternates">ALTERNATE AREAS · One possible spawn, not an item at every site.</div>':"";
+  const specific=chosen.id==="pap"?'The three Pack-a-Punch parts share a bank-area reference, not three independently measured pins.':chosen.id==="bus"?'Bus upgrades can appear across four powered rooms; one room is empty.':"";
+  const sourceNote=rooms.length?'<div class="craft-room"><span>ROOM / REFERENCE</span><p>'+esc(rooms.slice(0,2).join(' · '))+(rooms.length>2?' · additional possibilities in map details':'')+'</p></div>':"";
+  return '<article class="craft-part-row '+(done?"is-done":"")+'" data-craft-part="'+chosen.id+':'+i+'">'+
+   '<button type="button" class="tick '+(done?"checked":"")+'" data-part="'+chosen.id+':'+i+'" aria-pressed="'+done+'" aria-label="'+(done?"Uncheck ":"Mark collected ")+esc(part[0])+'">'+(done?"✓":"○")+'</button>'+
+   '<div class="craft-part-info"><strong><span class="mini-craft-code">'+esc(chosen.code)+'</span> '+esc(part[0])+'</strong>'+
+    '<small class="craft-area">AREA · '+esc(loc)+'</small>'+sourceNote+
+    '<small class="craft-part-guidance">'+esc(part[1])+'</small>'+extra+(specific?'<small class="craft-part-warning">'+esc(specific)+'</small>':"")+
+   '</div><button type="button" class="craft-locate" data-craft-locate="'+chosen.id+':'+i+'" aria-label="Show '+esc(part[0])+' '+(multi?"possible areas":"source area")+' on map">'+(multi?"Show areas":"Map area")+'</button></article>';
  }).join("")+'</div>';
- html+='<div class="craft-bench"><strong>'+(chosen.benchItemId?'⚒ Workbench':'🚌 Installation')+'</strong><span>'+esc(chosen.benchItemId?chosen.location+' · '+zone(chosen.zone).name:'Attach upgrades to the bus; there is no fixed upgrade workbench')+'</span><button type="button" class="button ghost" data-craft-bench="'+chosen.id+'">'+(chosen.benchItemId?"Locate bench":"See possible rooms")+'</button></div>';
- html+='<p class="craft-accuracy">Map badges identify known sites and possible spawn areas—not exact pickup coordinates. Individual parts can vary between matches. Checklist progress is shared with Crew and stays saved on this device.</p></section>';
+ html+='<div class="craft-bench"><div class="craft-bench-copy"><strong>'+(chosen.benchItemId?'WORKBENCH / ASSEMBLY':'BUS INSTALLATION · NO FIXED BENCH')+'</strong>'+
+  '<span>'+esc(chosen.benchItemId?chosen.location+' · '+zone(chosen.zone).name:'Attach upgrades to the moving bus. Their candidate rooms are not fixed map pins.')+'</span></div>'+
+  '<button type="button" class="button ghost" data-craft-bench="'+chosen.id+'">'+(chosen.benchItemId?"Show bench on map":"Show possible areas")+'</button></div>';
+ html+='<details class="craft-accuracy"><summary>Map accuracy and saved progress</summary><p>Map badges identify verified sites and possible spawn areas, not exact pickup coordinates. A part may spawn in one of several rooms; source notes are not measured pins. These are manual checkmarks shared with Crew on this device only, not synchronized with Black Ops II.</p></details></section>';
  panel.innerHTML=html;
+ // Keep the nine-build picker stable during checklist rerenders; when entering
+ // Craftables from a map action, reveal the selected recipe without page-jumping.
+ const picker=panel.querySelector?.(".craft-selector-grid");
+ if(picker){
+  if(previousSelection===chosen.id&&Number.isFinite(previousScroll))picker.scrollLeft=previousScroll;
+  const active=picker.querySelector?.(".craft-selector.selected");
+  if(active?.getBoundingClientRect){
+   const target=active.getBoundingClientRect(),rail=picker.getBoundingClientRect();
+   // First render may run inside a hidden tab, leaving a valid but unhelpful
+   // scrollLeft=0. Recenter only if the chosen recipe is outside the rail.
+   if(rail.width>0&&target.width>0&&(target.left<rail.left+2||target.right>rail.right-2))
+    picker.scrollLeft=Math.max(0,picker.scrollLeft+target.left-rail.left-(rail.width-target.width)/2);
+  }
+ }
 }
 function renderCrew(){
  const panel=$("#crewPanel");
@@ -454,7 +592,7 @@ function renderCrew(){
  panel.dataset.ready="1";
 }
 function help(){
- modal("TranZit interactive map",'<div class="stack"><p><b>Map:</b> All major locations and important item icons appear directly on the geography. Tap a numbered stop, perk, weapon, part, bench or door marker to open its details. A <b>+number</b> marker lists the other items at that location.</p><p><b>Map key:</b> Each symbol has a color and meaning. Tap a category in the key to show more icons of that type, or <b>All</b> to restore the overview. Pinch to zoom, drag to pan, or expand the map.</p><p><b>Easter Egg:</b> The separate <b>EASTER EGG</b> tab contains the Maxis and Richtofen steps, progress checks and four-player assignments. A Locate button brings you back to the correct map site.</p><p><b>Sites, Find and Crew:</b> Room notes, searchable listings, buildable part checklists and names remain available without cluttering the main map.</p><p><b>Offline:</b> Safari Share → Add to Home Screen. Launch once online, then test airplane mode. Information is saved only on your phone, not synced with the game.</p><p><b>Accuracy:</b> Roads and buildings follow the supplied reference map; icons are site-level guides, not measured in-game pickup coordinates. Alternate spawns are listed in details.</p></div>');
+ modal("Help & Settings",'<div class="stack"><p><b>Map:</b> All major locations and important item icons appear directly on the geography. Tap a numbered stop, perk, weapon, part, bench or door marker to open its details. A <b>+number</b> marker lists the other items at that location.</p><p><b>Map key:</b> Each symbol has a color and meaning. Tap a category in the key to show more icons of that type, or <b>All</b> to restore the overview. Pinch to zoom, drag to pan, or expand the map.</p><p><b>Easter Egg:</b> The separate <b>EASTER EGG</b> tab contains the Maxis and Richtofen steps, progress checks and four-player assignments. A Locate button brings you back to the correct map site.</p><p><b>Sites, Find and Crew:</b> Room notes, searchable listings, buildable part checklists and names remain available without cluttering the main map.</p><p><b>Map diagnostics:</b> Run the privacy-safe v2 map performance scanner while panning and pinching, then copy the report.</p><button type="button" class="button" id="helpMapScan">Open map diagnostics</button><p><b>Offline:</b> Safari Share → Add to Home Screen. Launch once online, then test airplane mode. Information is saved only on your phone, not synced with the game.</p><p><b>Accuracy:</b> Roads and buildings follow the supplied reference map; icons are site-level guides, not measured in-game pickup coordinates. Alternate spawns are listed in details.</p></div>');
 }
 function isAccidentalMapClick(e){
  // Only disregard the single ghost click generated at the end of a drag,
@@ -466,9 +604,19 @@ document.addEventListener("click",e=>{
 const b=e.target.closest("button,[data-zone],[data-room],[data-item],[data-group],[data-map-more],[data-map-item],[data-map-key]");
 if(!b)return;
 if(b.dataset.view){go(b.dataset.view);return;}
+if(b.id==="closeSheet"){closeSheet();return;}
+if(b.id==="crewAccess"){go("crew");return;}
+if(b.id==="helpMapScan"){
+ $("#modal").close();go("map");
+ const scanner=$("#mapScanPanel");
+ if(scanner.hidden)$("#openMapScan").click();
+ scanner.scrollIntoView?.({behavior:"auto",block:"nearest"});
+ return;
+}
 if(b.dataset.craftSelect){state.craftSelected=b.dataset.craftSelect;save();renderCraftPanel();return;}
 if(b.dataset.craftView){state.craftSelected=b.dataset.craftView;save();if($("#modal").open)$("#modal").close();go("craft");return;}
 if(b.dataset.craftMap){
+ const drawer=$("#mapKeyDisclosure");if(drawer)drawer.open=false;
  state.craftFocus=b.dataset.craftMap==="all"?null:b.dataset.craftMap;
  state.mapKind=state.craftFocus?"part":"all";state.selected=null;
  if(state.craftFocus)state.craftSelected=state.craftFocus;
@@ -479,7 +627,7 @@ if(b.dataset.craftLocate){
  showCraftOnMap(id,Number(idx));return;
 }
 if(b.dataset.craftBench){showCraftOnMap(b.dataset.craftBench,null,true);return;}
-if(b.dataset.mapKey){state.craftFocus=null;state.mapKind=b.dataset.mapKey;state.selected=null;save();renderMap();return;}
+if(b.dataset.mapKey){const drawer=$("#mapKeyDisclosure");if(drawer)drawer.open=false;state.craftFocus=null;state.mapKind=b.dataset.mapKey;state.selected=null;save();renderMap();return;}
 if(b.dataset.mapMore){if(!isAccidentalMapClick(e))context("more:"+b.dataset.mapMore);return;}
 if(b.dataset.mapItem){context(b.dataset.mapItem);return;}
 if(b.dataset.mapMode){state.mapMode=b.dataset.mapMode;state.mapFilters=MAP_MODES[state.mapMode].slice();save();renderMap();return;}
@@ -525,9 +673,17 @@ if(b.id==="mapExit"){setMapExpanded(false);return;}
 if(b.id==="zoomIn"){setZoom(zoom*1.3);return;}
 if(b.id==="zoomOut"){setZoom(zoom/1.3);return;}
 });
-document.addEventListener("change",e=>{if(e.target.dataset.assignment!==undefined){state.assign[state.side+":"+e.target.dataset.assignment]=e.target.value;save();}
+document.addEventListener("keydown",e=>{
+ if(e.key!=="Escape")return;
+ if($("#modal").open){$("#modal").close();return;}
+ if(sheetView){closeSheet();return;}
+ if($("#mapKeyDisclosure")?.open){$("#mapKeyDisclosure").open=false;return;}
+ if(!$("#mapContext").hidden){closeMapContext();return;}
+ if($("#interactiveMap").classList.contains("map-expanded"))setMapExpanded(false);
+});
+document.addEventListener("change",e=>{if(e.target.dataset.assignment!==undefined){const stepNumber=e.target.dataset.assignment;state.assign[state.side+":"+stepNumber]=e.target.value;save();renderQuestCrewSummary();const step=e.target.closest?.(".quest-step");const status=step?.querySelector?.(".step-count");if(status)status.textContent=e.target.value!==""?"Assigned: "+state.crew[Number(e.target.value)]:"No player assigned";}
 if(e.target.id==="zoneSelect"){state.zone=e.target.value;state.floor=0;save();renderZones();}});
-document.addEventListener("input",e=>{if(e.target.id==="atlasSearch")renderAtlas();if(e.target.dataset.crew!==undefined){state.crew[Number(e.target.dataset.crew)]=e.target.value||"Player "+(Number(e.target.dataset.crew)+1);save();}});
+document.addEventListener("input",e=>{if(e.target.id==="atlasSearch")renderAtlas();if(e.target.dataset.crew!==undefined){state.crew[Number(e.target.dataset.crew)]=e.target.value||"Player "+(Number(e.target.dataset.crew)+1);save();if(state.view==="quest")renderQuest();}});
 $("#worldMap").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-zone],[data-item],[data-group],[data-map-more]")){e.preventDefault();e.target.dispatchEvent(new MouseEvent("click",{bubbles:true}));}});
 const vp=$("#mapViewport");
 function moveCamera(dx,dy){

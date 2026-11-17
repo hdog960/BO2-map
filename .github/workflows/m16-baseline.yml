@@ -1,0 +1,96 @@
+name: M16 release-safety and full feature-parity acceptance
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'sw.js'
+      - 'icon.svg'
+      - 'apple-touch-icon.png'
+      - 'manifest.webmanifest'
+      - 'diagnostics.js'
+      - 'world-art.svg'
+      - 'tests/sw-safety.test.mjs'
+      - 'docs/M16_5A_RELEASE_SAFETY.md'
+      - 'app.js'
+      - 'styles.css'
+      - 'tests/browser-smoke.html'
+      - 'tests/runtime-smoke.test.mjs'
+      - 'tests/atlas.test.mjs'
+      - 'tests/m16-foundation-capture.mjs'
+      - 'docs/M16_BASELINE_AND_FEATURE_PARITY.md'
+      - 'docs/M16_2_ACCEPTANCE.md'
+      - 'docs/M16_3_ACCEPTANCE.md'
+      - 'docs/M16_4_ACCEPTANCE.md'
+      - '.github/workflows/m16-baseline.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Assert exact pull-request source HEAD
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          echo "M16_SOURCE_EXACT_HEAD=$(git rev-parse HEAD)"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify isolated SW cache safety, full source contracts and v1 saves
+        run: |
+          node --check tests/m16-foundation-capture.mjs
+          node --test tests/*.test.mjs
+      - name: Verify the published GitHub Pages baseline without changing it
+        shell: bash
+        run: |
+          set -euo pipefail
+          LIVE="https://hdog960.github.io/BO2-map"
+          for asset in index.html app.js data.js sw.js styles.css world-art.svg diagnostics.js manifest.webmanifest icon.svg; do
+            curl -fsSL --retry 3 --max-time 25 "$LIVE/$asset" -o "/tmp/m16-pages-$asset"
+            curl -fsSL --retry 3 --max-time 25 "https://raw.githubusercontent.com/hdog960/BO2-map/80cdb6db12efb38edb41a3d43adbfec52ac5a99a/$asset" -o "/tmp/m16-baseline-$asset"
+            if ! cmp -s "/tmp/m16-baseline-$asset" "/tmp/m16-pages-$asset"; then
+              echo "PUBLISHED_PAGES_MISMATCH: $asset differs from immutable protected main baseline SHA"
+              exit 1
+            fi
+            echo "Published Pages matches protected baseline SHA: $asset"
+          done
+          echo "M16_PAGES_BASELINE_MATCH"
+      - name: Validate original TZ Apple Home Screen raster fallback
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+          image=Path('apple-touch-icon.png').read_bytes()
+          assert image[:8]==b'\x89PNG\r\n\x1a\n', 'Invalid Apple touch PNG signature'
+          assert struct.unpack('>II',image[16:24])==(180,180), 'Expected 180x180 icon'
+          assert b'apple-touch-icon.png' in Path('index.html').read_bytes()
+          assert b'apple-touch-icon.png' in Path('sw.js').read_bytes()
+          print('M16_APPLE_ICON_PNG_PASS 180x180 source-artwork raster')
+          PY
+      - name: Capture 53 protected phone screenshots plus genuine offline upgrade
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/m16-http-server.log 2>&1 &
+          CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          if [ -z "$CHROME_BIN" ]; then echo "Chromium not present"; exit 1; fi
+          export CHROME_BIN
+          export ATLAS_CANDIDATE_SHA="$(git rev-parse HEAD)"
+          sleep 1
+          node tests/m16-foundation-capture.mjs
+          test -f m16-foundation-evidence/baseline-layout.json
+      - name: Upload M16.5A release-safety mobile evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m16-release-safety-five-viewports
+          path: m16-foundation-evidence/
+          if-no-files-found: warn
+          retention-days: 30
