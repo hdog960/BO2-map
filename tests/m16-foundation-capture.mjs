@@ -139,8 +139,9 @@ try {
     await evaluate(rpc,'document.querySelector("nav [data-view=quest]").click()');
     await evaluate(rpc,'document.querySelector("[data-side=maxis]").click()');
     await sleep(110);
-    const maxisView=await evaluate(rpc,'({count:document.querySelectorAll("#questPanel [data-quest-step]").length,current:document.querySelectorAll("#questPanel .quest-step-details[open]").length,route:document.querySelector("[data-side=maxis]").getAttribute("aria-pressed")})');
+    const maxisView=await evaluate(rpc,'(() => {const action=document.querySelector("#questPanel .quest-next-actions").getBoundingClientRect(),nav=document.querySelector(".bottom-nav").getBoundingClientRect(),hero=document.querySelector("#questPanel .quest-next").getBoundingClientRect();return {count:document.querySelectorAll("#questPanel [data-quest-step]").length,current:document.querySelectorAll("#questPanel .quest-step-details[open]").length,route:document.querySelector("[data-side=maxis]").getAttribute("aria-pressed"),heroTop:hero.top,actionBottom:action.bottom,navTop:nav.top}})()');
     if(maxisView.count!==6||maxisView.current!==1||maxisView.route!=="true")fail("Maxis source route screenshot contract failed "+width+"x"+height);
+    if(height<=470&&maxisView.actionBottom>maxisView.navTop+2)fail("Landscape next-objective buttons clipped under navigation at "+width+"x"+height+": "+JSON.stringify(maxisView));
     evidence.push({requested:{width,height},questRoute:"maxis",measured:maxisView,screenshot:await capture(rpc,width,height,"quest-maxis")});
     await evaluate(rpc,'document.querySelector("[data-side=richtofen]").click()');
     await sleep(110);
@@ -148,11 +149,15 @@ try {
     if(richtofenView.count!==8||richtofenView.current!==1||richtofenView.route!=="true")fail("Richtofen source route screenshot contract failed "+width+"x"+height);
     evidence.push({requested:{width,height},questRoute:"richtofen",measured:richtofenView,screenshot:await capture(rpc,width,height,"quest-richtofen")});
     await evaluate(rpc,'document.querySelector("#questCrewDisclosure").open=true');
-    await sleep(80);
+    // Crew follows the priority objective in short landscape; scroll to show the
+    // actual names in the screenshot, not merely an offscreen details[open] node.
+    if(height<=470)await evaluate(rpc,'document.querySelector("#questCrewDisclosure").scrollIntoView({block:"start"})');
+    await sleep(110);
     const crewView=await evaluate(rpc,'({open:document.querySelector("#questCrewDisclosure").open,people:document.querySelectorAll("#questCrewSummary .quest-roster-person").length})');
     if(!crewView.open||crewView.people!==4)fail("Crew disclosure screenshot contract failed "+width+"x"+height);
     evidence.push({requested:{width,height},questRoute:"crew-disclosure",measured:crewView,screenshot:await capture(rpc,width,height,"quest-crew")});
     await evaluate(rpc,'document.querySelector("#questCrewDisclosure").open=false');
+    if(height<=470)await evaluate(rpc,'window.scrollTo({top:0,behavior:"instant"})');
     if(width===390&&height===844){
       for(const name of extraViews){
         await evaluate(rpc,'document.querySelector("nav [data-view='+name+']").click()');
