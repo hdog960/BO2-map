@@ -515,10 +515,13 @@ function renderAtlas(){
 function renderCraftPanel(){
  if(!buildById(state.craftSelected))state.craftSelected="jet";
  const chosen=buildById(state.craftSelected),panel=$("#craftPanel");
+ const previousPicker=panel.querySelector?.(".craft-selector-grid");
+ const previousSelection=panel.querySelector?.(".craft-selector.selected")?.dataset.craftSelect;
+ const previousScroll=previousPicker?.scrollLeft;
  const completedBuilds=D.builds.filter(b=>b.parts.every((_,i)=>!!state.parts[b.id+":"+i])).length;
  const collectedParts=D.builds.reduce((n,b)=>n+craftProgress(b).found,0);
  const totalParts=D.builds.reduce((n,b)=>n+b.parts.length,0);
- let html='<div class="craft-library-header"><div><strong>CHOOSE A BUILDABLE</strong><span>9 original builds · select to inspect</span></div><span class="craft-library-progress">'+completedBuilds+'/9 ready · '+collectedParts+'/'+totalParts+' parts</span></div>';
+ let html='<div class="craft-library-header"><div><strong>CHOOSE A BUILDABLE</strong><span>9 original builds · swipe to choose</span></div><span class="craft-library-progress">'+completedBuilds+'/9 ready · '+collectedParts+'/'+totalParts+' parts</span></div>';
  html+='<div class="craft-selector-grid" role="group" aria-label="Choose one of nine color-coded buildables">'+D.builds.map(b=>{
   const p=craftProgress(b),active=b.id===chosen.id;
   return '<button class="craft-selector '+(active?"selected":"")+'" type="button" data-craft-select="'+b.id+'" aria-pressed="'+active+'" aria-label="'+esc(b.name)+', '+p.found+' of '+p.total+' parts collected" style="--craft-color:'+b.color+'">'+
@@ -550,6 +553,19 @@ function renderCraftPanel(){
   '<button type="button" class="button ghost" data-craft-bench="'+chosen.id+'">'+(chosen.benchItemId?"Show bench on map":"Show possible areas")+'</button></div>';
  html+='<details class="craft-accuracy"><summary>Map accuracy and saved progress</summary><p>Map badges identify verified sites and possible spawn areas, not exact pickup coordinates. A part may spawn in one of several rooms; source notes are not measured pins. These are manual checkmarks shared with Crew on this device only, not synchronized with Black Ops II.</p></details></section>';
  panel.innerHTML=html;
+ // Keep the nine-build picker stable during checklist rerenders; when entering
+ // Craftables from a map action, reveal the selected recipe without page-jumping.
+ const picker=panel.querySelector?.(".craft-selector-grid");
+ if(picker){
+  if(previousSelection===chosen.id&&Number.isFinite(previousScroll))picker.scrollLeft=previousScroll;
+  else{
+   const active=picker.querySelector?.(".craft-selector.selected");
+   if(active?.getBoundingClientRect){
+    const target=active.getBoundingClientRect(),rail=picker.getBoundingClientRect();
+    picker.scrollLeft=Math.max(0,picker.scrollLeft+target.left-rail.left-(rail.width-target.width)/2);
+   }
+  }
+ }
 }
 function renderCrew(){
  const panel=$("#crewPanel");
