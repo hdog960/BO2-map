@@ -23,6 +23,14 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Assert exact pull-request source HEAD
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          echo "M16_SOURCE_EXACT_HEAD=$(git rev-parse HEAD)"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -53,6 +61,7 @@ jobs:
           CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
           if [ -z "$CHROME_BIN" ]; then echo "Chromium not present"; exit 1; fi
           export CHROME_BIN
+          export ATLAS_CANDIDATE_SHA="$(git rev-parse HEAD)"
           sleep 1
           node tests/m16-foundation-capture.mjs
           test -f m16-foundation-evidence/baseline-layout.json
