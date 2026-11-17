@@ -638,3 +638,21 @@ body.sheet-open{overflow:hidden;touch-action:pan-y}
  #view-quest #questPanel .quest-list-heading{order:3}
  #view-quest #questPanel .quest-step{order:4}
 }
+
+
+/* M16.3 acceptance refinement: at 667×375, both objective actions must sit
+   entirely above the fixed bottom tabs; hide decorative labels, not gameplay. */
+@media(orientation:landscape) and (max-height:400px){
+ #view-quest .quest-heading .eyebrow{display:none}
+ #view-quest .quest-heading h2{font-size:18px;line-height:1.05;margin:0}
+ #view-quest .quest-heading{margin:0 0 1px}
+ #view-quest .quest-route-label{display:none}
+ #view-quest .quest-route-choice{margin:1px 0 2px}
+ #view-quest #questPanel .quest-next{padding:6px 10px;margin:1px 0 7px}
+ #view-quest #questPanel .quest-next h3{font-size:17px;line-height:1.15;margin:3px 0 2px}
+ #view-quest #questPanel .quest-next .num{font-size:9px}
+ #view-quest #questPanel .quest-next>p:not(.quest-manual-caveat){font-size:11px;line-height:1.3;margin:0 0 3px}
+ #view-quest #questPanel .quest-next-meta{margin:3px 0}
+ #view-quest #questPanel .quest-next-actions{margin:3px 0 0}
+ #view-quest #questPanel .quest-next .quest-manual-caveat{display:none}
+}
