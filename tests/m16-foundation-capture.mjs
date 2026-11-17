@@ -151,10 +151,14 @@ try {
     await evaluate(rpc,'document.querySelector("#questCrewDisclosure").open=true');
     // Crew follows the priority objective in short landscape; scroll to show the
     // actual names in the screenshot, not merely an offscreen details[open] node.
-    if(height<=470)await evaluate(rpc,'document.querySelector("#questCrewDisclosure").scrollIntoView({block:"start"})');
-    await sleep(110);
+    if(height<=470)await evaluate(rpc,'document.querySelector("#questCrewDisclosure").scrollIntoView({behavior:"instant",block:"start"})');
+    await sleep(140);
     const crewView=await evaluate(rpc,'({open:document.querySelector("#questCrewDisclosure").open,people:document.querySelectorAll("#questCrewSummary .quest-roster-person").length})');
     if(!crewView.open||crewView.people!==4)fail("Crew disclosure screenshot contract failed "+width+"x"+height);
+    if(height<=470){
+      const rosterBounds=await evaluate(rpc,'(() => {const e=document.querySelector("#questCrewSummary .quest-roster-person"),r=e.getBoundingClientRect(),n=document.querySelector(".bottom-nav").getBoundingClientRect();return {top:r.top,bottom:r.bottom,navTop:n.top}})()');
+      if(rosterBounds.top<0||rosterBounds.top>rosterBounds.navTop-25)fail("Expanded Crew names not visible in landscape screenshot "+width+"x"+height+": "+JSON.stringify(rosterBounds));
+    }
     evidence.push({requested:{width,height},questRoute:"crew-disclosure",measured:crewView,screenshot:await capture(rpc,width,height,"quest-crew")});
     await evaluate(rpc,'document.querySelector("#questCrewDisclosure").open=false');
     if(height<=470)await evaluate(rpc,'window.scrollTo({top:0,behavior:"instant"})');
