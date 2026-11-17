@@ -301,7 +301,7 @@ test('M16.4 source rooms and alternate-area warnings stay grounded',()=>{
  click({craftSelect:'jet'});
  assert.match(els.craftPanel.innerHTML,/ROOM \/ REFERENCE/);
  assert.match(els.craftPanel.innerHTML,/Tunnel/);
- assert.match(els.craftPanel.innerHTML,/Hunter.s Cabin/);
+ assert.match(els.craftPanel.innerHTML,/Hunter&#39;s Cabin/);
  click({craftSelect:'nav'});
  assert.match(els.craftPanel.innerHTML,/ALTERNATE AREAS/);
  assert.match(els.craftPanel.innerHTML,/One possible spawn/);
