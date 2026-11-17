@@ -210,11 +210,32 @@ test('iPhone uses native touch streams instead of brittle pointer capture',()=>{
 test('initial map allows panning and reports blocked camera input separately',()=>{
  const app=read('app.js'),diag=read('diagnostics.js');
  assert.match(app,/let zoom=1,panX=0,panY=0/);
- assert.match(app,/Math\.max\(width\/MAP_W,height\/MAP_H\)/);
+ assert.match(app,/Math\.min\(width\/MAP_W,height\/MAP_H\)/);
  assert.match(app,/const spanX=.*\/m\.k/);
  for(const key of ['nativeTouchHandled','pointerHandled','panChanged','panAtBoundary','cameraFrames','pointerCaptureLost'])
   assert.ok(app.includes(key)&&diag.includes(key),key);
  assert.match(diag,/Camera movement blocked by edge/);
+});
+
+test('M16 map-fit: root SVG, camera math and reset preserve entire world',()=>{
+ const html=read('index.html'),app=read('app.js'),css=read('styles.css');
+ assert.match(html,/preserveAspectRatio="xMidYMid meet"/);
+ assert.doesNotMatch(html,/preserveAspectRatio="xMidYMid slice"/);
+ assert.match(app,/Math\.min\(width\/MAP_W,height\/MAP_H\)/);
+ assert.match(app,/const slack=0;/);
+ assert.match(app,/function resetMap\(\)\{zoom=1;panX=0;panY=0;refreshMapMetrics\(\)/);
+ assert.match(css,/#interactiveMap:not\(\.map-expanded\) #mapViewport/);
+ assert.match(css,/aspect-ratio:720 \/ 580!important/);
+});
+test('M16 map-fit: +/- and native pinch use correct offsets and safe zoom limits',()=>{
+ const app=read('app.js');
+ assert.match(app,/Math\.min\(4,Math\.max\(1,next\)\)/);
+ assert.match(app,/zoom\/1\.3/);
+ assert.match(app,/zoom\*1\.3/);
+ assert.match(app,/const originX=m\.offX\/m\.k,originY=m\.offY\/m\.k/);
+ assert.match(app,/const wx=\(oldMid\.x-panX\)\/zoom/);
+ assert.match(app,/nativeTouchStart/);
+ assert.match(app,/nativeTouchMove/);
 });
 
 test('M16.4 full source item-placement and world site parity',()=>{

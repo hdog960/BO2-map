@@ -769,6 +769,18 @@ body.sheet-open{overflow:hidden;touch-action:pan-y}
 }
 
 
+/* M16 iPhone map-fit hotfix: portrait overview uses the natural 720:580
+   map ratio rather than wasting space on vertical letterbox bands. Expanded
+   full-screen and landscape retain their separate viewport constraints. */
+@media (orientation:portrait) and (max-width:699px){
+ #interactiveMap:not(.map-expanded) #mapViewport{
+  aspect-ratio:720 / 580!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+ }
+}
+
 /* M16.5A: render the MAP tab using a native SVG rather than an unsupported
    Unicode symbol; preserve original two-thumb controls and 44px targets. */
 .bottom-nav .nav-map-icon{display:inline-grid;place-items:center;flex:0 0 21px;width:21px;height:21px;line-height:1}

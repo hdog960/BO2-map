@@ -1,4 +1,4 @@
-const CACHE='tranzit-atlas-v14';
+const CACHE='tranzit-atlas-v15'; // Map-fit hotfix precache; never evict another project's data.
 // Cache Storage is shared by all GitHub Pages projects on this origin.
 // Delete only caches explicitly owned by TranZit; never sibling PWAs.
 const OWNED_CACHE_PREFIX='tranzit-atlas-';
