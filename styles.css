@@ -767,3 +767,9 @@ body.sheet-open{overflow:hidden;touch-action:pan-y}
  #view-craft .craft-part-list{grid-template-columns:repeat(2,minmax(0,1fr))}
  #view-craft .craft-part-row{padding:8px}
 }
+
+
+/* M16.5A: render the MAP tab using a native SVG rather than an unsupported
+   Unicode symbol; preserve original two-thumb controls and 44px targets. */
+.bottom-nav .nav-map-icon{display:inline-grid;place-items:center;flex:0 0 21px;width:21px;height:21px;line-height:1}
+.bottom-nav .nav-map-icon svg{display:block;width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8}
