@@ -114,7 +114,7 @@ const MAP_LABELS={perk:"Perks",weapon:"Wall guns",part:"Parts",bench:"Workbenche
 const MAP_PRIORITY={perk:0,goal:1,box:2,bench:3,turbine:4,paid:5,special:6,weapon:7,part:8,secret:9};
 // Category badges are callouts connected to the verified *site*, not in-room pins.
 // See data.js item.mapMode and the complete placement audit in AUDIT_ICON_PLACEMENT.md.
-// Start zoomed enough to actually explore the map with a finger; Reset still fits all.
+// M16 iPhone hotfix: zoom=1 is a full-world overview; Reset must never crop the source map.
 let zoom=1,panX=0,panY=0,pointers=new Map(),dragged=false,lastDrag=0,lastDragPoint=null;
 let nativeTouchSeen=false,nativeTouches=new Map(),nativeDrag=false;
 let nativeTouchHandled=0,pointerHandled=0,panChanged=0,panAtBoundary=0,gestureStarts=0,pointerCaptureLost=0;
@@ -330,9 +330,9 @@ function refreshMapMetrics(){
  const svg=$("#worldMap"),r=svg.getBoundingClientRect();
  const width=r.width||svg.clientWidth||$("#mapViewport").clientWidth||MAP_W;
  const height=r.height||svg.clientHeight||$("#mapViewport").clientHeight||MAP_H;
- // The viewport intentionally crops the schematic (SVG slice), so use the same
- // aspect scale for world, hit-testing and inverse-scaled labels. No fake pins.
- const k=Math.max(0.15,Math.max(width/MAP_W,height/MAP_H));
+ // SVG 'meet' letterboxes rather than cropping; use the same contain scale
+ // for world, hit-testing, pinch centers and fixed-size overlays. No fake pins.
+ const k=Math.max(0.15,Math.min(width/MAP_W,height/MAP_H));
  mapMetrics={left:r.left||0,top:r.top||0,k,
   offX:(width-MAP_W*k)/2,offY:(height-MAP_H*k)/2};
  overlayDirty=true;
@@ -375,12 +375,12 @@ function flushMapFrame(){
  mapRaf=0;applyTransform();
 }
 function clampMap(){
- // SVG 'slice' crops the virtual world to the screen aspect ratio. Camera bounds
- // must include the visible slice, or edge sites cannot be reached on portrait iPhones.
+ // SVG 'meet' always shows the whole world at zoom=1. Camera bounds
+ // account for letterbox margins while preserving every edge location.
  const m=mapMetrics||refreshMapMetrics(),svg=$("#worldMap");
  const spanX=(svg.clientWidth||MAP_W)/m.k,spanY=(svg.clientHeight||MAP_H)/m.k;
  const originX=m.offX/m.k,originY=m.offY/m.k;
- const slack=zoom<=1.001?20:0;
+ const slack=0; // No camera drift at fit zoom; pan only where zoom creates overflow.
  const lowX=spanX-originX-MAP_W*zoom-slack,highX=-originX+slack;
  const lowY=spanY-originY-MAP_H*zoom-slack,highY=-originY+slack;
  panX=lowX>highX?(lowX+highX)/2:Math.max(lowX,Math.min(highX,panX));
@@ -396,7 +396,7 @@ function setZoom(next,center={x:MAP_W/2,y:MAP_H/2}){
  clampMap();
  applyTransform();
 }
-function resetMap(){zoom=1;panX=0;panY=0;renderMapMarkers();applyTransform();}
+function resetMap(){zoom=1;panX=0;panY=0;refreshMapMetrics();renderMapMarkers();applyTransform();}
 function setMapExpanded(expanded){
  $("#interactiveMap").classList.toggle("map-expanded",expanded);
  document.body.classList.toggle("atlas-expanded",expanded);
