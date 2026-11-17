@@ -462,9 +462,9 @@ function renderQuest(){
    '<div class="num">YOUR NEXT OBJECTIVE <span>STEP '+(next+1)+' OF '+steps.length+'</span></div>'+
    '<h3>'+esc(nextStep.title)+'</h3>'+
    '<p>'+esc(nextStep.note)+'</p>'+
-   '<div class="quest-next-meta"><span>⌖ '+esc(zone(nextStep.zone).name)+'</span><span>♧ '+esc(assigned)+'</span></div>'+
+   '<div class="quest-next-meta"><span>SITE · '+esc(zone(nextStep.zone).name)+'</span><span>♧ '+esc(assigned)+'</span></div>'+
    '<div class="actions quest-next-actions">'+
-    '<button type="button" class="button quest-location" data-quest-zone="'+nextStep.zone+'">⌖ Show on map</button>'+
+    '<button type="button" class="button quest-location" data-quest-zone="'+nextStep.zone+'">Show on map</button>'+
     '<button type="button" class="button ghost quest-complete" data-quest-done="'+next+'">✓ Mark step complete</button></div>'+
    '<p class="quest-manual-caveat">Confirm this action in-game before checking it off.</p></section>';
  }else{
@@ -484,7 +484,7 @@ function renderQuest(){
    '<strong>'+esc(step.title)+'</strong><div class="step-count">'+(who?"Assigned: "+esc(who):"No player assigned")+'</div></div></div>'+
    '<details class="step-reveal quest-step-details" '+(isNext?"open":"")+'><summary>Instructions, location & crew</summary>'+
    '<div class="quest-step-body"><p>'+esc(step.note)+'</p>'+
-   '<div class="step-extra"><div class="flex between"><span class="pill">⌖ '+esc(zone(step.zone).name)+'</span>'+
+   '<div class="step-extra"><div class="flex between"><span class="pill">SITE · '+esc(zone(step.zone).name)+'</span>'+
    '<button type="button" class="button ghost" data-quest-zone="'+step.zone+'">Show location</button></div>'+
    '<label class="small muted" for="questAssign'+i+'">Assign to player</label>'+
    '<select class="assign" id="questAssign'+i+'" data-assignment="'+i+'" aria-label="Assign '+esc(step.title)+'"><option value="">Unassigned</option>'+
