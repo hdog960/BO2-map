@@ -53,7 +53,7 @@ function simulatedWorker({initial=[],networkOnline=true}={}){
 }
 
 test('M16.5A worker version and assets are self-owned, with PNG cache fallback',()=>{
- assert.match(source,/const CACHE='tranzit-atlas-v14'/);
+ assert.match(source,/const CACHE='tranzit-atlas-v15'/);
  assert.match(source,/const OWNED_CACHE_PREFIX='tranzit-atlas-'/);
  assert.match(source,/key\.startsWith\(OWNED_CACHE_PREFIX\)&&key!==CACHE/);
  for(const asset of ['index.html','styles.css','app.js','diagnostics.js','data.js','manifest.webmanifest','world-art.svg','icon.svg','apple-touch-icon.png'])
@@ -61,25 +61,25 @@ test('M16.5A worker version and assets are self-owned, with PNG cache fallback',
  assert.doesNotMatch(source,/keys\.filter\(key=>key!==CACHE\)/);
 });
 
-test('M16.5A installation populates only TranZit v14 and activates without deleting sibling caches',async()=>{
- const sw=simulatedWorker({initial:['tranzit-atlas-v13','tranzit-atlas-v8','mythwrought-assets-v4','runegrave-offline-v3','unwritten-company-cache','tranzit-field-atlas-custom']});
+test('M16.5A installation populates only TranZit v15 and activates without deleting sibling caches',async()=>{
+ const sw=simulatedWorker({initial:['tranzit-atlas-v14','tranzit-atlas-v13','tranzit-atlas-v8','mythwrought-assets-v4','runegrave-offline-v3','unwritten-company-cache','tranzit-field-atlas-custom']});
  await sw.dispatch('install');
  assert.equal(sw.gets.skipWaiting,1);
- assert.ok(sw.stores.get('tranzit-atlas-v14')?.has(scope+'apple-touch-icon.png'));
- assert.ok(sw.stores.get('tranzit-atlas-v14')?.has(scope+'index.html'));
+ assert.ok(sw.stores.get('tranzit-atlas-v15')?.has(scope+'apple-touch-icon.png'));
+ assert.ok(sw.stores.get('tranzit-atlas-v15')?.has(scope+'index.html'));
  await sw.dispatch('activate');
  assert.equal(sw.gets.claimed,1);
- assert.deepEqual(sw.deleted.sort(),['tranzit-atlas-v13','tranzit-atlas-v8']);
+ assert.deepEqual(sw.deleted.sort(),['tranzit-atlas-v13','tranzit-atlas-v14','tranzit-atlas-v8']);
  for(const sibling of ['mythwrought-assets-v4','runegrave-offline-v3','unwritten-company-cache','tranzit-field-atlas-custom'])
   assert.equal(sw.stores.get(sibling)?.get('https://hdog960.github.io/unrelated-sentinel')?.body,'sibling data',sibling);
- assert.ok(sw.stores.has('tranzit-atlas-v14'));
+ assert.ok(sw.stores.has('tranzit-atlas-v15'));
 });
 
-test('M16.5A existing v14 cache remains while older same-prefix caches are retired',async()=>{
- const sw=simulatedWorker({initial:['tranzit-atlas-v14','tranzit-atlas-v13','mythwrought-v1']});
+test('M16.5A existing v15 cache remains while older same-prefix caches are retired',async()=>{
+ const sw=simulatedWorker({initial:['tranzit-atlas-v15','tranzit-atlas-v14','tranzit-atlas-v13','mythwrought-v1']});
  await sw.dispatch('activate');
- assert.deepEqual(sw.deleted,['tranzit-atlas-v13']);
- assert.ok(sw.stores.has('tranzit-atlas-v14'));
+ assert.deepEqual(sw.deleted,['tranzit-atlas-v14','tranzit-atlas-v13']);
+ assert.ok(sw.stores.has('tranzit-atlas-v15'));
  assert.ok(sw.stores.has('mythwrought-v1'));
 });
 
@@ -101,11 +101,11 @@ test('M16.5A online fetch refreshes current cache but never claims external requ
  const url=scope+'styles.css';
  const refreshed=await sw.dispatch('fetch',{url,method:'GET',mode:'no-cors'});
  assert.equal(refreshed.body,'fresh '+url);
- const latest=await sw.stores.get('tranzit-atlas-v14').get(url);
+ const latest=await sw.stores.get('tranzit-atlas-v15').get(url);
  assert.equal(latest.body,'fresh '+url);
- const keysBefore=[...sw.stores.get('tranzit-atlas-v14').keys()];
+ const keysBefore=[...sw.stores.get('tranzit-atlas-v15').keys()];
  const outside={url:'https://example.com/style.css',method:'GET',mode:'no-cors'};
  const skipped=await sw.dispatch('fetch',outside).catch(e=>e);
  assert.equal(skipped,undefined,'foreign requests must not be intercepted');
- assert.deepEqual([...sw.stores.get('tranzit-atlas-v14').keys()],keysBefore);
+ assert.deepEqual([...sw.stores.get('tranzit-atlas-v15').keys()],keysBefore);
 });
