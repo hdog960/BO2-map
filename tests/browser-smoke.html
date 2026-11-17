@@ -12,6 +12,18 @@
    check(!!doc,"iframe same origin");
    const click=selector=>{const el=doc.querySelector(selector);check(el,"Missing "+selector);el.dispatchEvent(new win.MouseEvent("click",{bubbles:true}));};
    check(doc.querySelector("#view-map").classList.contains("active"),"interactive map must be initial view");
+
+   // M16.5A: native vector nav symbol works without rare glyph fonts,
+   // and iOS Home Screen icon points at the dedicated PNG asset.
+   const mapIcon=doc.querySelector('nav.bottom-nav button[data-view="map"] .nav-map-icon svg');
+   check(!!mapIcon&&mapIcon.querySelectorAll("path").length===2,"MAP uses source-native SVG rather than unsupported Unicode glyph");
+   check(win.getComputedStyle(mapIcon).display==="block"&&mapIcon.getBoundingClientRect().width>=18,"MAP SVG renders at phone-readable dimensions");
+   const appleIcon=doc.querySelector('link[rel="apple-touch-icon"]');
+   check(!!appleIcon&&appleIcon.getAttribute("href")==="./apple-touch-icon.png","Apple touch icon references PNG");
+   check(appleIcon.getAttribute("sizes")==="180x180","Apple touch icon declares 180px");
+   const imageResponse=await fetch("../apple-touch-icon.png");
+   check(imageResponse.ok&&imageResponse.headers.get("content-type")?.includes("image/png"),"Apple PNG exists in served app");
+
    check(doc.querySelector("#mapLegend"),"map key must exist");
    check(doc.querySelectorAll("#mapLegend [data-map-key]").length===11,"all ten icon categories plus All");
    check(doc.querySelectorAll("#mapPins [data-group]").length>=12,"site-linked category pins should be shown without fake item coordinates");
