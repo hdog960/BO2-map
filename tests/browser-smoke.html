@@ -165,6 +165,31 @@
    check(doc.querySelectorAll("#craftPanel [data-craft-select]").length===9,"All nine buildables selectable");
    check(doc.querySelector("#craftPanel").textContent.includes("Jet Gun"),"Jet Gun shown as the default craftable");
    check(doc.querySelector("#craftPanel").textContent.includes("Hunter's Cabin"),"Jet Gun gauge area is displayed");
+   // M16.4: interactive source-built craft library, full color/code parity,
+   // alternate spawn wording and moving-bus exception.
+   const craftOptions=Array.from(doc.querySelectorAll("#craftPanel [data-craft-select]"));
+   check(craftOptions.length===9,"craft selector retains all nine original recipes");
+   check(new Set(craftOptions.map(b=>b.style.getPropertyValue("--craft-color"))).size===9,"all nine builds retain distinct original colors");
+   for(const [id,code] of [["turbine","TB"],["shield","ZS"],["turret","TR"],["trap","ET"],["power","PS"],["jet","JG"],["pap","PAP"],["nav","NAV"],["bus","BUS"]]){
+    click('#craftPanel [data-craft-select="'+id+'"]');
+    check(doc.querySelector("#craftPanel .craft-large-symbol").textContent===code,"color-coded craft identity: "+id);
+    check(doc.querySelector('#craftPanel [data-craft-select="'+id+'"]').getAttribute("aria-pressed")==="true","selected craft is announced: "+id);
+    check(doc.querySelector("#craftPanel .craft-part-progress").getAttribute("aria-valuenow")!==null,"accessible part progress: "+id);
+   }
+   check(doc.querySelector("#craftPanel").textContent.includes("NO FIXED BENCH"),"bus upgrade does not invent stationary workbench");
+   click('#craftPanel [data-craft-bench="bus"]');
+   check(doc.querySelector("#view-map").classList.contains("active"),"bus installation links to source-map overview");
+   check(doc.querySelector("#mapContext").hidden,"bus installation does not invent a static bench pin");
+   click('nav button[data-view="craft"]');
+   click('#craftPanel [data-craft-select="nav"]');
+   check(doc.querySelector("#craftPanel .craft-alternates"),"NAV candidate spawn areas are not mislabeled as guaranteed pickups");
+   check(doc.querySelector("#craftPanel").textContent.includes("One possible spawn"),"source-accuracy caveat accompanies alternates");
+   click('#craftPanel [data-craft-select="jet"]');
+   check(doc.querySelector("#craftPanel .craft-room")?.textContent.includes("Tunnel"),"real source room guidance displayed");
+   check(doc.querySelectorAll("#craftPanel .craft-part-row").length===4,"Jet Gun has all four independently tracked parts");
+   check(doc.querySelectorAll("#craftPanel [data-craft-locate]").length===4,"each component has a map-area action");
+   check(doc.querySelector("#craftPanel .craft-accuracy"),"precise placement caveats stay available in the UI");
+
    click('#craftPanel [data-craft-map="jet"]');
    check(doc.querySelector("#view-map").classList.contains("active"),"Craftable filter jumps to world map");
    check(doc.querySelector('#craftMapStrip [data-craft-map="jet"]').getAttribute("aria-pressed")==="true","Jet Gun color filter active");
