@@ -162,6 +162,27 @@ try {
     evidence.push({requested:{width,height},questRoute:"crew-disclosure",measured:crewView,screenshot:await capture(rpc,width,height,"quest-crew")});
     await evaluate(rpc,'document.querySelector("#questCrewDisclosure").open=false');
     if(height<=470)await evaluate(rpc,'window.scrollTo({top:0,behavior:"instant"})');
+
+    // M16.4: source-driven craft UI at every phone size, not mocked panels.
+    // Include every important outlier: Jet's four fixed areas, NAV alternate
+    // locations, and the moving bus with no fixed workbench.
+    await evaluate(rpc,'document.querySelector("nav [data-view=craft]").click()');
+    await evaluate(rpc,'document.querySelector("#craftPanel [data-craft-select=jet]").click()');
+    await sleep(140);
+    const jetView=await evaluate(rpc,'(() => {const $=s=>document.querySelector(s),b=$("#craftPanel .craft-show").getBoundingClientRect(),n=$(".bottom-nav").getBoundingClientRect(),sel=$("#craftPanel .craft-selector.selected").getBoundingClientRect(),rail=$("#craftPanel .craft-selector-grid").getBoundingClientRect();return {name:$("#craftPanel .craft-detail h3").textContent,parts:document.querySelectorAll("#craftPanel .craft-part-row").length,rooms:document.querySelectorAll("#craftPanel .craft-room").length,bench:!!$("#craftPanel [data-craft-bench=jet]"),mapActionBottom:b.bottom,navTop:n.top,selectedVisible:sel.left>=rail.left-2&&sel.right<=rail.right+2}})()');
+    if(jetView.name!=="Jet Gun"||jetView.parts!==4||jetView.rooms!==4||!jetView.bench||!jetView.selectedVisible)fail("M16.4 Jet Gun craft source failure "+width+"x"+height+": "+JSON.stringify(jetView));
+    if(height<=470&&jetView.mapActionBottom>jetView.navTop+2)fail("M16.4 landscape map action clipped under nav "+width+"x"+height+": "+JSON.stringify(jetView));
+    evidence.push({requested:{width,height},craft:"jet",measured:jetView,screenshot:await capture(rpc,width,height,"craft-jet")});
+    await evaluate(rpc,'document.querySelector("#craftPanel [data-craft-select=nav]").click()');
+    await sleep(100);
+    const navView=await evaluate(rpc,'({name:document.querySelector("#craftPanel .craft-detail h3").textContent,parts:document.querySelectorAll("#craftPanel .craft-part-row").length,alternate:document.querySelectorAll("#craftPanel .craft-alternates").length})');
+    if(navView.parts!==4||navView.alternate<2)fail("NAV original alternate-spawn source failure: "+JSON.stringify(navView));
+    evidence.push({requested:{width,height},craft:"nav",measured:navView,screenshot:await capture(rpc,width,height,"craft-nav")});
+    await evaluate(rpc,'document.querySelector("#craftPanel [data-craft-select=bus]").click()');
+    await sleep(100);
+    const busView=await evaluate(rpc,'({name:document.querySelector("#craftPanel .craft-detail h3").textContent,parts:document.querySelectorAll("#craftPanel .craft-part-row").length,noFixedBench:document.querySelector("#craftPanel .craft-bench").textContent.includes("NO FIXED BENCH")})');
+    if(busView.parts!==3||!busView.noFixedBench)fail("Bus equipment false static bench: "+JSON.stringify(busView));
+    evidence.push({requested:{width,height},craft:"bus",measured:busView,screenshot:await capture(rpc,width,height,"craft-bus")});
     if(width===390&&height===844){
       for(const name of extraViews){
         await evaluate(rpc,'document.querySelector("nav [data-view='+name+']").click()');
@@ -190,6 +211,14 @@ try {
       // Genuine Chromium page reload, exercising the deployed v1 localStorage
       // contract rather than merely seeding a Node VM with a parsed save.
       const savedBefore=await evaluate(rpc,'localStorage.getItem("tranzit-atlas-save-v1")');
+      await evaluate(rpc,'document.querySelector("nav [data-view=craft]").click()');
+      await evaluate(rpc,'document.querySelector("#craftPanel [data-craft-select=jet]").click()');
+      await evaluate(rpc,'document.querySelector("#craftPanel [data-part=\"jet:1\"]").click()');
+      await sleep(100);
+      const craftProgress=await evaluate(rpc,'({parts:JSON.parse(localStorage.getItem("tranzit-atlas-save-v1")).parts["jet:1"],text:document.querySelector("#craftPanel .craft-status").textContent})');
+      if(!craftProgress.parts||!craftProgress.text.includes("1 of 4"))fail("Craftable checklist does not persist to v1 part slot: "+JSON.stringify(craftProgress));
+      evidence.push({requested:{width,height},craft:"collected",measured:craftProgress,screenshot:await capture(rpc,width,height,"craft-collected")});
+
       await evaluate(rpc,'document.querySelector("nav [data-view=quest]").click()');
       await evaluate(rpc,'document.querySelector("[data-side=richtofen]").click()');
       await evaluate(rpc,'document.querySelector("#questPanel [data-quest-done]").click()');
@@ -200,9 +229,15 @@ try {
       await rpc("Page.reload",{ignoreCache:true});
       await sleep(550);
       await waitForApp(rpc);
-      const persisted=await evaluate(rpc,'(() => {const s=JSON.parse(localStorage.getItem("tranzit-atlas-save-v1"));return {side:s.side,done:s.done["richtofen:0"],assigned:s.assign["richtofen:1"],name:s.crew[2],maxis:document.querySelectorAll("#questPanel [data-quest-step]").length,step2:document.querySelector("#questPanel .quest-next")?.textContent.includes("STEP 2 OF 8"),active:document.querySelector("#view-quest").classList.contains("active")}})()');
-      if(persisted.side!=="richtofen"||!persisted.done||persisted.assigned!=="2"||persisted.name!=="Atlas Test Pilot"||persisted.maxis!==8||!persisted.step2||!persisted.active)fail("Real browser reload lost quest/crew progress: "+JSON.stringify(persisted));
+      const persisted=await evaluate(rpc,'(() => {const s=JSON.parse(localStorage.getItem("tranzit-atlas-save-v1"));return {side:s.side,done:s.done["richtofen:0"],assigned:s.assign["richtofen:1"],name:s.crew[2],jetPart:s.parts["jet:1"],maxis:document.querySelectorAll("#questPanel [data-quest-step]").length,step2:document.querySelector("#questPanel .quest-next")?.textContent.includes("STEP 2 OF 8"),active:document.querySelector("#view-quest").classList.contains("active")}})()');
+      if(persisted.side!=="richtofen"||!persisted.done||persisted.assigned!=="2"||persisted.name!=="Atlas Test Pilot"||!persisted.jetPart||persisted.maxis!==8||!persisted.step2||!persisted.active)fail("Real browser reload lost quest/crew progress: "+JSON.stringify(persisted));
       evidence.push({requested:{width,height},questRoute:"real-reload",measured:persisted,screenshot:await capture(rpc,width,height,"quest-reload")});
+      await evaluate(rpc,'document.querySelector("nav [data-view=craft]").click()');
+      await evaluate(rpc,'document.querySelector("#craftPanel [data-craft-select=jet]").click()');
+      const reloadedCraft=await evaluate(rpc,'({progress:document.querySelector("#craftPanel .craft-status").textContent,checked:document.querySelector("#craftPanel [data-part=\"jet:1\"]").getAttribute("aria-pressed")})');
+      if(!reloadedCraft.progress.includes("1 of 4")||reloadedCraft.checked!=="true")fail("Real reload lost shared craft part checkmark: "+JSON.stringify(reloadedCraft));
+      evidence.push({requested:{width,height},craft:"real-reload",measured:reloadedCraft,screenshot:await capture(rpc,width,height,"craft-reload")});
+
       await evaluate(rpc,'localStorage.setItem("tranzit-atlas-save-v1",'+JSON.stringify(savedBefore)+')');
       await rpc("Page.reload",{ignoreCache:true});
       await sleep(350);
@@ -214,11 +249,11 @@ try {
     baselineCommit:"80cdb6db12efb38edb41a3d43adbfec52ac5a99a",
     candidateCommit:process.env.GITHUB_SHA||"local PR branch",
     browser:"Chromium headless CDP; mobile emulation at deviceScaleFactor=1; not physical iPhone",
-    milestone:"M16.3 Easter Egg redesign",
+    milestone:"M16.4 Craftables redesign and source-parity review",
     screenshotCount:evidence.length,records:evidence
   },null,2)+"\n");
-  if(evidence.length!==36)fail("Expected 20 M16.2 source views plus 15 route/Crew captures at all five sizes and 1 genuine reload");
-  console.log("M16_3_QUEST_CAPTURE_PASS "+evidence.length+" genuine screenshots, including independent routes and real reload");
+  if(evidence.length!==53)fail("Expected prior 36 views plus 15 craft source screens, a collected-part portrait and genuine craft reload");
+  console.log("M16_4_CRAFT_CAPTURE_PASS "+evidence.length+" genuine screenshots, including nine-build source parity and dual quest/craft reload");
 }finally {
   try{socket?.close();}catch{}
   try{browser?.kill("SIGTERM");}catch{}
