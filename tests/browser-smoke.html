@@ -77,6 +77,17 @@
    click("#resetMap");
 
 
+   // This real-browser geometry check rejects the original cropping bug.
+   const fullyVisibleWorld=()=>{
+    const art=doc.querySelector("#mapWorld image").getBoundingClientRect();
+    const vp=doc.querySelector("#mapViewport").getBoundingClientRect();
+    check(art.width>40&&art.height>40,"world art must be visible");
+    check(art.left>=vp.left-2&&art.top>=vp.top-2&&art.right<=vp.right+2&&art.bottom<=vp.bottom+2,"complete source world visible at reset");
+    check(Math.abs(win.TZ_MAP_TELEMETRY().zoom-1)<.001,"fit zoom must equal one");
+   };
+   fullyVisibleWorld();
+   click("#zoomOut"); // already at true world-fit minimum
+   fullyVisibleWorld();
    // Interactive camera regression: world geometry zooms, on-map graphics do not.
    let fixedPin=doc.querySelector('#mapPins [data-zone="farm"] .site-pin');
    const fixedLabel=doc.querySelector('#mapLabels .fixed-world-label');
@@ -137,12 +148,13 @@
    nt("touchmove",[touch(8,px-32,py),touch(9,px+82,py)]);
    nt("touchend",[],[touch(8,px-32,py),touch(9,px+82,py)]);
    check(win.TZ_MAP_TELEMETRY().zoom>initialNativeZoom,"native two-finger pinch zooms map");
-   check(doc.querySelector("#worldMap").getAttribute("preserveAspectRatio")==="xMidYMid slice","map uses cropped source geometry");
+   check(doc.querySelector("#worldMap").getAttribute("preserveAspectRatio")==="xMidYMid meet","map uses fully fitted source geometry");
    check(win.getComputedStyle(doc.querySelector("#mapViewport")).touchAction==="none","map native gestures avoid page scrolling");
    fixedPin=doc.querySelector('#mapPins [data-zone="farm"] .site-pin');
    check(Math.abs(fixedPin.getBoundingClientRect().width-iconWidth)<1.2,"native touch pinch keeps icon size constant");
    click("#resetMap");
 
+   fullyVisibleWorld();
    click('#mapPins [data-group="depot|perk"]');
    check(!doc.querySelector("#mapContext").hidden,"tapping a perk category opens location-index sheet");
    check(doc.querySelector("#mapContext").textContent.includes("Quick Revive"),"depot's real perk is in site list");
