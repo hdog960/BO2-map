@@ -1,4 +1,4 @@
-name: M16 quest and map mobile acceptance
+name: M16 craftables and feature-parity acceptance
 on:
   pull_request:
     paths:
@@ -12,6 +12,7 @@ on:
       - 'docs/M16_BASELINE_AND_FEATURE_PARITY.md'
       - 'docs/M16_2_ACCEPTANCE.md'
       - 'docs/M16_3_ACCEPTANCE.md'
+      - 'docs/M16_4_ACCEPTANCE.md'
       - '.github/workflows/m16-baseline.yml'
   workflow_dispatch:
 permissions:
@@ -25,7 +26,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify quest routes, source contracts and v1 save compatibility
+      - name: Verify catalog, nine builds, quest source contracts and v1 saves
         run: |
           node --check tests/m16-foundation-capture.mjs
           node --test tests/*.test.mjs
@@ -44,7 +45,7 @@ jobs:
             echo "Published Pages matches protected baseline SHA: $asset"
           done
           echo "M16_PAGES_BASELINE_MATCH"
-      - name: Capture route, Crew, map and real-reload Chromium evidence at five sizes
+      - name: Capture buildable parts, source areas, routes and real reload at five sizes
         shell: bash
         run: |
           set -euo pipefail
@@ -55,11 +56,11 @@ jobs:
           sleep 1
           node tests/m16-foundation-capture.mjs
           test -f m16-foundation-evidence/baseline-layout.json
-      - name: Upload M16.3 viewport and real-reload evidence
+      - name: Upload M16.4 viewport and real-reload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: m16-quest-five-viewports
+          name: m16-craft-five-viewports
           path: m16-foundation-evidence/
           if-no-files-found: warn
           retention-days: 30
