@@ -245,15 +245,40 @@ try {
     }
     console.log("Verified baseline Chromium viewport "+width+"x"+height+", 10 site pins, 130 records");
   }
+  // M16.5A: genuine Chromium SW upgrade/offline witness on a secure local origin.
+  // This executes after all 53 previously accepted source-specific screenshots.
+  // CacheStorage is shared by sibling GitHub Pages apps: seed one unrelated cache
+  // plus the previous TranZit v13 cache before installing the v14 worker.
+  await rpc("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true,screenWidth:390,screenHeight:844});
+  const upgrade=await evaluate(rpc,'(async()=>{const sibling=await caches.open("mythwrought-offline-sentinel");await sibling.put("./sibling-safety-proof",new Response("untouched sibling bytes"));const legacy=await caches.open("tranzit-atlas-v13");await legacy.put("./old-tranzit",new Response("old v13"));const reg=await navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"});await navigator.serviceWorker.ready;const keys=await caches.keys();const saved=await caches.match("./sibling-safety-proof");const old=keys.includes("tranzit-atlas-v13");const icon=await caches.match("./apple-touch-icon.png");return {active:!!reg.active,keys,siblingContent:await saved?.text(),oldOwnedRetained:old,iconCached:!!icon}})()');
+  if(!upgrade.active||upgrade.siblingContent!=="untouched sibling bytes"||upgrade.oldOwnedRetained||!upgrade.iconCached)
+   fail("Real Chromium SW activation must retire old TranZit cache, precache PNG and preserve sibling: "+JSON.stringify(upgrade));
+  await rpc("Page.reload",{ignoreCache:false});
+  await sleep(500);
+  await waitForApp(rpc);
+  await evaluate(rpc,'document.querySelector("nav [data-view=map]").click()');
+  const controlled=await evaluate(rpc,'({controlled:!!navigator.serviceWorker.controller,scope:navigator.serviceWorker.controller?.scriptURL,siteCount:document.querySelectorAll("#mapPins [data-zone]").length})');
+  if(!controlled.controlled||controlled.siteCount!==10)fail("Service worker failed to control the real app before network loss: "+JSON.stringify(controlled));
+  await rpc("Network.enable");
+  await rpc("Network.emulateNetworkConditions",{offline:true,latency:0,downloadThroughput:0,uploadThroughput:0});
+  await rpc("Page.reload",{ignoreCache:false});
+  await sleep(600);
+  const loadedOffline=await waitForApp(rpc);
+  const offlineState=await evaluate(rpc,'(async()=>{const keys=await caches.keys(),sibling=await caches.match("./sibling-safety-proof"),icon=await caches.match("./apple-touch-icon.png");return {controller:!!navigator.serviceWorker.controller,sites:document.querySelectorAll("#mapPins [data-zone]").length,items:window.TZ_DATA?.items.length,mapActive:document.querySelector("#view-map").classList.contains("active"),siblingContent:await sibling?.text(),iconCached:!!icon,cacheNames:keys,online:navigator.onLine}})()');
+  if(!offlineState.controller||offlineState.sites!==10||offlineState.items!==130||!offlineState.mapActive||offlineState.siblingContent!=="untouched sibling bytes"||!offlineState.iconCached)
+   fail("Genuine offline Chromium reload after cache upgrade did not preserve app and sibling PWA: "+JSON.stringify(offlineState));
+  evidence.push({requested:{width:390,height:844},releaseSafety:"genuine-offline-upgrade",measured:{upgrade,controlled,offlineState,viewport:loadedOffline.viewport},screenshot:await capture(rpc,390,844,"offline-upgrade")});
+  await rpc("Network.emulateNetworkConditions",{offline:false,latency:0,downloadThroughput:0,uploadThroughput:0});
+  console.log("M16_5A_REAL_CHROMIUM_OFFLINE_PASS controller="+offlineState.controller+" sibling cache intact; v13 retired; v14 precached; catalog="+offlineState.items);
   await fsp.writeFile(path.join(output,"baseline-layout.json"),JSON.stringify({
     baselineCommit:"80cdb6db12efb38edb41a3d43adbfec52ac5a99a",
     candidateCommit:process.env.ATLAS_CANDIDATE_SHA||process.env.GITHUB_SHA||"local PR branch",
     browser:"Chromium headless CDP; mobile emulation at deviceScaleFactor=1; not physical iPhone",
-    milestone:"M16.4 Craftables redesign and source-parity review",
+    milestone:"M16.5A release-safety remediation, cross-project cache isolation and 53 protected screens",
     screenshotCount:evidence.length,records:evidence
   },null,2)+"\n");
-  if(evidence.length!==53)fail("Expected prior 36 views plus 15 craft source screens, a collected-part portrait and genuine craft reload");
-  console.log("M16_4_CRAFT_CAPTURE_PASS "+evidence.length+" genuine screenshots, including nine-build source parity and dual quest/craft reload");
+  if(evidence.length!==54)fail("Expected original 53 source screenshots plus one real Chromium offline-upgrade witness");
+  console.log("M16_5A_RELEASE_CAPTURE_PASS "+evidence.length+" genuine screenshots: 53 preserved views and real offline upgrade");
 }finally {
   try{socket?.close();}catch{}
   try{browser?.kill("SIGTERM");}catch{}
