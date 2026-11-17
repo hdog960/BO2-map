@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#0c121a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TranZit Atlas">
 <meta name="description" content="An offline, four-player TranZit field atlas and Tower of Babble checklist.">
-<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="./icon.svg"><link rel="apple-touch-icon" href="./icon.svg"><link rel="stylesheet" href="./styles.css">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="./icon.svg"><link rel="apple-touch-icon" sizes="180x180" type="image/png" href="./apple-touch-icon.png"><link rel="stylesheet" href="./styles.css">
 <title>TranZit // Field Atlas</title>
 </head>
 <body>
@@ -72,7 +72,7 @@
     </div>
   </div>
 </div>
-<nav class="bottom-nav" aria-label="Main navigation"><button type="button" data-view="map" class="selected" aria-label="Interactive world map"><span aria-hidden="true">⌖</span>MAP</button><button type="button" data-view="quest" aria-label="Tower of Babble Easter egg"><span aria-hidden="true">⚡</span>EASTER EGG</button><button type="button" data-view="craft" aria-label="Craftables and parts"><span aria-hidden="true">⚒</span>CRAFTABLES</button></nav></div>
+<nav class="bottom-nav" aria-label="Main navigation"><button type="button" data-view="map" class="selected" aria-label="Interactive world map"><span class="nav-map-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="21" height="21" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3 6.5 9 3l6 3.5L21 3v14.5L15 21l-6-3.5L3 21V6.5Z"/><path d="M9 3v14.5M15 6.5V21"/></svg></span>MAP</button><button type="button" data-view="quest" aria-label="Tower of Babble Easter egg"><span aria-hidden="true">⚡</span>EASTER EGG</button><button type="button" data-view="craft" aria-label="Craftables and parts"><span aria-hidden="true">⚒</span>CRAFTABLES</button></nav></div>
 <dialog id="modal"><div class="modal-header"><h2 id="modalTitle">Info</h2><button class="iconbtn" id="closeModal" aria-label="Close" type="button">✕</button></div><div id="modalBody"></div></dialog>
 <script src="./data.js" defer></script><script src="./app.js" defer></script><script src="./diagnostics.js" defer></script>
 </body></html>
