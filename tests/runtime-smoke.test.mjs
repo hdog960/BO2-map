@@ -278,3 +278,63 @@ test('M16.3 crew editor and step assignment use unchanged persisted keys',()=>{
  assert.match(els.questPanel.innerHTML,/Assigned: Field Operator/);
  click({},'closeSheet');assert.equal(els.auxSheet.hidden,true);
 });
+
+
+test('M16.4 each of nine craft selectors preserves saved color-coded build identity',()=>{
+ const {els,click,saved}=boot();
+ for(const [id,code,part] of [
+  ['turbine','TB','Mannequin'],['shield','ZS','Car door'],['turret','TR','Unusable RPD'],
+  ['trap','ET','Battery'],['power','PS','Power board'],['jet','JG','Jet engine'],
+  ['pap','PAP','Machine'],['nav','NAV','Meteorite'],['bus','BUS','Roof hatch']
+ ]){
+  click({craftSelect:id});
+  assert.equal(saved().craftSelected,id);
+  assert.match(els.craftPanel.innerHTML,new RegExp('class="craft-large-symbol"[^>]*>'+code+'<'));
+  assert.ok(els.craftPanel.innerHTML.includes(part),id+' first part');
+  assert.match(els.craftPanel.innerHTML,/data-craft-locate/);
+  assert.match(els.craftPanel.innerHTML,/craft-part-progress/);
+  assert.match(els.craftPanel.innerHTML,/aria-valuenow/);
+ }
+});
+test('M16.4 source rooms and alternate-area warnings stay grounded',()=>{
+ const {els,click}=boot();
+ click({craftSelect:'jet'});
+ assert.match(els.craftPanel.innerHTML,/ROOM \/ REFERENCE/);
+ assert.match(els.craftPanel.innerHTML,/Tunnel/);
+ assert.match(els.craftPanel.innerHTML,/Hunter.s Cabin/);
+ click({craftSelect:'nav'});
+ assert.match(els.craftPanel.innerHTML,/ALTERNATE AREAS/);
+ assert.match(els.craftPanel.innerHTML,/One possible spawn/);
+ click({craftSelect:'pap'});
+ assert.match(els.craftPanel.innerHTML,/not three independently measured pins/);
+ click({craftSelect:'bus'});
+ assert.match(els.craftPanel.innerHTML,/NO FIXED BENCH/);
+ assert.match(els.craftPanel.innerHTML,/one room is empty/i);
+});
+test('M16.4 collected craft steps retain old v1 slots and shared crew counts',()=>{
+ const {els,click,saved}=boot();
+ click({view:'craft'});
+ click({craftSelect:'jet'});
+ click({part:'jet:0'});click({part:'jet:1'});
+ assert.equal(saved().parts['jet:0'],true);
+ assert.equal(saved().parts['jet:1'],true);
+ assert.match(els.craftPanel.innerHTML,/2 of 4 parts checked/);
+ click({view:'crew'});
+ assert.match(els.crewPanel.innerHTML,/Jet Gun/);
+ assert.match(els.crewPanel.innerHTML,/2\/4/);
+ click({view:'craft'});
+ assert.match(els.craftPanel.innerHTML,/2 of 4 parts checked/);
+ click({part:'jet:0'});
+ assert.equal(saved().parts['jet:0'],false);
+ assert.match(els.craftPanel.innerHTML,/1 of 4 parts checked/);
+});
+test('M16.4 moving bus install opens overview instead of invented static bench pin',()=>{
+ const {els,click,saved}=boot();
+ click({craftSelect:'bus'});
+ click({craftBench:'bus'});
+ assert.equal(saved().view,'map');
+ assert.equal(saved().craftFocus,'bus');
+ assert.equal(saved().craftSelected,'bus');
+ assert.equal(saved().mapKind,'part');
+ assert.match(els.craftPanel.innerHTML,/NO FIXED BENCH/);
+});
