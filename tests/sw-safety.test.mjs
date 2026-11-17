@@ -45,6 +45,7 @@ function simulatedWorker({initial=[],networkOnline=true}={}){
   };
   assert.ok(handlers.has(name),'worker must implement '+name);
   handlers.get(name)(event);
+  if(name==='fetch'&&!promise)return undefined; // Cross-origin requests are intentionally unclaimed.
   assert.ok(promise,'worker '+name+' must wait for async work');
   return await promise;
  };
