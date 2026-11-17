@@ -656,3 +656,17 @@ body.sheet-open{overflow:hidden;touch-action:pan-y}
  #view-quest #questPanel .quest-next-actions{margin:3px 0 0}
  #view-quest #questPanel .quest-next .quest-manual-caveat{display:none}
 }
+
+
+/* Landscape reading order: retain the original #questPanel DOM and test
+   contracts while visually putting the collapsible Crew immediately after
+   the active objective, before progress and the full quest archive. */
+@media(orientation:landscape) and (max-height:470px){
+ #view-quest #questPanel{display:contents}
+ #view-quest #questPanel .quest-next{order:3}
+ #view-quest #questCrewDisclosure{order:4;margin:5px 0 8px}
+ #view-quest #questPanel .quest-progress{order:5}
+ #view-quest #questPanel .quest-prep{order:6}
+ #view-quest #questPanel .quest-list-heading{order:7}
+ #view-quest #questPanel .quest-step{order:8}
+}
