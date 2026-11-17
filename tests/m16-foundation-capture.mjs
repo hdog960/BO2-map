@@ -213,7 +213,7 @@ try {
       const savedBefore=await evaluate(rpc,'localStorage.getItem("tranzit-atlas-save-v1")');
       await evaluate(rpc,'document.querySelector("nav [data-view=craft]").click()');
       await evaluate(rpc,'document.querySelector("#craftPanel [data-craft-select=jet]").click()');
-      await evaluate(rpc,'document.querySelector("#craftPanel [data-part=\"jet:1\"]").click()');
+      await evaluate(rpc,'document.querySelectorAll("#craftPanel [data-part]")[1].click()');
       await sleep(100);
       const craftProgress=await evaluate(rpc,'({parts:JSON.parse(localStorage.getItem("tranzit-atlas-save-v1")).parts["jet:1"],text:document.querySelector("#craftPanel .craft-status").textContent})');
       if(!craftProgress.parts||!craftProgress.text.includes("1 of 4"))fail("Craftable checklist does not persist to v1 part slot: "+JSON.stringify(craftProgress));
@@ -234,7 +234,7 @@ try {
       evidence.push({requested:{width,height},questRoute:"real-reload",measured:persisted,screenshot:await capture(rpc,width,height,"quest-reload")});
       await evaluate(rpc,'document.querySelector("nav [data-view=craft]").click()');
       await evaluate(rpc,'document.querySelector("#craftPanel [data-craft-select=jet]").click()');
-      const reloadedCraft=await evaluate(rpc,'({progress:document.querySelector("#craftPanel .craft-status").textContent,checked:document.querySelector("#craftPanel [data-part=\"jet:1\"]").getAttribute("aria-pressed")})');
+      const reloadedCraft=await evaluate(rpc,'({progress:document.querySelector("#craftPanel .craft-status").textContent,checked:document.querySelectorAll("#craftPanel [data-part]")[1].getAttribute("aria-pressed")})');
       if(!reloadedCraft.progress.includes("1 of 4")||reloadedCraft.checked!=="true")fail("Real reload lost shared craft part checkmark: "+JSON.stringify(reloadedCraft));
       evidence.push({requested:{width,height},craft:"real-reload",measured:reloadedCraft,screenshot:await capture(rpc,width,height,"craft-reload")});
 
