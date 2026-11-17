@@ -611,3 +611,30 @@ body.sheet-open{overflow:hidden;touch-action:pan-y}
  #view-quest .quest-route-choice button small{font-size:10px}
  #view-quest .quest-next{padding:11px 13px}
 }
+
+
+/* M16.3 short landscape: surface the current objective and its map action
+   before secondary progress/crew panels. The full detail list stays scrollable. */
+@media(orientation:landscape) and (max-height:470px){
+ #view-quest.active{display:flex;flex-direction:column;gap:0}
+ #view-quest .quest-heading{order:0}
+ #view-quest .quest-route-label{order:1;margin-bottom:2px}
+ #view-quest .quest-route-choice{order:2}
+ #view-quest #questPanel{order:3;display:flex;flex-direction:column;gap:0}
+ #view-quest #questCrewDisclosure{order:4;margin:7px 0 0}
+ #view-quest #questPanel .quest-next{order:0;margin:3px 0 9px;padding:9px 12px}
+ #view-quest #questPanel .quest-next h3{font-size:19px;margin:5px 0 4px}
+ #view-quest #questPanel .quest-next>p:not(.quest-manual-caveat){
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+  overflow:hidden;line-height:1.4;margin:0 0 4px;font-size:12px
+ }
+ #view-quest #questPanel .quest-next-meta{margin:5px 0;gap:5px}
+ #view-quest #questPanel .quest-next-meta span{min-height:22px;padding:2px 6px}
+ #view-quest #questPanel .quest-next-actions{margin:5px 0 0;gap:6px}
+ #view-quest #questPanel .quest-next-actions button{min-height:44px;padding:5px 7px}
+ #view-quest #questPanel .quest-next .quest-manual-caveat{font-size:10px;margin:5px 0 0}
+ #view-quest #questPanel .quest-progress{order:1;margin:1px 0 8px}
+ #view-quest #questPanel .quest-prep{order:2}
+ #view-quest #questPanel .quest-list-heading{order:3}
+ #view-quest #questPanel .quest-step{order:4}
+}
