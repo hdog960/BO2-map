@@ -282,11 +282,13 @@ function showCraftOnMap(buildId,partIndex=null,bench=false){
  state.mapKind="part";
  const source=bench?D.items.find(i=>i.id===build.benchItemId):partIndex!==null?craftCatalog(build,partIndex)[0]:null;
  const siteIds=partIndex!==null?craftLocations(build,partIndex):[];
+ // Bus upgrades attach to a moving bus. Do not simulate a stationary bench pin.
+ const mobileInstall=bench&&!build.benchItemId;
  state.selected=source?.id||null;
  if(partIndex===null&&!bench)state.selected=null;
  go("map");
  // Whole-map overview shows all candidate part sites at once.
- if(partIndex===null&&!bench||siteIds.length>1){
+ if(mobileInstall||(partIndex===null&&!bench)||siteIds.length>1){
   zoom=1;panX=0;panY=0;renderMapMarkers();applyTransform();
   return;
  }
@@ -513,24 +515,40 @@ function renderAtlas(){
 function renderCraftPanel(){
  if(!buildById(state.craftSelected))state.craftSelected="jet";
  const chosen=buildById(state.craftSelected),panel=$("#craftPanel");
- let html='<div class="craft-selector-grid" aria-label="Choose a buildable">'+D.builds.map(b=>{
+ const completedBuilds=D.builds.filter(b=>b.parts.every((_,i)=>!!state.parts[b.id+":"+i])).length;
+ const collectedParts=D.builds.reduce((n,b)=>n+craftProgress(b).found,0);
+ const totalParts=D.builds.reduce((n,b)=>n+b.parts.length,0);
+ let html='<div class="craft-library-header"><div><strong>CHOOSE A BUILDABLE</strong><span>9 original builds · select to inspect</span></div><span class="craft-library-progress">'+completedBuilds+'/9 ready · '+collectedParts+'/'+totalParts+' parts</span></div>';
+ html+='<div class="craft-selector-grid" role="group" aria-label="Choose one of nine color-coded buildables">'+D.builds.map(b=>{
   const p=craftProgress(b),active=b.id===chosen.id;
-  return '<button class="craft-selector '+(active?"selected":"")+'" type="button" data-craft-select="'+b.id+'" aria-pressed="'+active+'" style="--craft-color:'+b.color+'">'+
-   '<span class="craft-emblem" aria-hidden="true">'+esc(b.code)+'</span><span class="craft-label"><strong>'+esc(b.name)+'</strong><small>'+p.found+'/'+p.total+' collected</small></span></button>';
+  return '<button class="craft-selector '+(active?"selected":"")+'" type="button" data-craft-select="'+b.id+'" aria-pressed="'+active+'" aria-label="'+esc(b.name)+', '+p.found+' of '+p.total+' parts collected" style="--craft-color:'+b.color+'">'+
+   '<span class="craft-emblem" aria-hidden="true">'+esc(b.code)+'</span><span class="craft-label"><strong>'+esc(b.name)+'</strong><small>'+(p.found===p.total?"Ready to assemble":p.found+'/'+p.total+' parts checked')+'</small></span></button>';
  }).join("")+'</div>';
  const progress=craftProgress(chosen),allDone=progress.found===progress.total;
- html+='<section class="craft-detail" style="--craft-color:'+chosen.color+'"><div class="craft-detail-head"><span class="craft-large-symbol">'+esc(chosen.code)+'</span><div><div class="kicker">SELECTED BUILDABLE</div><h3>'+esc(chosen.name)+'</h3><p>'+esc(chosen.note)+'</p></div></div>';
- html+='<div class="craft-actions"><span class="craft-status">'+(allDone?"✓ All parts checked":progress.found+' of '+progress.total+' parts checked')+'</span><button class="button craft-show" type="button" data-craft-map="'+chosen.id+'">⌖ Show only this on map</button></div>';
- html+='<div class="craft-part-progress"><div style="width:'+((progress.found/progress.total)*100)+'%"></div></div>';
+ html+='<section class="craft-detail" style="--craft-color:'+chosen.color+'" aria-label="Selected '+esc(chosen.name)+' buildable"><div class="craft-detail-head">'+
+  '<span class="craft-large-symbol" aria-hidden="true">'+esc(chosen.code)+'</span><div><div class="kicker">SELECTED BUILDABLE · '+esc(chosen.code)+'</div><h3>'+esc(chosen.name)+'</h3><p>'+esc(chosen.note)+'</p></div></div>';
+ html+='<div class="craft-actions"><span class="craft-status" aria-live="polite">'+(allDone?"✓ All parts checked":progress.found+' of '+progress.total+' parts checked')+'</span>'+
+  '<button class="button craft-show" type="button" data-craft-map="'+chosen.id+'">Show only this on map</button></div>';
+ html+='<div class="craft-part-progress" role="progressbar" aria-label="'+esc(chosen.name)+' collected parts" aria-valuemin="0" aria-valuemax="'+progress.total+'" aria-valuenow="'+progress.found+'"><div style="width:'+((progress.found/progress.total)*100)+'%"></div></div>';
+ html+='<div class="craft-part-heading"><strong>PART CHECKLIST</strong><span>Tap a circle when collected · map each source area</span></div>';
  html+='<div class="craft-part-list">'+chosen.parts.map((part,i)=>{
   const done=!!state.parts[chosen.id+":"+i],sites=craftLocations(chosen,i),loc=craftLocationLabel(chosen,i);
-  const multi=sites.length>1;
-  const extra=multi?'<small class="craft-alternates">Possible areas; the part spawns at one location, not all of them.</small>':"";
-  const specific=chosen.id==="pap"?'All three Pack-a-Punch parts share a bank-area reference, not separately measured pins.':chosen.id==="bus"?'Each bus upgrade can appear in one of four powered rooms; one room is empty.':"";
-  return '<div class="craft-part-row '+(done?"is-done":"")+'"><button type="button" class="tick '+(done?"checked":"")+'" data-part="'+chosen.id+':'+i+'" aria-pressed="'+done+'" aria-label="'+(done?"Uncheck ":"Mark collected ")+esc(part[0])+'">'+(done?"✓":"○")+'</button><div class="craft-part-info"><strong><span class="mini-craft-code">'+esc(chosen.code)+'</span> '+esc(part[0])+'</strong><small>'+esc(loc)+'</small><small>'+esc(part[1])+'</small>'+extra+(specific?'<small>'+esc(specific)+'</small>':"")+'</div><button type="button" class="craft-locate" data-craft-locate="'+chosen.id+':'+i+'">'+(multi?"Show areas":"Map")+'</button></div>';
+  const references=craftCatalog(chosen,i),room=references.map(item=>item.room).filter(Boolean);
+  const rooms=[...new Set(room)],multi=sites.length>1;
+  const extra=multi?'<div class="craft-alternates">ALTERNATE AREAS · One possible spawn, not an item at every site.</div>':"";
+  const specific=chosen.id==="pap"?'The three Pack-a-Punch parts share a bank-area reference, not three independently measured pins.':chosen.id==="bus"?'Bus upgrades can appear across four powered rooms; one room is empty.':"";
+  const sourceNote=rooms.length?'<div class="craft-room"><span>ROOM / REFERENCE</span><p>'+esc(rooms.slice(0,2).join(' · '))+(rooms.length>2?' · additional possibilities in map details':'')+'</p></div>':"";
+  return '<article class="craft-part-row '+(done?"is-done":"")+'" data-craft-part="'+chosen.id+':'+i+'">'+
+   '<button type="button" class="tick '+(done?"checked":"")+'" data-part="'+chosen.id+':'+i+'" aria-pressed="'+done+'" aria-label="'+(done?"Uncheck ":"Mark collected ")+esc(part[0])+'">'+(done?"✓":"○")+'</button>'+
+   '<div class="craft-part-info"><strong><span class="mini-craft-code">'+esc(chosen.code)+'</span> '+esc(part[0])+'</strong>'+
+    '<small class="craft-area">AREA · '+esc(loc)+'</small>'+sourceNote+
+    '<small class="craft-part-guidance">'+esc(part[1])+'</small>'+extra+(specific?'<small class="craft-part-warning">'+esc(specific)+'</small>':"")+
+   '</div><button type="button" class="craft-locate" data-craft-locate="'+chosen.id+':'+i+'" aria-label="Show '+esc(part[0])+' '+(multi?"possible areas":"source area")+' on map">'+(multi?"Show areas":"Map area")+'</button></article>';
  }).join("")+'</div>';
- html+='<div class="craft-bench"><strong>'+(chosen.benchItemId?'⚒ Workbench':'🚌 Installation')+'</strong><span>'+esc(chosen.benchItemId?chosen.location+' · '+zone(chosen.zone).name:'Attach upgrades to the bus; there is no fixed upgrade workbench')+'</span><button type="button" class="button ghost" data-craft-bench="'+chosen.id+'">'+(chosen.benchItemId?"Locate bench":"See possible rooms")+'</button></div>';
- html+='<p class="craft-accuracy">Map badges identify known sites and possible spawn areas—not exact pickup coordinates. Individual parts can vary between matches. Checklist progress is shared with Crew and stays saved on this device.</p></section>';
+ html+='<div class="craft-bench"><div class="craft-bench-copy"><strong>'+(chosen.benchItemId?'WORKBENCH / ASSEMBLY':'BUS INSTALLATION · NO FIXED BENCH')+'</strong>'+
+  '<span>'+esc(chosen.benchItemId?chosen.location+' · '+zone(chosen.zone).name:'Attach upgrades to the moving bus. Their candidate rooms are not fixed map pins.')+'</span></div>'+
+  '<button type="button" class="button ghost" data-craft-bench="'+chosen.id+'">'+(chosen.benchItemId?"Show bench on map":"Show possible areas")+'</button></div>';
+ html+='<details class="craft-accuracy"><summary>Map accuracy and saved progress</summary><p>Map badges identify verified sites and possible spawn areas, not exact pickup coordinates. A part may spawn in one of several rooms; source notes are not measured pins. These are manual checkmarks shared with Crew on this device only, not synchronized with Black Ops II.</p></details></section>';
  panel.innerHTML=html;
 }
 function renderCrew(){
