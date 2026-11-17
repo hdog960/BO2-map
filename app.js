@@ -558,12 +558,13 @@ function renderCraftPanel(){
  const picker=panel.querySelector?.(".craft-selector-grid");
  if(picker){
   if(previousSelection===chosen.id&&Number.isFinite(previousScroll))picker.scrollLeft=previousScroll;
-  else{
-   const active=picker.querySelector?.(".craft-selector.selected");
-   if(active?.getBoundingClientRect){
-    const target=active.getBoundingClientRect(),rail=picker.getBoundingClientRect();
+  const active=picker.querySelector?.(".craft-selector.selected");
+  if(active?.getBoundingClientRect){
+   const target=active.getBoundingClientRect(),rail=picker.getBoundingClientRect();
+   // First render may run inside a hidden tab, leaving a valid but unhelpful
+   // scrollLeft=0. Recenter only if the chosen recipe is outside the rail.
+   if(rail.width>0&&target.width>0&&(target.left<rail.left+2||target.right>rail.right-2))
     picker.scrollLeft=Math.max(0,picker.scrollLeft+target.left-rail.left-(rail.width-target.width)/2);
-   }
   }
  }
 }
