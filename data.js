@@ -243,12 +243,12 @@ for(const b of builds){
 }
 const quests={
 maxis:[
-{title:"Prepare four Turbines",zone:"depot",note:"Every player can build a Turbine at the Bus Depot hall. A pair is sufficient for the core pylon step, while four simplifies simultaneous placements."},
+{title:"Build your Turbines",zone:"depot",note:"Build at least two Turbines at the Bus Depot starting hall. Four-player groups can bring extras for the final lamppost step."},
 {title:"Build and turn on the power",zone:"power",note:"Pay 750 for the outhouse, assemble board/lever/zombie arm in the reactor, turn the power on and listen for Maxis."},
 {title:"Switch the power OFF",zone:"power",note:"After Maxis speaks, turn the power off. Keep Turbines alive; put two beneath the Pylon."},
 {title:"Prepare the Avogadro and EMP",zone:"pylon",note:"Draw the Avogadro during the lightning storm; the Mystery Box provides EMP grenades. Keep it alive until under the tower."},
 {title:"Kill Avogadro beneath the Pylon",zone:"pylon",note:"EMP is reliable; two charged Turbines must be beneath the tower as the Avogadro is defeated. Listen for the Maxis confirmation."},
-{title:"Coordinate two different streetlights",zone:"diner",note:"Take two live Turbines to two distinct streetlights (e.g., Depot and Diner). If necessary coordinate with the two Turbines under the Pylon and follow Maxis' audio cue."}
+{title:"Power two separate streetlights",zone:"diner",note:"Once Maxis confirms the Avogadro charge, power two DIFFERENT lamps with functioning Turbines. Two players can move the original two Turbines from the Pylon."}
 ],
 richtofen:[
 {title:"Assign Samuel; activate power",zone:"power",note:"Build the power switch at Power Station and leave power ON. Samuel hears Richtofen's quest dialogue."},
@@ -257,9 +257,133 @@ richtofen:[
 {title:"Overload the Jet Gun under Pylon",zone:"pylon",note:"Fire the assembled Jet Gun toward the pylon until it overheats/breaks and Richtofen speaks to Samuel."},
 {title:"Charge with explosive kills",zone:"pylon",note:"Kill zombies beneath the tower with explosives (standard Ray Gun counts). Community guides report about 25; listen for the confirming voice line."},
 {title:"Secure EMP grenades",zone:"diner",note:"Spin the Mystery Box. Ideally all four players obtain EMPs for a simple final simultaneous throw."},
-{title:"Activate four different portal streetlights",zone:"pylon",note:"Create portals by carrying latched Denizens under streetlights. Spread to FOUR DIFFERENT lit portal lampposts; coordinate everyone before throwing."},
-{title:"Four-player simultaneous EMP throw",zone:"pylon",note:"At the agreed count, each player throws an EMP grenade at a different active portal lamppost; Samuel listens for Richtofen's completion cue."}
+{title:"Plan four different lamppost targets",zone:"pylon",note:"Choose four distinct flickering green streetlights. Four players each take one lamp; a smaller team can prepare Denizen portals for quick travel."},
+{title:"EMP four different lampposts",zone:"pylon",note:"Hit four DIFFERENT green streetlights in a short overlapping window. Four players can throw together; fewer players can use portals. Solo is exceptionally difficult."}
 ]};
+
+/* Expanded, source-checked Tower of Babble field guide.
+   Keep each route's original 6/8 objective slots for schema-1 save compatibility. */
+const questGuide={
+ maxis:{
+  players:"2–4 players",power:"OFF after Maxis asks",gear:"2+ Turbines / EMP",
+  intro:"Use working Turbines to charge the Pylon while defeating the Avogadro underneath it, then power two separate streetlights.",
+  prep:[
+   "Set difficulty to Original, not Easy. Start from the lobby if trying to update a previously saved quest side.",
+   "At least two players are required; four make the finale easier. Each player can carry one Turbine.",
+   "Build the Power Station switch, switch ON and listen to Maxis, then switch OFF when he asks.",
+   "Get EMP Grenades from the Mystery Box and find the Pylon in the cornfield between Farm and Power Station.",
+   "A NAV Table and Pack-a-Punch are not necessary for Tower of Babble."
+  ],
+  reminder:"With two players, move the two Turbines to separate lamps after the Avogadro charge succeeds. With four, leave two beneath the tower and place two others at lamps.",
+  result:"Maxis confirms completion as orange electricity travels from the streetlights to the tower.",
+  faq:[
+   ["Do we need four players?","No. Two-player Maxis is possible. Both players use Turbines at the tower, then relocate them to different lamps after the Avogadro step is confirmed."],
+   ["Why did the Avogadro not count?","Main power must be OFF, Avogadro must be directly under the tower, and the two Turbines must still be supplying energy. Keep the EMP blast away from the Turbines."],
+   ["Do we need the NAV Table?","No. The NAV Table relates to the broader BO2 Victis story, not the Tower of Babble completion itself."]
+  ]
+ },
+ richtofen:{
+  players:"1–4 players*",power:"ON throughout",gear:"Jet Gun / explosives / EMP",
+  intro:"Overload the Jet Gun under the Pylon, make explosive zombie kills beneath it, and EMP four distinct green streetlights.",
+  prep:[
+   "Use Original difficulty, not Easy. For a newly saved profile-side choice, start the match from the lobby.",
+   "Build the power switch and leave the Power Station ON for the entire Richtofen route.",
+   "Samuel Stuhlinger hears Richtofen's instructions. Other characters can perform actions, but Samuel provides crucial audio confirmation.",
+   "Collect four Jet Gun parts; the Town bar has the build bench. Bring an explosive weapon and enough Mystery Box EMP Grenades.",
+   "Four players are easiest. Two or three may chain Denizen portals. A solo strategy exists, but is highly luck- and timing-dependent. A NAV Table is not required."
+  ],
+  reminder:"Denizen portals are a travel workaround for smaller teams, not a mandatory prerequisite when four players can already stand at separate lampposts.",
+  result:"Richtofen's closing dialogue plays and blue electricity links the streetlights to the tower.",
+  faq:[
+   ["Must four people play?","No. Four separate EMP lamp hits are needed, not necessarily four different throwers. With two or three players, use Denizen portals to chain hits. Solo requires difficult luck-sensitive timing and potentially a Max Ammo."],
+   ["Why did the Jet Gun charge fail?","Fully cool it, then break it by firing under the Pylon with power ON. If Richtofen does not acknowledge it and the green lamps do not flicker, rebuild and retry."],
+   ["Do all lamps need portals?","No. Four people can each EMP a distinct lamp without portals; smaller groups use portals to reach enough targets quickly."]
+  ]
+ }
+};
+const questStepDetails={
+ maxis:[
+  {actions:[
+   "Find the mannequin, fan and tailfin parts inside the Bus Depot starting hall.",
+   "Build a Turbine at the starting-room bench; a second player should build their own.",
+   "Keep Turbines charged and ready; additional ones are helpful for larger teams."
+  ],confirm:"At least two players have working Turbines.",warning:"A placed Turbine can expire, so carry spares if possible.",tool:"turbine"},
+  {actions:[
+   "At Power Station, purchase the 750-point outhouse access and drop into the laboratory.",
+   "Find the board, lever and severed zombie arm, and add them to the power-switch blueprint.",
+   "Activate the built power switch and listen for Maxis."
+  ],confirm:"The main power comes on and Maxis begins speaking.",warning:"The remote Pack-a-Punch lightning door is not the power switch."},
+  {actions:[
+   "Once Maxis asks you to shut the power down, turn the completed switch back OFF.",
+   "Head to the Pylon in the cornfield between Farm and Power Station.",
+   "Bring two usable Turbines and an EMP-equipped teammate underneath the tower."
+  ],confirm:"Main power is OFF and the party is ready under the Pylon.",warning:"Keeping power ON is for Richtofen's route, not this one."},
+  {actions:[
+   "Get EMP Grenades from the Mystery Box before attempting the charged encounter.",
+   "Watch for lightning directly above the Pylon, and end a round during the storm to attempt an Avogadro spawn.",
+   "Lure the living Avogadro underneath the main tower and deploy two working Turbines there."
+  ],confirm:"Maxis' energy dialogue plays while the Turbines operate under the Pylon.",warning:"Storm timing is not guaranteed every round. Do not waste the EMP before the Avogadro is properly positioned."},
+  {actions:[
+   "Check that main power is OFF and the two Turbines have energy.",
+   "Lead the Avogadro into the Pylon footprint, then throw an EMP near him.",
+   "Keep the EMP blast away from the Turbines and wait for Maxis to acknowledge the charge."
+  ],confirm:"Maxis acknowledges the transfer of live energy to the tower.",warning:"If Maxis complains that your supplies are drained, replace any failed Turbine and repeat."},
+  {actions:[
+   "Choose two DIFFERENT streetlights (Bus Depot and Diner are convenient examples).",
+   "With four players, two leave Turbines under the Pylon while two others place separate Turbines at the lamps.",
+   "With two players, move the two original Turbines to different lamps AFTER the successful Avogadro step.",
+   "Listen for Maxis' completion line and watch for the orange effect at the tower."
+  ],confirm:"Two separate lamps send orange energy to the Pylon and Maxis completes the quest.",warning:"Both lamp Turbines must be functioning. Do not treat two hits at one lamp as two targets."}
+ ],
+ richtofen:[
+  {actions:[
+   "Start on Original difficulty, ideally from the lobby if changing the saved route.",
+   "Build the board, lever and zombie arm into the Power Station switch and activate it.",
+   "Keep main power ON. Identify the Samuel player who can hear Richtofen's dialogue."
+  ],confirm:"Power remains ON and Samuel can hear the route cues.",warning:"Turning power off sends you down the Maxis setup."},
+  {actions:[
+   "Find the Jet Gun engine in the road Tunnel between Depot and Diner.",
+   "Find the wires in the Power Station underground Tombstone / Electric Trap area.",
+   "Find the handbrake in hidden Nacht der Untoten off the cornfield.",
+   "Find the pressure gauge in Hunter's Cabin between Power Station and Town."
+  ],confirm:"All four Jet Gun parts are collected.",warning:"Parts can have alternate exact positions within the listed zones. Nacht and the Cabin are not regular bus stops.",tool:"jet"},
+  {actions:[
+   "Carry the components to the Thrustodyne workbench inside the Town bar near Stamin-Up.",
+   "Assemble the Jet Gun; have one player bring it to the Pylon.",
+   "Let the Jet Gun cool completely before firing at the tower."
+  ],confirm:"The assembled Jet Gun is ready and fully cooled.",warning:"Overheating breaks the gun; a failed tower attempt can mean rebuilding.",tool:"jet"},
+  {actions:[
+   "Stand right underneath the Pylon, leaving power ON.",
+   "Fire a completely cooled Jet Gun upward until it overheats and breaks.",
+   "Listen for Richtofen speaking to Samuel and check for flickering green streetlights."
+  ],confirm:"Richtofen addresses Samuel and the green lamps start sparking.",warning:"A partly heated Jet Gun may not deliver the needed charge. Rebuild and retry after fully cooling."},
+  {actions:[
+   "Stay under the Pylon with the main power still ON.",
+   "Kill about 25 zombies with explosive damage; the Ray Gun and Ray Gun Mark II are commonly used.",
+   "Teammates may contribute; continue until Samuel hears Richtofen's confirming line."
+  ],confirm:"Richtofen confirms the tower has sufficient explosive energy.",warning:"Ordinary gunfire may not count. Do not mark complete just because you counted 25 kills."},
+  {actions:[
+   "Spin the Mystery Box until the party has sufficient EMP Grenades for four lamp hits.",
+   "Assign targets: ideally one lamp per EMP-equipped player in a four-player group.",
+   "If fewer than four players, save supplies for rapid second throws after portal travel."
+  ],confirm:"Enough EMP throws are available for four different lampposts.",warning:"EMP supply is random; do not initiate the finale until everyone is stocked and positioned."},
+  {actions:[
+   "Identify four separate green/flickering lamps around TranZit.",
+   "With four players, station one person at each different lamp; portals are optional.",
+   "With two or three, let a Denizen latch onto a player near a lamp to open a teleporter as a shortcut to another lamp.",
+   "Agree on who will target each lamp and synchronize the final attempt."
+  ],confirm:"Four distinct lamps have owners and the team is ready.",warning:"Hitting one lamppost twice does not replace a fourth unique target. Portals have unpredictable exits."},
+  {actions:[
+   "Hit four DIFFERENT green lamps with EMPs in a short overlapping window.",
+   "Four players: throw together at assigned lamps. Two or three: one player EMPs a lamp, portals, and quickly EMPs another.",
+   "Solo: an advanced, luck-sensitive sequence with prepared portals and possibly a timed Max Ammo; success is not guaranteed.",
+   "Wait for Richtofen's final voice line and blue electrical effect."
+  ],confirm:"Richtofen congratulates Samuel and blue energy links the lamps to the Pylon.",warning:"Four different targets are mandatory; four different players are not. Check timing and lamp uniqueness if it fails."}
+ ]};
+for(const side of Object.keys(quests)){
+ quests[side].forEach((step,i)=>Object.assign(step,questStepDetails[side][i]));
+}
+
 const plans={
 depot:{floors:[{name:"Ground",rooms:[{name:"Starting hall",x:22,y:65,w:265,h:150},{name:"Quick Revive hall",x:287,y:90,w:100,h:100},{name:"Garage / powered room",x:387,y:65,w:165,h:150},{name:"Bus stop outside",x:210,y:260,w:185,h:75}]}]},
 diner:{floors:[{name:"Ground",rooms:[{name:"Diner",x:25,y:76,w:225,h:155},{name:"Gas station garage",x:270,y:76,w:195,h:155},{name:"Powered shed",x:475,y:115,w:110,h:116},{name:"Bus stop",x:213,y:258,w:160,h:62}]},{name:"Roof",rooms:[{name:"Diner roof",x:105,y:70,w:320,h:170},{name:"Hatch access",x:231,y:250,w:160,h:60}]}]},
@@ -274,11 +398,13 @@ const references=[
 {name:"ZFRR TranZit perks",url:"https://zfrr.me/hub/tranzit-perks-and-power/"},
 {name:"ZFRR TranZit weapons",url:"https://zfrr.me/hub/tranzit-weapons/"},
 {name:"ZFRR Tower of Babble",url:"https://zfrr.me/hub/tranzit-easter-egg/"},
+{name:"Call of Duty Wiki / Fandom Tower of Babble walkthrough",url:"https://callofduty.fandom.com/wiki/Tower_of_Babble#Walkthrough"},
+{name:"Call of Duty Zombies Guides walkthrough",url:"https://www.codzombiesguides.com/main-quests/black-ops-2/tranzit/"},
 {name:"Secrets and Easter eggs reference",url:"https://zfrr.me/hub/tranzit-secrets/"},
 {name:"Persistent-upgrades reference",url:"https://zfrr.me/hub/tranzit-persistent-upgrades/"},
 {name:"Ten achievements reference",url:"https://zfrr.me/hub/tranzit-achievements/"},
 {name:"Original-era door checklist",url:"https://www.neoseeker.com/call-of-duty-black-ops-ii/faqs/272171-call-of-duty-bo2.html"},
 {name:"Call of Duty Zombies Richtofen quest",url:"https://www.callofdutyzombies.com/zombie-library/zombies-library/black-ops_ii/tranzit/side-quest-easter-egg-%E2%80%93-tower-of-babble-~-obey-richtofen-r297/"}
 ];
-return {zones,types,items,builds,quests,plans,references};
+return {zones,types,items,builds,quests,questGuide,plans,references};
 })();
