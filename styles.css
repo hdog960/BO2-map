@@ -785,3 +785,46 @@ body.sheet-open{overflow:hidden;touch-action:pan-y}
    Unicode symbol; preserve original two-thumb controls and 44px targets. */
 .bottom-nav .nav-map-icon{display:inline-grid;place-items:center;flex:0 0 21px;width:21px;height:21px;line-height:1}
 .bottom-nav .nav-map-icon svg{display:block;width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8}
+
+/* Tower of Babble v2 — responsive source-backed step guide. */
+.quest-route-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 8px}
+.quest-route-facts>div{background:#252c28;border:1px solid #665c46;border-radius:8px;padding:8px 9px;min-width:0}
+.quest-route-facts small{display:block;color:#d2bb8c;font-size:9px;letter-spacing:.7px;font-weight:850;margin-bottom:4px}
+.quest-route-facts strong{display:block;color:#f5e9d4;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+.quest-route-intro{font-size:12px;line-height:1.55;color:#e2dccf;margin:0 0 10px}
+#view-quest .quest-prep ul{padding-left:19px;margin:4px 0 10px;color:#e2dac8}
+#view-quest .quest-prep li{font-size:12px;line-height:1.58;margin:7px 0}
+#view-quest .quest-prep .quest-prep-callout{padding:9px 10px;background:#35382d;border-left:3px solid #dfba75;border-radius:5px}
+.quest-next-evidence{background:#29392c;border:1px solid #628067;border-radius:7px;padding:7px 10px;margin:7px 0;font-size:11px;line-height:1.5;color:#e9f0db}
+.quest-next-evidence strong{display:block;color:#bde3ab;font-size:10px;letter-spacing:.7px}
+.quest-next-instructions{display:inline-block;margin:3px 0 7px;color:#ffe2a6;font-weight:800;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+.quest-next-instructions:focus-visible{outline:2px solid #ffe2a6;outline-offset:3px}
+#view-quest .quest-step{scroll-margin-top:20px}
+.quest-how{background:#263129;border:1px solid #536a51;border-radius:8px;padding:9px 10px 5px}
+.quest-how-heading{font-size:10px;font-weight:900;letter-spacing:.8px;color:#e9c991}
+.quest-how ol{margin:8px 0 0;padding-left:19px}
+.quest-how li{font-size:12px;line-height:1.6;color:#e7ebdf;margin:0 0 10px;padding-left:2px}
+.quest-how li::marker{color:#ebc18a;font-weight:900}
+.quest-proof,.quest-warning{padding:9px 11px;margin:8px 0;border-radius:7px}
+.quest-proof{border:1px solid #678c6a;background:#28392e}
+.quest-warning{border:1px solid #976e49;background:#392d26}
+.quest-proof strong,.quest-warning strong{display:block;color:#c4e6b9;font-size:10px;letter-spacing:.5px}
+.quest-warning strong{color:#fac592}
+#view-quest .quest-proof p,#view-quest .quest-warning p{font-size:12px;line-height:1.5;margin:5px 0 0;color:#ebe8dc}
+#view-quest .quest-tool{min-height:44px;margin:5px 0 10px;white-space:normal;text-align:center}
+.quest-faq{border:1px solid #696251;border-radius:9px;background:#232c28;margin:16px 0 28px;overflow:hidden}
+.quest-faq>summary{color:#ead2a3;font-size:11px;letter-spacing:.5px;font-weight:900;min-height:44px;padding:13px;cursor:pointer}
+.quest-faq-body{padding:0 12px 15px}
+.quest-faq-pair{border-top:1px solid #45524a;padding:11px 0 0}
+.quest-faq-pair strong{font-size:12px;color:#f5dfbe}
+#view-quest .quest-faq p{font-size:12px;line-height:1.6;color:#d7dbd1;margin:5px 0 12px}
+#view-quest .quest-faq .quest-faq-outcome{background:#303b32;padding:9px 10px;border-radius:7px;margin:0 0 11px}
+#view-quest .quest-faq .quest-faq-source{font-size:11px}
+#view-quest .quest-faq-source a{color:#f2c988;text-decoration:underline;text-underline-offset:2px}
+@media(max-width:375px){.quest-route-facts{gap:4px}.quest-route-facts>div{padding:7px 6px}.quest-route-facts strong{font-size:10px}}
+/* Ensure current-objective actions remain visible above bottom tabs at 667x375. */
+@media(orientation:landscape) and (max-height:470px){
+ #view-quest #questPanel .quest-next-evidence,#view-quest #questPanel .quest-next-instructions{display:none}
+ #view-quest #questPanel .quest-route-facts,#view-quest #questPanel .quest-route-intro{order:6}
+ #view-quest #questPanel .quest-faq{order:9}
+}

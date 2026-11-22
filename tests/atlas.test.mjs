@@ -291,3 +291,26 @@ test('M16.4 original saves, diagnostics, offline, quests and controls stay prese
  assert.match(html,/src="\.\/diagnostics\.js"/);
  for(const x of ['./data.js','./app.js','./world-art.svg','./diagnostics.js'])assert.ok(sw.includes(x),x);
 });
+
+
+test('Tower of Babble guide covers 14 steps without changing schema-1 quest slots',()=>{
+ assert.equal(D.quests.maxis.length,6);
+ assert.equal(D.quests.richtofen.length,8);
+ for(const side of ['maxis','richtofen']){
+  const guide=D.questGuide[side];
+  assert.ok(guide,side);
+  assert.ok(guide.prep.length>=5,side);
+  assert.ok(guide.faq.length>=3,side);
+  assert.match(guide.prep.join(' '),/Original/);
+  assert.match(guide.prep.join(' '),/NAV Table/);
+  for(const step of D.quests[side]){
+   assert.ok(step.actions.length>=3,side+': '+step.title);
+   assert.ok(step.confirm.length>20,side+': '+step.title);
+   assert.ok(step.warning.length>20,side+': '+step.title);
+  }
+ }
+ assert.match(D.quests.maxis[5].actions.join(' '),/two players/i);
+ assert.match(D.quests.richtofen[7].actions.join(' '),/Solo:/);
+ assert.match(D.questGuide.richtofen.reminder,/not a mandatory prerequisite/);
+ assert.ok(D.references.some(s=>s.url.includes('callofduty.fandom.com/wiki/Tower_of_Babble')));
+});

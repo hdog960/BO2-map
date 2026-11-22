@@ -442,6 +442,22 @@ function renderQuestCrewSummary(){
   '<div class="quest-roster-person"><span>PLAYER '+(i+1)+'</span><strong>'+esc(name)+'</strong></div>'
  ).join("")+'</div><p class="quest-crew-footnote">'+assigned+' of '+D.quests[state.side].length+' '+(state.side==="maxis"?"Maxis":"Richtofen")+' objectives assigned. Player names and assignments are saved on this device only.</p>';
 }
+
+function questHowTo(step){
+ return '<div class="quest-how"><strong class="quest-how-heading">DO THIS IN-GAME</strong><ol>'+
+  (step.actions||[]).map(action=>'<li>'+esc(action)+'</li>').join('')+'</ol></div>'+
+  '<div class="quest-proof"><strong>✓ CONFIRM BEFORE CHECKING OFF</strong><p>'+esc(step.confirm||'Confirm in your BO2 match.')+'</p></div>'+
+  (step.warning?'<div class="quest-warning"><strong>WATCH OUT</strong><p>'+esc(step.warning)+'</p></div>':'')+
+  (step.tool?'<button type="button" class="button ghost quest-tool" data-craft-view="'+esc(step.tool)+'">View '+esc(step.tool==='jet'?'Jet Gun':'Turbine')+' parts in Craftables</button>':'');
+}
+function questHelp(guide){
+ return '<details class="quest-faq"><summary>STUCK? TROUBLESHOOTING & COMPLETION</summary>'+
+  '<div class="quest-faq-body"><p class="quest-faq-outcome"><strong>How you know it worked:</strong> '+esc(guide.result)+'</p>'+
+  guide.faq.map(([q,a])=>'<div class="quest-faq-pair"><strong>'+esc(q)+'</strong><p>'+esc(a)+'</p></div>').join('')+
+  '<p class="quest-faq-source">References: <a href="https://callofduty.fandom.com/wiki/Tower_of_Babble#Walkthrough" target="_blank" rel="noopener noreferrer">Call of Duty Wiki walkthrough</a> · <a href="https://zfrr.me/hub/tranzit-easter-egg/" target="_blank" rel="noopener noreferrer">ZFRR route guide</a> · <a href="https://www.codzombiesguides.com/main-quests/black-ops-2/tranzit/" target="_blank" rel="noopener noreferrer">COD Zombies Guides</a>.</p>'+
+  '<p class="quest-faq-source">The guide stores manual checkmarks on this device only. Trust in-game dialogue and effects to confirm achievement progress.</p></div></details>';
+}
+
 function renderQuest(){
  if(!D.quests[state.side]){state.side="maxis";save();}
  $$("[data-side]").forEach(b=>{
@@ -450,7 +466,7 @@ function renderQuest(){
   b.setAttribute("aria-pressed",String(active));
  });
  renderQuestCrewSummary();
- const steps=D.quests[state.side];
+ const steps=D.quests[state.side],guide=D.questGuide[state.side];
  const completed=steps.filter((_,i)=>!!state.done[state.side+":"+i]).length;
  const next=steps.findIndex((_,i)=>!state.done[state.side+":"+i]);
  const pct=Math.round(100*completed/steps.length);
@@ -458,11 +474,16 @@ function renderQuest(){
  let html='<div class="quest-progress" aria-label="'+completed+' of '+steps.length+' '+state.side+' objectives completed">'+
   '<div class="quest-progress-text"><span><strong>'+completed+'/'+steps.length+'</strong> STEPS COMPLETE</span><span>'+pct+'%</span></div>'+
   '<div class="progress-track" role="progressbar" aria-label="Completed '+state.side+' steps" aria-valuemin="0" aria-valuemax="'+steps.length+'" aria-valuenow="'+completed+'"><div class="progress-bar" style="width:'+pct+'%"></div></div></div>';
- // Source-backed setup prerequisites, not an invented new route requirement.
- html+='<details class="quest-prep" id="questPrerequisites"><summary>BEFORE YOU START <span>Original difficulty · 4 players</span></summary>'+
-  '<div class="quest-prep-content"><p>Use Original difficulty, not Easy. Coordinate all four players and verify any prior Easter egg completion state.</p>'+
-  (state.side==="richtofen"?'<p>On Richtofen’s route, the Samuel player must hear the required voice lines.</p>':"")+
-  '<p>Every checkbox is a manual record; the atlas cannot detect your BO2 match or sync progress between phones.</p></div></details>';
+ // Route-specific preparation and evidence. Do not change the original saved checkmark slots.
+ html+='<div class="quest-route-facts" aria-label="'+esc(state.side)+' route requirements">'+
+  '<div><small>PLAYERS</small><strong>'+esc(guide.players)+'</strong></div>'+
+  '<div><small>MAIN POWER</small><strong>'+esc(guide.power)+'</strong></div>'+
+  '<div><small>ESSENTIAL GEAR</small><strong>'+esc(guide.gear)+'</strong></div></div>'+
+  '<p class="quest-route-intro">'+esc(guide.intro)+'</p>'+
+  '<details class="quest-prep" id="questPrerequisites"><summary>BEFORE YOU START <span>Original difficulty · '+esc(guide.players)+'</span></summary>'+
+   '<div class="quest-prep-content"><ul>'+guide.prep.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>'+
+   '<p class="quest-prep-callout">'+esc(guide.reminder)+'</p>'+
+   '<p>Checkmarks are saved only on this device; they do not complete or sync BO2 progress.</p></div></details>';
  if(nextStep){
   const who=state.assign[state.side+":"+next];
   const assigned=who!==""&&who!==undefined?state.crew[Number(who)]:"Unassigned";
@@ -470,6 +491,8 @@ function renderQuest(){
    '<div class="num">YOUR NEXT OBJECTIVE <span>STEP '+(next+1)+' OF '+steps.length+'</span></div>'+
    '<h3>'+esc(nextStep.title)+'</h3>'+
    '<p>'+esc(nextStep.note)+'</p>'+
+   '<div class="quest-next-evidence"><strong>CONFIRM IN-GAME</strong> '+esc(nextStep.confirm)+'</div>'+
+   '<a class="quest-next-instructions" href="#questStep'+next+'">Read full step-by-step instructions ↓</a>'+
    '<div class="quest-next-meta"><span>SITE · '+esc(zone(nextStep.zone).name)+'</span><span>♧ '+esc(assigned)+'</span></div>'+
    '<div class="actions quest-next-actions">'+
     '<button type="button" class="button quest-location" data-quest-zone="'+nextStep.zone+'">Show on map</button>'+
@@ -486,21 +509,22 @@ function renderQuest(){
   const key=state.side+":"+i,done=!!state.done[key],isNext=i===next,assigned=state.assign[key]??"";
   const who=assigned!==""?state.crew[Number(assigned)]:"";
   const stepStatus=done?"COMPLETE":isNext?"CURRENT":"UPCOMING";
-  html+='<section class="step quest-step '+(done?"done ":"")+(isNext?"current":"")+'" data-quest-step="'+i+'" '+(isNext?'aria-current="step"':"")+'>'+
+  html+='<section id="questStep'+i+'" class="step quest-step '+(done?"done ":"")+(isNext?"current":"")+'" data-quest-step="'+i+'" '+(isNext?'aria-current="step"':"")+'>'+
    '<div class="step-top"><button class="tick '+(done?"checked":"")+'" type="button" data-quest-done="'+i+'" aria-label="'+(done?"Mark incomplete: ":"Mark complete: ")+esc(step.title)+'" aria-pressed="'+done+'">'+(done?"✓":i+1)+'</button>'+
    '<div class="quest-step-head"><span class="quest-step-state">'+stepStatus+' · '+esc(zone(step.zone).name)+'</span>'+
    '<strong>'+esc(step.title)+'</strong><div class="step-count">'+(who?"Assigned: "+esc(who):"No player assigned")+'</div></div></div>'+
    '<details class="step-reveal quest-step-details" '+(isNext?"open":"")+'><summary>Instructions, location & crew</summary>'+
-   '<div class="quest-step-body"><p>'+esc(step.note)+'</p>'+
+   '<div class="quest-step-body"><p>'+esc(step.note)+'</p>'+questHowTo(step)+
    '<div class="step-extra"><div class="flex between"><span class="pill">SITE · '+esc(zone(step.zone).name)+'</span>'+
    '<button type="button" class="button ghost" data-quest-zone="'+step.zone+'">Show location</button></div>'+
    '<label class="small muted" for="questAssign'+i+'">Assign to player</label>'+
    '<select class="assign" id="questAssign'+i+'" data-assignment="'+i+'" aria-label="Assign '+esc(step.title)+'"><option value="">Unassigned</option>'+
     state.crew.map((name,j)=>'<option value="'+j+'" '+(assigned===String(j)?"selected":"")+'>'+esc(name)+'</option>').join("")+'</select>'+
-   '<details class="quest-troubleshooting"><summary>Checklist help</summary>'+
-   '<p>Follow the instructions for this objective exactly. Check difficulty, crew coordination and prior completion requirements; for Richtofen, verify the Samuel player hears the required lines. The atlas tracks only manual checks, not live in-game success.</p></details>'+
+   '<details class="quest-troubleshooting"><summary>Step reminder</summary>'+
+   '<p>'+esc(step.warning||'Verify this action in-game before marking it complete.')+'</p></details>'+
    '</div></div></details></section>';
  });
+ html+=questHelp(guide);
  $("#questPanel").innerHTML=html;
 }
 function renderAtlas(){
