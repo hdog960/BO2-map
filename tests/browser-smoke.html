@@ -25,7 +25,13 @@
    check(imageResponse.ok&&imageResponse.headers.get("content-type")?.includes("image/png"),"Apple PNG exists in served app");
 
    check(doc.querySelector("#mapLegend"),"map key must exist");
-   check(doc.querySelectorAll("#mapLegend [data-map-key]").length===11,"all ten icon categories plus All");
+   check(doc.querySelectorAll("#mapLegend [data-map-key]").length===7,"six approved map categories plus All");
+   for(const retired of ["weapon","special","goal","secret"]){
+    check(!doc.querySelector('#mapLegend [data-map-key="'+retired+'"]'),"removed map category is absent from key: "+retired);
+    check(!doc.querySelector('#mapPins [data-group$="|'+retired+'"]'),"removed map category has no world pins: "+retired);
+   }
+   for(const retained of ["perk","part","bench","paid","turbine","box"])
+    check(!!doc.querySelector('#mapLegend [data-map-key="'+retained+'"]'),"required category remains: "+retained);
    check(doc.querySelectorAll("#mapPins [data-group]").length>=12,"site-linked category pins should be shown without fake item coordinates");
    check(doc.querySelectorAll("#mapPins [data-zone]").length===10,"all ten mapped site pins");
    check(doc.querySelector("#worldMap image").getAttribute("href")==="./world-art.svg","reference vector artwork is present");
@@ -36,7 +42,7 @@
    check(win.getComputedStyle(drawer).position==="absolute","key overlays the map instead of pushing it");
    click("#mapKeyDisclosure summary");
    check(drawer.open,"tap expands compact key");
-   check(doc.querySelectorAll("#mapLegend [data-map-key]").length===11,"all original categories stay available");
+   check(doc.querySelectorAll("#mapLegend [data-map-key]").length===7,"only approved world-map categories appear");
    check(win.getComputedStyle(doc.querySelector(".map-filter-scroll")).overscrollBehaviorY==="contain","key scroll is contained");
    click('[data-map-key="perk"]');
    check(!drawer.open,"choosing category collapses drawer to restore map space");
