@@ -10,7 +10,7 @@ try{priorState=JSON.parse(localStorage.getItem(KEY)||"{}")||{};state=Object.assi
 if(!Array.isArray(state.mapFilters))state.mapFilters=defaults.mapFilters.slice();
 // Older installs saved filters before map-view presets existed: preserve their chosen layers.
 if(!Object.prototype.hasOwnProperty.call(priorState,"mapMode"))state.mapMode=state.mapFilters.length?"custom":"route";
-const MAP_MODES={route:[],quest:["goal","bench"],gear:["perk","weapon","part","bench","box"],doors:["paid","turbine","special"]};
+const MAP_MODES={route:[],quest:["bench"],gear:["perk","part","bench","box"],doors:["paid","turbine"]};
 if(!Object.keys(MAP_MODES).includes(state.mapMode)&&state.mapMode!=="custom")state.mapMode="route";
 if(!Array.isArray(state.crew)||state.crew.length!==4)state.crew=defaults.crew.slice();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn("Progress storage unavailable",e)}};
@@ -100,7 +100,7 @@ function go(view){
 function selectZone(id){state.zone=id;state.floor=0;save();go("zones");}
 function showItem(id){
  const item=D.items.find(x=>x.id===id);if(!item)return;
- const z=zone(item.zone),onMap=item.mapMode==="site-callout",b=buildById(item.buildId);
+ const z=zone(item.zone),onMap=isInMappedSite(item,item.zone),b=buildById(item.buildId);
  const alt=item.alternateZones?.length?'<p><strong>Other possible area(s):</strong> '+item.alternateZones.map(x=>esc(zone(x).name)).join(", ")+'</p>':"";
  const tag=b?'<div class="craft-modal-tag" style="--craft-color:'+b.color+'"><b>'+esc(b.code)+'</b><span>'+esc(b.name)+(item.type==="bench"?" · Workbench":" · Part")+'</span></div>':"";
  const collect=b&&item.buildPartIndex!==null&&item.buildPartIndex!==undefined?
@@ -109,9 +109,9 @@ function showItem(id){
 }
 /* Interactive atlas. Pins are anchored to known sites, not invented exact in-room coordinates. */
 const svgNS="http://www.w3.org/2000/svg";
-const MAP_SYMBOLS={perk:"P",weapon:"W",part:"+",bench:"⚒",paid:"$",turbine:"T",special:"!",box:"?",secret:"★",goal:"⚡"};
-const MAP_LABELS={perk:"Perks",weapon:"Wall guns",part:"Parts",bench:"Workbenches",paid:"Paid doors",turbine:"Turbine doors",special:"Special access",box:"Mystery Box",secret:"Secrets",goal:"Easter egg"};
-const MAP_PRIORITY={perk:0,goal:1,box:2,bench:3,turbine:4,paid:5,special:6,weapon:7,part:8,secret:9};
+const MAP_SYMBOLS={perk:"P",part:"+",bench:"⚒",paid:"$",turbine:"T",box:"?"};
+const MAP_LABELS={perk:"Perks",part:"Parts",bench:"Workbenches",paid:"Paid doors",turbine:"Turbine doors",box:"Mystery Box"};
+const MAP_PRIORITY={perk:0,box:1,bench:2,turbine:3,paid:4,part:5};
 // Category badges are callouts connected to the verified *site*, not in-room pins.
 // See data.js item.mapMode and the complete placement audit in AUDIT_ICON_PLACEMENT.md.
 // M16 iPhone hotfix: zoom=1 is a full-world overview; Reset must never crop the source map.
@@ -127,7 +127,13 @@ const MAP_WORLD_LABELS=[
 ];
 const MAP_TEXT_CORNER=[["NOT TO SCALE",535,558]];
 const MAP_W=720,MAP_H=580;
-if(!state.mapKind||!(state.mapKind==="all"||MAP_SYMBOLS[state.mapKind]))state.mapKind="all";
+// Migrate saved map selections which refer to categories no longer shown on the world map.
+if(!state.mapKind||!(state.mapKind==="all"||MAP_SYMBOLS[state.mapKind])){state.mapKind="all";save();}
+const previouslySelected=D.items.find(i=>i.id===state.selected);
+if((previouslySelected&&!MAP_SYMBOLS[previouslySelected.type])||
+ (typeof state.selected==="string"&&state.selected.startsWith("group:")&&!MAP_SYMBOLS[state.selected.split("|")[1]])){
+ state.selected=null;save();
+}
 function svgEl(type,attrs,children){
  const el=document.createElementNS(svgNS,type);
  for(const [k,v] of Object.entries(attrs||{}))el.setAttribute(k,String(v));
@@ -135,7 +141,7 @@ function svgEl(type,attrs,children){
  return el;
 }
 function isInMappedSite(item,zoneId){
- return item.mapMode==="site-callout"&&(item.zone===zoneId||item.alternateZones?.includes(zoneId));
+ return !!MAP_SYMBOLS[item.type]&&item.mapMode==="site-callout"&&(item.zone===zoneId||item.alternateZones?.includes(zoneId));
 }
 function placedItems(zoneId,type=null){
  return D.items.filter(i=>isInMappedSite(i,zoneId)&&(!type||i.type===type));
@@ -165,7 +171,7 @@ function buildMarkersAtSite(z,pins){
  });
 }
 function drawMapKey(){
- const list=D.items.filter(i=>i.mapMode==="site-callout");
+ const list=D.items.filter(i=>isInMappedSite(i,i.zone));
  const types=[["all","ALL","All",list.length],...Object.keys(MAP_SYMBOLS).map(type=>[type,MAP_SYMBOLS[type],MAP_LABELS[type],list.filter(i=>i.type===type).length])];
  $("#mapLegend").innerHTML=types.map(([kind,symbol,title,count])=>{
   const color=kind==="all"?"#ecd09a":category(kind).color,active=state.mapKind===kind;
@@ -592,7 +598,7 @@ function renderCrew(){
  panel.dataset.ready="1";
 }
 function help(){
- modal("Help & Settings",'<div class="stack"><p><b>Map:</b> All major locations and important item icons appear directly on the geography. Tap a numbered stop, perk, weapon, part, bench or door marker to open its details. A <b>+number</b> marker lists the other items at that location.</p><p><b>Map key:</b> Each symbol has a color and meaning. Tap a category in the key to show more icons of that type, or <b>All</b> to restore the overview. Pinch to zoom, drag to pan, or expand the map.</p><p><b>Easter Egg:</b> The separate <b>EASTER EGG</b> tab contains the Maxis and Richtofen steps, progress checks and four-player assignments. A Locate button brings you back to the correct map site.</p><p><b>Sites, Find and Crew:</b> Room notes, searchable listings, buildable part checklists and names remain available without cluttering the main map.</p><p><b>Map diagnostics:</b> Run the privacy-safe v2 map performance scanner while panning and pinching, then copy the report.</p><button type="button" class="button" id="helpMapScan">Open map diagnostics</button><p><b>Offline:</b> Safari Share → Add to Home Screen. Launch once online, then test airplane mode. Information is saved only on your phone, not synced with the game.</p><p><b>Accuracy:</b> Roads and buildings follow the supplied reference map; icons are site-level guides, not measured in-game pickup coordinates. Alternate spawns are listed in details.</p></div>');
+ modal("Help & Settings",'<div class="stack"><p><b>Map:</b> All major locations and important item icons appear directly on the geography. Tap a numbered stop, perk, part, bench, mystery box or door marker to open its details. Wall guns, special access, Easter egg steps and secrets remain in the separate reference views, not in world-map markers. A <b>+number</b> marker lists the other items at that location.</p><p><b>Map key:</b> Each symbol has a color and meaning. Tap a category in the key to show more icons of that type, or <b>All</b> to restore the overview. Pinch to zoom, drag to pan, or expand the map.</p><p><b>Easter Egg:</b> The separate <b>EASTER EGG</b> tab contains the Maxis and Richtofen steps, progress checks and four-player assignments. A Locate button brings you back to the correct map site.</p><p><b>Sites, Find and Crew:</b> Room notes, searchable listings, buildable part checklists and names remain available without cluttering the main map.</p><p><b>Map diagnostics:</b> Run the privacy-safe v2 map performance scanner while panning and pinching, then copy the report.</p><button type="button" class="button" id="helpMapScan">Open map diagnostics</button><p><b>Offline:</b> Safari Share → Add to Home Screen. Launch once online, then test airplane mode. Information is saved only on your phone, not synced with the game.</p><p><b>Accuracy:</b> Roads and buildings follow the supplied reference map; icons are site-level guides, not measured in-game pickup coordinates. Alternate spawns are listed in details.</p></div>');
 }
 function isAccidentalMapClick(e){
  // Only disregard the single ghost click generated at the end of a drag,
@@ -639,7 +645,7 @@ if(b.dataset.floor){state.floor=Number(b.dataset.floor);save();renderZones();ret
 if(b.dataset.showItem){showItem(b.dataset.showItem);return;}
 if(b.dataset.findOnMap){
  const item=D.items.find(i=>i.id===b.dataset.findOnMap);
- if(item&&item.mapMode==="site-callout"){
+ if(item&&isInMappedSite(item,item.zone)){
   $("#modal").close();
   if(item.buildId){state.craftSelected=item.buildId;state.craftFocus=item.buildId;state.mapKind="part";state.selected=item.id;}
   else{state.craftFocus=null;state.mapKind=item.type;state.selected="group:"+item.zone+"|"+item.type;}
