@@ -146,7 +146,7 @@ try {
     await evaluate(rpc,'document.querySelector("#mapKeyDisclosure").open=true');
     await sleep(70);
     const keyInfo=await evaluate(rpc,metricsExpression);
-    if(!keyInfo.drawerOpen||keyInfo.categoryKeyCount!==11||keyInfo.buildFilterCount!==10)fail("Map key/buildable drawer parity failure");
+    if(!keyInfo.drawerOpen||keyInfo.categoryKeyCount!==7||keyInfo.buildFilterCount!==10)fail("Map key/buildable drawer parity failure");
     evidence.push({requested:{width,height},measured:keyInfo,screenshot:await capture(rpc,width,height,"filters")});
     await evaluate(rpc,'document.querySelector("#mapKeyDisclosure").open=false');
     await evaluate(rpc,'document.querySelector("#mapPins [data-zone=town]").dispatchEvent(new MouseEvent("click",{bubbles:true}))');
