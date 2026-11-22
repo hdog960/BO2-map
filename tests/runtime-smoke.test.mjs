@@ -46,9 +46,41 @@ test('world map hides four retired marker categories while keeping atlas and que
  assert.match(els.questPanel.innerHTML,/Avogadro|MAXIS/i);
 });
 
+
+test('upgraded guide shows detailed actions, confirmation, route facts and reference sources',()=>{
+ const {els,click,saved}=boot();
+ assert.match(els.questPanel.innerHTML,/DO THIS IN-GAME/);
+ assert.match(els.questPanel.innerHTML,/CONFIRM IN-GAME/);
+ assert.match(els.questPanel.innerHTML,/callofduty\.fandom\.com\/wiki\/Tower_of_Babble/);
+ assert.match(els.questPanel.innerHTML,/href="#questStep0"/);
+ assert.match(els.questPanel.innerHTML,/data-craft-view="turbine"/);
+ assert.match(els.questPanel.innerHTML,/2–4 players/);
+ assert.match(els.questPanel.innerHTML,/orange energy|orange electricity/i);
+ click({side:'richtofen'});
+ assert.match(els.questPanel.innerHTML,/Jet Gun engine/);
+ assert.match(els.questPanel.innerHTML,/Denizen portal/);
+ assert.match(els.questPanel.innerHTML,/four DIFFERENT green lamps/i);
+ assert.match(els.questPanel.innerHTML,/Solo: an advanced/);
+ assert.match(els.questPanel.innerHTML,/data-craft-view="jet"/);
+ assert.match(els.questPanel.innerHTML,/Richtofen congratulates Samuel/);
+ assert.equal(saved().side,'richtofen');
+});
+test('old quest checkmarks and crew assignments survive the new step descriptions',()=>{
+ const original=JSON.stringify({view:'quest',side:'maxis',done:{'maxis:0':true,'richtofen:7':true},assign:{'maxis:1':'2'},parts:{'jet:1':true},crew:['P1','P2','P3','P4']});
+ const {els,click,saved}=boot(original);
+ assert.match(els.questPanel.innerHTML,/STEP 2 OF 6/);
+ assert.match(els.questPanel.innerHTML,/Assigned: P3/);
+ click({side:'richtofen'});
+ assert.match(els.questPanel.innerHTML,/1\/8/);
+ assert.equal(saved().done['richtofen:7'],true);
+ assert.equal(saved().done['maxis:0'],true);
+ assert.equal(saved().assign['maxis:1'],'2');
+ assert.equal(saved().parts['jet:1'],true);
+});
+
 test('selecting Richtofen switches to its eight-step quest path',()=>{
  const {els,click,saved}=boot();click({side:'richtofen'});
- assert.match(els.questPanel.innerHTML,/Four-player simultaneous EMP throw/);
+ assert.match(els.questPanel.innerHTML,/EMP four different lampposts/);
  assert.equal(saved().side,'richtofen');
 });
 test('quest checkbox is persistent',()=>{

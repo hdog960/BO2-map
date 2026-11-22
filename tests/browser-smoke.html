@@ -249,6 +249,10 @@
    // M16.3 — the selected route is an interactive, accessible state; one
    // objective is open by default and every other step remains available.
    check(doc.querySelectorAll('#questPanel [data-quest-step]').length===6,"Maxis preserves six source-authored objectives");
+   check(doc.querySelector("#questPanel .quest-route-facts").textContent.includes("OFF"),"Maxis route shows power OFF requirement");
+   check(doc.querySelector("#questPanel .quest-next-evidence").textContent.includes("Turbines"),"current Maxis step has in-game verification");
+   check(doc.querySelector('#questStep0 .quest-how ol').children.length>=3,"current step has usable detailed directions");
+   check(doc.querySelectorAll("#questPanel .quest-faq-pair").length>=3,"source-backed troubleshooting is accessible");
    check(doc.querySelector('#questPanel .quest-next')?.textContent.includes("STEP 1 OF 6"),"first unfinished Maxis objective is prominent");
    check(doc.querySelectorAll('#questPanel .quest-step-details[open]').length===1,"only current objective details open by default");
    check(!doc.querySelector("#questPrerequisites").open,"prerequisites stay compact but accessible");
@@ -264,10 +268,12 @@
    click("#questCrewDisclosure summary");
    check(!crewDisclosure.open,"Crew roster can collapse");
    click('[data-side="richtofen"]');
-   check(doc.querySelector("#questPanel").textContent.includes("Four-player simultaneous EMP throw"),"Richtofen checklist");
+   check(doc.querySelector("#questPanel").textContent.includes("EMP four different lampposts"),"Richtofen checklist");
    click('[data-quest-done="0"]');
    check(doc.querySelector("#questPanel").textContent.includes("1/8"),"Richtofen progress check");
    check(doc.querySelectorAll('#questPanel [data-quest-step]').length===8,"Richtofen retains eight distinct steps");
+   check(doc.querySelector("#questPanel .quest-route-facts").textContent.includes("ON"),"Richtofen route shows power ON requirement");
+   check(doc.querySelector('#questStep7').textContent.includes("Solo:"),"Richtofen guide covers advanced solo approach");
    check(doc.querySelector("#questPanel .quest-next")?.textContent.includes("STEP 2 OF 8"),"next incomplete step advances after manual completion");
    check(doc.querySelector('#questPanel [data-quest-step="0"] .quest-step-details').open===false,"completed objective is collapsed");
    check(doc.querySelector('#questPanel [data-quest-step="1"] .quest-step-details').open===true,"current objective instructions expand");
