@@ -29,6 +29,23 @@ test('application starts with interactive map key and all other screens intact',
  assert.match(els.questPanel.innerHTML,/Avogadro|MAXIS/i);
 });
 
+
+test('world map hides four retired marker categories while keeping atlas and quest content',()=>{
+ const {els,click,saved}=boot(JSON.stringify({view:'map',mapKind:'secret',selected:'group:town|secret'}));
+ for(const name of ['Special access','Easter egg','Wall guns','Secrets'])
+  assert.doesNotMatch(els.mapLegend.innerHTML,new RegExp(name),name);
+ assert.equal(saved().mapKind,'all');
+ assert.equal(saved().selected,null);
+ click({mapMore:'town'});
+ assert.match(els.mapContext.innerHTML,/Juggernog/);
+ assert.doesNotMatch(els.mapContext.innerHTML,/Bank vault outer door|Bank vault inner door|Carrion teddy|Town Morse-code/);
+ click({mapMore:'depot'});
+ assert.match(els.mapContext.innerHTML,/Quick Revive/);
+ assert.doesNotMatch(els.mapContext.innerHTML,/M14|Olympia|Carrion teddy/);
+ assert.match(els.atlasItems.innerHTML,/Bank vault outer door/);
+ assert.match(els.questPanel.innerHTML,/Avogadro|MAXIS/i);
+});
+
 test('selecting Richtofen switches to its eight-step quest path',()=>{
  const {els,click,saved}=boot();click({side:'richtofen'});
  assert.match(els.questPanel.innerHTML,/Four-player simultaneous EMP throw/);
